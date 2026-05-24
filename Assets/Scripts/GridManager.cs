@@ -351,6 +351,6 @@ public class GridManager : MonoBehaviour
             if (!word.isFound) return;
         }
 
-        Debug.Log("You Win!");
+        Debug.Log("You Win!!");
     }
 }
