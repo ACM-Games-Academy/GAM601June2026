@@ -295,6 +295,8 @@ public class GridManager : MonoBehaviour
         //   Continue()@Message(WordFound)
         // When this fires, the conversation advances and evaluates the
         // branch conditions to pick the correct next node automatically.
+        Debug.Log("WordFound sequence reached — branchValue: " + foundWord.branchValue);
+        
         Sequencer.Message("WordFound");
 
         // ─────────────────────────────────────────────────────────────
