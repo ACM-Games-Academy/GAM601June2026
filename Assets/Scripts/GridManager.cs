@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using PixelCrushers.DialogueSystem;
 
 public class GridManager : MonoBehaviour
 {
     [Header("Selection")]
     private List<Cell> selectedCells = new List<Cell>();
 
-    // Tracks the direction the player is selecting in
-    // e.g. (1, 0) means moving right, (0, 1) means moving down
     private int directionRow = 0;
     private int directionCol = 0;
     private bool directionLocked = false;
@@ -19,7 +18,6 @@ public class GridManager : MonoBehaviour
     public Color selectedColor = Color.yellow;
     public Color foundColor = Color.green;
 
-    // Tracks whether a clear is already in progress
     private bool isClearingSelection = false;
 
     [Header("Grid Settings")]
@@ -34,15 +32,20 @@ public class GridManager : MonoBehaviour
 
     private string[] hieroglyphs = new string[]
     {
-        "𓁷", "𓎟", "𓀀","𓁐","𓃀","𓈖","𓌱","𓅓"
+        "𓁷", "𓎟", "𓀀", "𓁐", "𓃀", "𓈖", "𓌱", "𓅓"
     };
 
     [System.Serializable]
     public class HieroglyphWord
     {
-        public string wordName;
-        public string[] symbols;
+        public string wordName;    // label for debugging e.g. "Path_A"
+        public string[] symbols;     // the hieroglyph sequence
         public bool isFound;
+
+        // Must match the value your conversation conditions check against
+        // e.g. "Path_A", "Path_B", "Path_C"
+        // Set this in the Inspector for each word
+        public string branchValue;
     }
 
     [Header("Words to Hide")]
@@ -94,8 +97,6 @@ public class GridManager : MonoBehaviour
 
     void PlaceWordsInGrid(string[,] gridSymbols)
     {
-        // All four valid directions a word can be placed:
-        // right, down, diagonal down-right, diagonal down-left
         int[,] directions = new int[,]
         {
             {  0,  1 },   // horizontal right
@@ -113,23 +114,19 @@ public class GridManager : MonoBehaviour
             {
                 attempts++;
 
-                // Pick a random direction from the four options
                 int dirIndex = Random.Range(0, 4);
                 int dRow = directions[dirIndex, 0];
                 int dCol = directions[dirIndex, 1];
 
-                // Pick a random starting position
                 int startRow = Random.Range(0, gridHeight);
                 int startCol = Random.Range(0, gridWidth);
 
-                // Check if the word fits within the grid boundaries
                 int endRow = startRow + dRow * (word.symbols.Length - 1);
                 int endCol = startCol + dCol * (word.symbols.Length - 1);
 
                 if (endRow < 0 || endRow >= gridHeight) continue;
                 if (endCol < 0 || endCol >= gridWidth) continue;
 
-                // Check if all positions needed are empty
                 bool canPlace = true;
                 for (int i = 0; i < word.symbols.Length; i++)
                 {
@@ -143,7 +140,6 @@ public class GridManager : MonoBehaviour
                     }
                 }
 
-                // If the space is clear, place the word
                 if (canPlace)
                 {
                     for (int i = 0; i < word.symbols.Length; i++)
@@ -165,16 +161,10 @@ public class GridManager : MonoBehaviour
 
     public void OnCellSelected(Cell cell)
     {
-        // Block all input while the red flash delay is running
         if (isClearingSelection) return;
-
-        // Don't allow selecting already found cells
         if (cell.isPartOfFoundWord) return;
-
-        // Don't allow selecting the same cell twice
         if (selectedCells.Contains(cell)) return;
 
-        // If this is the first cell, just add it — no direction to check yet
         if (selectedCells.Count == 0)
         {
             selectedCells.Add(cell);
@@ -183,7 +173,6 @@ public class GridManager : MonoBehaviour
             return;
         }
 
-        // If this is the second cell, establish the direction
         if (selectedCells.Count == 1)
         {
             Cell firstCell = selectedCells[0];
@@ -191,19 +180,12 @@ public class GridManager : MonoBehaviour
             int rowDiff = cell.row - firstCell.row;
             int colDiff = cell.col - firstCell.col;
 
-            // The cell must be exactly one step away in a valid direction
-            // Valid: horizontal, vertical, or diagonal (max 1 step in any combination)
             bool isValidDirection =
                 (Mathf.Abs(rowDiff) <= 1 && Mathf.Abs(colDiff) <= 1) &&
                 !(rowDiff == 0 && colDiff == 0);
 
-            if (!isValidDirection)
-            {
-                // Too far away — ignore this click
-                return;
-            }
+            if (!isValidDirection) return;
 
-            // Lock in the direction for the rest of this selection
             directionRow = rowDiff;
             directionCol = colDiff;
             directionLocked = true;
@@ -214,18 +196,14 @@ public class GridManager : MonoBehaviour
             return;
         }
 
-        // For the third cell onwards, enforce the locked direction
         if (directionLocked)
         {
             Cell lastCell = selectedCells[selectedCells.Count - 1];
-
             int expectedRow = lastCell.row + directionRow;
             int expectedCol = lastCell.col + directionCol;
 
-            // The new cell must be exactly the next step in the locked direction
             if (cell.row != expectedRow || cell.col != expectedCol)
             {
-                // Wrong direction — flash red and clear
                 StartCoroutine(ClearSelectionWithDelay(0.5f));
                 return;
             }
@@ -244,7 +222,6 @@ public class GridManager : MonoBehaviour
             currentSequence[i] = selectedCells[i].hieroglyphValue;
         }
 
-        // Check against every word
         foreach (HieroglyphWord word in wordsToHide)
         {
             if (word.isFound) continue;
@@ -263,12 +240,11 @@ public class GridManager : MonoBehaviour
             if (isMatch)
             {
                 word.isFound = true;
-                MarkWordAsFound();
+                StartCoroutine(WordFoundSequence(word));
                 return;
             }
         }
 
-        // Find the longest word to know when to give up on a selection
         int longestWord = 0;
         foreach (HieroglyphWord word in wordsToHide)
         {
@@ -276,49 +252,68 @@ public class GridManager : MonoBehaviour
                 longestWord = word.symbols.Length;
         }
 
-        // If the player's selection is as long as the longest word
-        // and still no match, trigger the red flash and clear
         if (selectedCells.Count >= longestWord)
         {
             StartCoroutine(ClearSelectionWithDelay(0.5f));
         }
     }
 
-    // Flashes selected cells red, waits, then resets them
-    IEnumerator ClearSelectionWithDelay(float delay)
+    IEnumerator WordFoundSequence(HieroglyphWord foundWord)
     {
-        // Lock input so the player can't select more cells during the flash
+        // Lock input during the found animation
         isClearingSelection = true;
 
-        // Flash all selected cells red to signal a wrong answer
-        foreach (Cell cell in selectedCells)
-        {
-            cell.SetHighlight(Color.red);
-        }
-
-        // Wait for the delay duration
-        yield return new WaitForSeconds(delay);
-
-        // Now reset all cells back to their original colour
-        ClearSelection();
-
-        // Unlock input again
-        isClearingSelection = false;
-    }
-
-    void MarkWordAsFound()
-    {
+        // Turn all selected cells green
         foreach (Cell cell in selectedCells)
         {
             cell.SetHighlight(foundColor);
             cell.isPartOfFoundWord = true;
         }
 
-        // Reset direction tracking ready for the next selection
-        ResetDirection();
+        // Pause briefly so the player can see the green highlight
+        // before the dialogue advances
+        yield return new WaitForSeconds(1.0f);
 
+        ResetDirection();
         selectedCells.Clear();
-        CheckForWin();
+        isClearingSelection = false;
+
+        // ── PixelCrushers Integration ─────────────────────────────────
+        //
+        // Write which word was found into the PixelCrushers variable
+        // "SelectedPath" so the conversation's branch conditions can
+        // evaluate it. e.g. Variable["SelectedPath"] == "Path_A"
+        DialogueLua.SetVariable("SelectedPath", foundWord.branchValue);
+
+        // Also record this specific word as individually found, useful
+        // for conditions in later conversations
+        DialogueLua.SetVariable("Found_" + foundWord.wordName, true);
+
+        // Send the "WordFound" message to the Dialogue System.
+        // The trigger node in your conversation is paused waiting for
+        // exactly this message via its Sequence field:
+        //   Continue()@Message(WordFound)
+        // When this fires, the conversation advances and evaluates the
+        // branch conditions to pick the correct next node automatically.
+        Sequencer.Message("WordFound");
+
+        // ─────────────────────────────────────────────────────────────
+    }
+
+    IEnumerator ClearSelectionWithDelay(float delay)
+    {
+        isClearingSelection = true;
+
+        foreach (Cell cell in selectedCells)
+        {
+            cell.SetHighlight(Color.red);
+        }
+
+        yield return new WaitForSeconds(delay);
+
+        ClearSelection();
+
+        isClearingSelection = false;
     }
 
     void ClearSelection()
@@ -331,9 +326,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // Reset direction tracking ready for the next selection
         ResetDirection();
-
         selectedCells.Clear();
     }
 
@@ -342,15 +335,5 @@ public class GridManager : MonoBehaviour
         directionRow = 0;
         directionCol = 0;
         directionLocked = false;
-    }
-
-    void CheckForWin()
-    {
-        foreach (HieroglyphWord word in wordsToHide)
-        {
-            if (!word.isFound) return;
-        }
-
-        Debug.Log("You Win!!");
     }
 }
