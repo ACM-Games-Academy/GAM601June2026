@@ -266,9 +266,9 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: 'Your redemption begins -- guide the humans to goodness, to greatness
+        value: "Your redemption begins -- guide the humans to goodness, to greatness
           and according to the wishes of the Godhood. Your story may yet have a different
-          ending. '
+          ending. \U00013000 \U00013050 \U000130C0"
         type: 0
         typeString: 
       - title: Sequence
@@ -323,7 +323,8 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: 'I renew my solemn promise to serve the Gods, now and forever... '
+        value: "I renew my solemn promise to serve the Gods, now and forever... \U00013000
+          \U00013050 \U000130C0"
         type: 0
         typeString: 
       - title: Sequence
@@ -351,8 +352,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 93.87341
-        y: 193.14368
+        x: 95.6727
+        y: 194.0433
         width: 160
         height: 30
     - id: 3
@@ -409,7 +410,7 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 106.21411
-        y: 273.14026
+        y: 273.93295
         width: 160
         height: 30
     - id: 4
@@ -572,8 +573,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 92.29956, y: 4.1138115}
-    canvasZoom: 1.0092502
+    canvasScrollPosition: {x: 28.106094, y: 37.56523}
+    canvasZoom: 0.82925034
   syncInfo:
     syncActors: 0
     syncItems: 0
