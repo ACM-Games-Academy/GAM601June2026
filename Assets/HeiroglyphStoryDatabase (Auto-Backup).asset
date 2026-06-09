@@ -54,7 +54,7 @@ MonoBehaviour:
       type: 2
       typeString: CustomFieldType_Boolean
     portrait: {fileID: 0}
-    spritePortrait: {fileID: 0}
+    spritePortrait: {fileID: -5416161702059855779, guid: c5f8a9b5b85d26840aa9a030902b1f1c, type: 3}
     alternatePortraits: []
     spritePortraits: []
   - id: 2
@@ -72,11 +72,11 @@ MonoBehaviour:
       type: 0
       typeString: CustomFieldType_Text
     - title: IsPlayer
-      value: False
+      value: True
       type: 2
       typeString: CustomFieldType_Boolean
     portrait: {fileID: 0}
-    spritePortrait: {fileID: 0}
+    spritePortrait: {fileID: 21300000, guid: 1f7489b792f0d9e4f94bbde3c86f5c3d, type: 3}
     alternatePortraits: []
     spritePortraits: []
   items: []
@@ -87,7 +87,7 @@ MonoBehaviour:
     - title: Name
       value: SelectedPath
       type: 0
-      typeString: 
+      typeString: CustomFieldType_Text
     - title: Initial Value
       value: '""'
       type: 0
@@ -95,7 +95,7 @@ MonoBehaviour:
     - title: Description
       value: 
       type: 0
-      typeString: 
+      typeString: CustomFieldType_Text
   - id: 2
     fields:
     - title: Name
@@ -132,6 +132,34 @@ MonoBehaviour:
       typeString: 
     - title: Initial Value
       value: '"Opening"'
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Description
+      value: 
+      type: 0
+      typeString: 
+  - id: 5
+    fields:
+    - title: Name
+      value: Path_A_Display
+      type: 0
+      typeString: 
+    - title: Initial Value
+      value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Description
+      value: 
+      type: 0
+      typeString: 
+  - id: 6
+    fields:
+    - title: Name
+      value: Path_B_Display
+      type: 0
+      typeString: 
+    - title: Initial Value
+      value: 
       type: 0
       typeString: CustomFieldType_Text
     - title: Description
@@ -239,7 +267,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 86.07379
+        x: 88.62698
         y: 41.176704
         width: 160
         height: 30
@@ -266,9 +294,9 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: 'Your redemption begins -- guide the humans to goodness, to greatness
+        value: "Your redemption begins -- guide the humans to goodness, to greatness
           and according to the wishes of the Godhood. Your story may yet have a different
-          ending. '
+          ending. \U00013000 \U00013050 \U000130C0"
         type: 0
         typeString: 
       - title: Sequence
@@ -296,8 +324,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 83.37668
-        y: 134.40001
+        x: 90.12976
+        y: 123.78801
         width: 160
         height: 30
     - id: 2
@@ -323,7 +351,8 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: 'I renew my solemn promise to serve the Gods, now and forever... '
+        value: I renew my solemn promise to serve the Gods, now and forever... Example
+          text -- (answer 1) (answer 2)
         type: 0
         typeString: 
       - title: Sequence
@@ -351,11 +380,117 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 221.9961
-        y: 260.497
+        x: 93.743256
+        y: 189.21967
         width: 160
         height: 30
     - id: 3
+      fields:
+      - title: Title
+        value: WordSearchTrigger
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 'SetContinueMode(false);
+
+          Continue()@Message(WordFound)'
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 1
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 1
+        originDialogueID: 3
+        destinationConversationID: 1
+        destinationDialogueID: 6
+        isConnector: 0
+        priority: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 107.34207
+        y: 273.93295
+        width: 160
+        height: 30
+    - id: 4
+      fields:
+      - title: Title
+        value: Path A
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: You Have Chosen Path A
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: SetContinueMode(original)
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 1
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks: []
+      conditionsString: Variable["SelectedPath"] == "Path_A"
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 641.30066
+        y: 228.0015
+        width: 160
+        height: 30
+    - id: 5
       fields:
       - title: Title
         value: 
@@ -366,11 +501,60 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Actor
-        value: 1
+        value: 2
         type: 5
         typeString: CustomFieldType_Actor
       - title: Conversant
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: 
+      - title: Dialogue Text
+        value: You Have Chosen Path B
+        type: 0
+        typeString: 
+      - title: Sequence
+        value: SetContinueMode(original)
+        type: 0
+        typeString: 
+      conversationID: 1
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks: []
+      conditionsString: Variable["SelectedPath"] == "Path_B"
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 634.58594
+        y: 354.6751
+        width: 160
+        height: 30
+    - id: 6
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: 
+      - title: Description
+        value: 
+        type: 0
+        typeString: 
+      - title: Actor
         value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 1
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
@@ -392,7 +576,19 @@ MonoBehaviour:
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
-      outgoingLinks: []
+      outgoingLinks:
+      - originConversationID: 1
+        originDialogueID: 6
+        destinationConversationID: 1
+        destinationDialogueID: 4
+        isConnector: 0
+        priority: 2
+      - originConversationID: 1
+        originDialogueID: 6
+        destinationConversationID: 1
+        destinationDialogueID: 5
+        isConnector: 0
+        priority: 2
       conditionsString: 
       userScript: 
       onExecute:
@@ -400,13 +596,13 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 396.7534
-        y: 346.22516
+        x: 374.02475
+        y: 280.5322
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 18.151413, y: 8.667971}
-    canvasZoom: 1.03
+    canvasScrollPosition: {x: 9.023621, y: 96.5721}
+    canvasZoom: 0.70925045
   syncInfo:
     syncActors: 0
     syncItems: 0

@@ -93,6 +93,24 @@ public class GridManager : MonoBehaviour
                 grid[row, col] = cellScript;
             }
         }
+        
+
+        // After building the grid, write each word's hieroglyph
+        // sequence into a PixelCrushers variable as a plain string.
+        // These variables are then referenced in dialogue node text
+        // using [var=VariableName] tokens.
+        foreach (HieroglyphWord word in wordsToHide)
+        {
+            // Joins the symbols array into a spaced string
+            // e.g. ["𓀀","𓁐","𓃀"] becomes "𓀀 𓁐 𓃀"
+            string displayString = string.Join(" ", word.symbols);
+
+            // Writes to e.g. "Path_A_Display", "Path_B_Display"
+            DialogueLua.SetVariable(word.branchValue + "_Display", displayString);
+        }
+
+        // Temporary debug line — remove after testing
+        Debug.Log("Path_A_Display value: " + DialogueLua.GetVariable("Path_A_Display").asString);
     }
 
     void PlaceWordsInGrid(string[,] gridSymbols)
