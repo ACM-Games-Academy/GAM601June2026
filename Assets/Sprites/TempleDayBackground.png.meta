@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ef6475fdd56d9764a8c3af985f22a542
+guid: a2949a1ba2ee9ef48b4c817e712f8156
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8399233467727893228
-    second: GoddessBast_0
+      213: 7980238798014242262
+    second: TempleDayBackground_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: GoddessBast_0
+      name: TempleDayBackground_0
       rect:
         serializedVersion: 2
-        x: 705
-        y: 82
-        width: 508
-        height: 1756
+        x: 0
+        y: 0
+        width: 1672
+        height: 941
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ce25e7d7652109470800000000000000
-      internalID: 8399233467727893228
+      spriteID: 6dddd6ad7e08fbe60800000000000000
+      internalID: 7980238798014242262
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      GoddessBast_0: 8399233467727893228
+      TempleDayBackground_0: 7980238798014242262
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

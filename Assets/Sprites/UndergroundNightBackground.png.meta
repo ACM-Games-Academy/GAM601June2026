@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: dbcc8ab1d6516be4f948d6dbb2e856f9
+guid: d0a1cd1140ccb9f40abfcb4ca828b796
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5694340226214419893
-    second: GoddessSekhmet_0
+      213: -4065028796746238123
+    second: UndergroundNightBackground_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: GoddessSekhmet_0
+      name: UndergroundNightBackground_0
       rect:
         serializedVersion: 2
-        x: 645
-        y: 86
-        width: 658
-        height: 1735
+        x: 0
+        y: 0
+        width: 1672
+        height: 941
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5bd5abd044c560f40800000000000000
-      internalID: 5694340226214419893
+      spriteID: 557f438c8dd1697c0800000000000000
+      internalID: -4065028796746238123
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      GoddessSekhmet_0: 5694340226214419893
+      UndergroundNightBackground_0: -4065028796746238123
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

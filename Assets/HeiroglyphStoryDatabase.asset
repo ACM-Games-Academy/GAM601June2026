@@ -35,28 +35,6 @@ MonoBehaviour:
     underline: 0
   baseID: 1
   actors:
-  - id: 1
-    fields:
-    - title: Name
-      value: Mut
-      type: 0
-      typeString: 
-    - title: Pictures
-      value: '[]'
-      type: 3
-      typeString: CustomFieldType_Files
-    - title: Description
-      value: Narrator Nighttime Underworld
-      type: 0
-      typeString: CustomFieldType_Text
-    - title: IsPlayer
-      value: True
-      type: 2
-      typeString: CustomFieldType_Boolean
-    portrait: {fileID: 0}
-    spritePortrait: {fileID: 21300000, guid: c6f6f267ab32dc1409f9be8014621d58, type: 3}
-    alternatePortraits: []
-    spritePortraits: []
   - id: 2
     fields:
     - title: Name
@@ -90,7 +68,7 @@ MonoBehaviour:
       type: 3
       typeString: CustomFieldType_Files
     - title: Description
-      value: Temple Priest
+      value: human Temple Priest
       type: 0
       typeString: CustomFieldType_Text
     - title: IsPlayer
@@ -99,6 +77,94 @@ MonoBehaviour:
       typeString: CustomFieldType_Boolean
     portrait: {fileID: 0}
     spritePortrait: {fileID: 365585524039130369, guid: a5e7d43d9e30c504399f2a2d32c74c36, type: 3}
+    alternatePortraits: []
+    spritePortraits: []
+  - id: 4
+    fields:
+    - title: Name
+      value: YoungerSisterPriestess
+      type: 0
+      typeString: 
+    - title: Pictures
+      value: '[]'
+      type: 3
+      typeString: CustomFieldType_Files
+    - title: Description
+      value: human Younger Sister -- Priestess of Thebes
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: IsPlayer
+      value: False
+      type: 2
+      typeString: CustomFieldType_Boolean
+    portrait: {fileID: 0}
+    spritePortrait: {fileID: 0}
+    alternatePortraits: []
+    spritePortraits: []
+  - id: 1
+    fields:
+    - title: Name
+      value: Mut
+      type: 0
+      typeString: 
+    - title: Pictures
+      value: '[]'
+      type: 3
+      typeString: CustomFieldType_Files
+    - title: Description
+      value: Narrator Nighttime Underworld
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: IsPlayer
+      value: True
+      type: 2
+      typeString: CustomFieldType_Boolean
+    portrait: {fileID: 0}
+    spritePortrait: {fileID: 21300000, guid: c6f6f267ab32dc1409f9be8014621d58, type: 3}
+    alternatePortraits: []
+    spritePortraits: []
+  - id: 5
+    fields:
+    - title: Name
+      value: Thoth
+      type: 0
+      typeString: 
+    - title: Pictures
+      value: '[]'
+      type: 3
+      typeString: CustomFieldType_Files
+    - title: Description
+      value: god
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: IsPlayer
+      value: False
+      type: 2
+      typeString: CustomFieldType_Boolean
+    portrait: {fileID: 0}
+    spritePortrait: {fileID: 0}
+    alternatePortraits: []
+    spritePortraits: []
+  - id: 6
+    fields:
+    - title: Name
+      value: Sekhmet
+      type: 0
+      typeString: 
+    - title: Pictures
+      value: '[]'
+      type: 3
+      typeString: CustomFieldType_Files
+    - title: Description
+      value: 'god '
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: IsPlayer
+      value: False
+      type: 2
+      typeString: CustomFieldType_Boolean
+    portrait: {fileID: 0}
+    spritePortrait: {fileID: 0}
     alternatePortraits: []
     spritePortraits: []
   items: []
@@ -182,6 +248,34 @@ MonoBehaviour:
       typeString: 
     - title: Initial Value
       value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Description
+      value: 
+      type: 0
+      typeString: 
+  - id: 7
+    fields:
+    - title: Name
+      value: TimeOfDay
+      type: 0
+      typeString: 
+    - title: Initial Value
+      value: Day
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Description
+      value: 
+      type: 0
+      typeString: 
+  - id: 8
+    fields:
+    - title: Name
+      value: CurrentNPC
+      type: 0
+      typeString: 
+    - title: Initial Value
+      value: '""'
       type: 0
       typeString: CustomFieldType_Text
     - title: Description
@@ -355,11 +449,11 @@ MonoBehaviour:
       - title: Title
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Description
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Actor
         value: 2
         type: 5
@@ -371,16 +465,16 @@ MonoBehaviour:
       - title: Menu Text
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Dialogue Text
         value: I renew my solemn promise to serve the Gods, now and forever... Example
           text -- (answer 1) (answer 2)
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Sequence
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       conversationID: 1
       isRoot: 0
       isGroup: 0
@@ -490,7 +584,10 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: SetContinueMode(original)
+        value: 'SetContinueMode(original)
+
+          SendMessage(FadeToNight, BackgroundManager,
+          WorldSpace)'
         type: 0
         typeString: CustomFieldType_Text
       conversationID: 1
@@ -623,8 +720,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 22.584343}
-    canvasZoom: 0.49925062
+    canvasScrollPosition: {x: 0, y: 0}
+    canvasZoom: 0.5592506
   syncInfo:
     syncActors: 0
     syncItems: 0
