@@ -40,7 +40,7 @@ MonoBehaviour:
     - title: Name
       value: Cat
       type: 0
-      typeString: 
+      typeString: CustomFieldType_Text
     - title: Pictures
       value: '[]'
       type: 3
@@ -54,7 +54,7 @@ MonoBehaviour:
       type: 2
       typeString: CustomFieldType_Boolean
     portrait: {fileID: 0}
-    spritePortrait: {fileID: 21300000, guid: 69bc69cb579d7ca438c1726fa190601c, type: 3}
+    spritePortrait: {fileID: -4538705923021813642, guid: 7b239d7360a5372448b3c856829d8305, type: 3}
     alternatePortraits: []
     spritePortraits: []
   - id: 3
