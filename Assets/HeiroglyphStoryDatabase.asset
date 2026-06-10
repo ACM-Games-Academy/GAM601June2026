@@ -410,9 +410,9 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: "Your redemption begins -- guide the humans to goodness, to greatness
-          and according to the wishes of the Godhood. Your story may yet have a different
-          ending. \U00013000 \U00013050 \U000130C0"
+        value: "Your       redemption          begins -- guide the humans to goodness,
+          to greatness and according to the wishes of the Godhood. Your story may
+          yet have a different ending. \U00013000 \U00013050 \U000130C0"
         type: 0
         typeString: 
       - title: Sequence
@@ -496,8 +496,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 93.743256
-        y: 190.82208
+        x: 98.55046
+        y: 192.4245
         width: 160
         height: 30
     - id: 3
@@ -584,12 +584,13 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 'SetContinueMode(original)
-
-          SendMessage(FadeToNight, BackgroundManager,
-          WorldSpace)'
+        value: SendMessage(FadeToNight, ,BackgroundManager)
         type: 0
         typeString: CustomFieldType_Text
+      - title: Response Menu Sequence
+        value: 
+        type: 0
+        typeString: 
       conversationID: 1
       isRoot: 0
       isGroup: 0
@@ -605,7 +606,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 641.30066
+        x: 643.00555
         y: 228.0015
         width: 160
         height: 30
@@ -720,8 +721,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.5592506
+    canvasScrollPosition: {x: 1.704895, y: 160.25552}
+    canvasZoom: 0.46925062
   syncInfo:
     syncActors: 0
     syncItems: 0

@@ -40,7 +40,7 @@ MonoBehaviour:
     - title: Name
       value: Cat
       type: 0
-      typeString: 
+      typeString: CustomFieldType_Text
     - title: Pictures
       value: '[]'
       type: 3
@@ -54,7 +54,7 @@ MonoBehaviour:
       type: 2
       typeString: CustomFieldType_Boolean
     portrait: {fileID: 0}
-    spritePortrait: {fileID: 21300000, guid: 69bc69cb579d7ca438c1726fa190601c, type: 3}
+    spritePortrait: {fileID: -4538705923021813642, guid: 7b239d7360a5372448b3c856829d8305, type: 3}
     alternatePortraits: []
     spritePortraits: []
   - id: 3
@@ -410,9 +410,9 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: "Your redemption begins -- guide the humans to goodness, to greatness
-          and according to the wishes of the Godhood. Your story may yet have a different
-          ending. \U00013000 \U00013050 \U000130C0"
+        value: "Your       redemption          begins -- guide the humans to goodness,
+          to greatness and according to the wishes of the Godhood. Your story may
+          yet have a different ending. \U00013000 \U00013050 \U000130C0"
         type: 0
         typeString: 
       - title: Sequence
@@ -496,8 +496,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 93.743256
-        y: 190.82208
+        x: 98.55046
+        y: 192.4245
         width: 160
         height: 30
     - id: 3
@@ -584,7 +584,10 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: SetContinueMode(original)
+        value: 'SetContinueMode(original)
+
+          SendMessage(FadeToNight, BackgroundManager,
+          WorldSpace)'
         type: 0
         typeString: CustomFieldType_Text
       conversationID: 1
@@ -717,8 +720,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.5592506
+    canvasScrollPosition: {x: 0, y: 56.25992}
+    canvasZoom: 0.46925062
   syncInfo:
     syncActors: 0
     syncItems: 0
