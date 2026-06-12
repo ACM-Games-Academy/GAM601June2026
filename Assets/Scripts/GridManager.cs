@@ -2,16 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using PixelCrushers.DialogueSystem;
+
+// GridManager — Yarn Spinner version.
+//
+// All PixelCrushers code has been removed. The GridManager no longer
+// talks to any dialogue system directly. Instead it:
+//   1. Only accepts input while 'inputEnabled' is true
+//   2. Fires the OnWordFound event when a word is solved
+//
+// The WordsearchDialogueBridge script listens for that event and
+// handles all communication with Yarn Spinner. This keeps the
+// wordsearch completely independent of whichever dialogue system
+// is in use.
 
 public class GridManager : MonoBehaviour
 {
     [Header("Selection")]
     private List<Cell> selectedCells = new List<Cell>();
-
-    private int directionRow = 0;
-    private int directionCol = 0;
-    private bool directionLocked = false;
 
     // Colours for cell states
     public Color normalColor = Color.white;
@@ -20,9 +27,18 @@ public class GridManager : MonoBehaviour
 
     private bool isClearingSelection = false;
 
+    [Header("Input Control")]
+    // When false, all cell clicks are ignored.
+    // The dialogue bridge turns this on when a <<wordsearch>> command
+    // runs, and off again once a word has been found.
+    public bool inputEnabled = false;
+
     [Header("Grid Settings")]
     public int gridWidth = 6;
     public int gridHeight = 6;
+
+    // How many cells the player picks before the answer is checked
+    public int wordLength = 3;
 
     [Header("References")]
     public GameObject cellPrefab;
@@ -38,18 +54,22 @@ public class GridManager : MonoBehaviour
     [System.Serializable]
     public class HieroglyphWord
     {
-        public string wordName;    // label for debugging e.g. "Path_A"
-        public string[] symbols;     // the hieroglyph sequence
+        public string wordName;
+        public string[] symbols;
         public bool isFound;
 
-        // Must match the value your conversation conditions check against
-        // e.g. "Path_A", "Path_B", "Path_C"
-        // Set this in the Inspector for each word
+        // The value written to the Yarn variable $selectedPath
+        // when this word is found, e.g. "Path_A" or "Path_B"
         public string branchValue;
     }
 
     [Header("Words to Hide")]
     public HieroglyphWord[] wordsToHide;
+
+    // ── Event fired when a word is found ─────────────────────────────
+    // The WordsearchDialogueBridge subscribes to this.
+    // The string parameter is the found word's branchValue.
+    public event System.Action<string> OnWordFound;
 
     void Start()
     {
@@ -64,7 +84,6 @@ public class GridManager : MonoBehaviour
 
         PlaceWordsInGrid(gridSymbols);
 
-        // Fill remaining empty spots with random hieroglyphs
         for (int row = 0; row < gridHeight; row++)
         {
             for (int col = 0; col < gridWidth; col++)
@@ -76,12 +95,11 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // Spawn the actual cell objects
         for (int row = 0; row < gridHeight; row++)
         {
             for (int col = 0; col < gridWidth; col++)
             {
-                GameObject newCellObject = Instantiate(cellPrefab, gridPanel);
+                GameObject newCellObject = Instantiate(cellPrefab, gridPanel, false);
                 newCellObject.name = "Cell_" + row + "_" + col;
 
                 Cell cellScript = newCellObject.GetComponent<Cell>();
@@ -93,24 +111,6 @@ public class GridManager : MonoBehaviour
                 grid[row, col] = cellScript;
             }
         }
-        
-
-        // After building the grid, write each word's hieroglyph
-        // sequence into a PixelCrushers variable as a plain string.
-        // These variables are then referenced in dialogue node text
-        // using [var=VariableName] tokens.
-        foreach (HieroglyphWord word in wordsToHide)
-        {
-            // Joins the symbols array into a spaced string
-            // e.g. ["𓀀","𓁐","𓃀"] becomes "𓀀 𓁐 𓃀"
-            string displayString = string.Join(" ", word.symbols);
-
-            // Writes to e.g. "Path_A_Display", "Path_B_Display"
-            DialogueLua.SetVariable(word.branchValue + "_Display", displayString);
-        }
-
-        // Temporary debug line — remove after testing
-        Debug.Log("Path_A_Display value: " + DialogueLua.GetVariable("Path_A_Display").asString);
     }
 
     void PlaceWordsInGrid(string[,] gridSymbols)
@@ -162,9 +162,7 @@ public class GridManager : MonoBehaviour
                 {
                     for (int i = 0; i < word.symbols.Length; i++)
                     {
-                        int placeRow = startRow + dRow * i;
-                        int placeCol = startCol + dCol * i;
-                        gridSymbols[placeRow, placeCol] = word.symbols[i];
+                        gridSymbols[startRow + dRow * i, startCol + dCol * i] = word.symbols[i];
                     }
                     placed = true;
                 }
@@ -179,61 +177,30 @@ public class GridManager : MonoBehaviour
 
     public void OnCellSelected(Cell cell)
     {
+        // Ignore all input unless the dialogue has activated the puzzle
+        if (!inputEnabled) return;
+
         if (isClearingSelection) return;
         if (cell.isPartOfFoundWord) return;
         if (selectedCells.Contains(cell)) return;
 
-        if (selectedCells.Count == 0)
-        {
-            selectedCells.Add(cell);
-            cell.SetHighlight(selectedColor);
-            CheckForMatch();
-            return;
-        }
-
-        if (selectedCells.Count == 1)
-        {
-            Cell firstCell = selectedCells[0];
-
-            int rowDiff = cell.row - firstCell.row;
-            int colDiff = cell.col - firstCell.col;
-
-            bool isValidDirection =
-                (Mathf.Abs(rowDiff) <= 1 && Mathf.Abs(colDiff) <= 1) &&
-                !(rowDiff == 0 && colDiff == 0);
-
-            if (!isValidDirection) return;
-
-            directionRow = rowDiff;
-            directionCol = colDiff;
-            directionLocked = true;
-
-            selectedCells.Add(cell);
-            cell.SetHighlight(selectedColor);
-            CheckForMatch();
-            return;
-        }
-
-        if (directionLocked)
-        {
-            Cell lastCell = selectedCells[selectedCells.Count - 1];
-            int expectedRow = lastCell.row + directionRow;
-            int expectedCol = lastCell.col + directionCol;
-
-            if (cell.row != expectedRow || cell.col != expectedCol)
-            {
-                StartCoroutine(ClearSelectionWithDelay(0.5f));
-                return;
-            }
-        }
-
         selectedCells.Add(cell);
         cell.SetHighlight(selectedColor);
-        CheckForMatch();
+
+        if (selectedCells.Count >= wordLength)
+        {
+            CheckSelection();
+        }
     }
 
-    void CheckForMatch()
+    void CheckSelection()
     {
+        if (!IsStraightLine())
+        {
+            StartCoroutine(ClearSelectionWithDelay(0.5f));
+            return;
+        }
+
         string[] currentSequence = new string[selectedCells.Count];
         for (int i = 0; i < selectedCells.Count; i++)
         {
@@ -245,17 +212,7 @@ public class GridManager : MonoBehaviour
             if (word.isFound) continue;
             if (currentSequence.Length != word.symbols.Length) continue;
 
-            bool isMatch = true;
-            for (int i = 0; i < word.symbols.Length; i++)
-            {
-                if (currentSequence[i] != word.symbols[i])
-                {
-                    isMatch = false;
-                    break;
-                }
-            }
-
-            if (isMatch)
+            if (SequenceMatches(currentSequence, word.symbols))
             {
                 word.isFound = true;
                 StartCoroutine(WordFoundSequence(word));
@@ -263,61 +220,70 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        int longestWord = 0;
-        foreach (HieroglyphWord word in wordsToHide)
+        StartCoroutine(ClearSelectionWithDelay(0.5f));
+    }
+
+    bool IsStraightLine()
+    {
+        if (selectedCells.Count < 2) return true;
+
+        int stepRow = selectedCells[1].row - selectedCells[0].row;
+        int stepCol = selectedCells[1].col - selectedCells[0].col;
+
+        if (Mathf.Abs(stepRow) > 1 || Mathf.Abs(stepCol) > 1) return false;
+        if (stepRow == 0 && stepCol == 0) return false;
+
+        for (int i = 1; i < selectedCells.Count; i++)
         {
-            if (word.symbols.Length > longestWord)
-                longestWord = word.symbols.Length;
+            int expectedRow = selectedCells[0].row + stepRow * i;
+            int expectedCol = selectedCells[0].col + stepCol * i;
+
+            if (selectedCells[i].row != expectedRow ||
+                selectedCells[i].col != expectedCol)
+            {
+                return false;
+            }
         }
 
-        if (selectedCells.Count >= longestWord)
+        return true;
+    }
+
+    bool SequenceMatches(string[] a, string[] b)
+    {
+        if (a.Length != b.Length) return false;
+
+        for (int i = 0; i < a.Length; i++)
         {
-            StartCoroutine(ClearSelectionWithDelay(0.5f));
+            if (a[i] != b[i]) return false;
         }
+
+        return true;
     }
 
     IEnumerator WordFoundSequence(HieroglyphWord foundWord)
     {
-        // Lock input during the found animation
         isClearingSelection = true;
 
-        // Turn all selected cells green
         foreach (Cell cell in selectedCells)
         {
             cell.SetHighlight(foundColor);
             cell.isPartOfFoundWord = true;
         }
 
-        // Pause briefly so the player can see the green highlight
-        // before the dialogue advances
+        // Let the player see the green highlight before dialogue resumes
         yield return new WaitForSeconds(1.0f);
 
-        ResetDirection();
         selectedCells.Clear();
         isClearingSelection = false;
 
-        // ── PixelCrushers Integration ─────────────────────────────────
-        //
-        // Write which word was found into the PixelCrushers variable
-        // "SelectedPath" so the conversation's branch conditions can
-        // evaluate it. e.g. Variable["SelectedPath"] == "Path_A"
-        DialogueLua.SetVariable("SelectedPath", foundWord.branchValue);
+        // Lock the puzzle again until the next <<wordsearch>> command
+        inputEnabled = false;
 
-        // Also record this specific word as individually found, useful
-        // for conditions in later conversations
-        DialogueLua.SetVariable("Found_" + foundWord.wordName, true);
+        Debug.Log("Word found — branchValue: " + foundWord.branchValue);
 
-        // Send the "WordFound" message to the Dialogue System.
-        // The trigger node in your conversation is paused waiting for
-        // exactly this message via its Sequence field:
-        //   Continue()@Message(WordFound)
-        // When this fires, the conversation advances and evaluates the
-        // branch conditions to pick the correct next node automatically.
-        Debug.Log("WordFound sequence reached — branchValue: " + foundWord.branchValue);
-        
-        Sequencer.Message("WordFound");
-
-        // ─────────────────────────────────────────────────────────────
+        // Tell whoever is listening (the dialogue bridge) which
+        // answer the player found
+        OnWordFound?.Invoke(foundWord.branchValue);
     }
 
     IEnumerator ClearSelectionWithDelay(float delay)
@@ -346,14 +312,6 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        ResetDirection();
         selectedCells.Clear();
-    }
-
-    void ResetDirection()
-    {
-        directionRow = 0;
-        directionCol = 0;
-        directionLocked = false;
     }
 }
