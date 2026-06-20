@@ -2,7 +2,7 @@
 ---
 <<declare $selectedPath = "">>
 Narrator: The Pharaoh's tomb lies before you, sealed by two doors.
-Narrator: Which door will you open?
+Narrator: Which door will you open? #expression:laughing
 Narrator: Find 𓀀 𓁐 𓃀 in the grid to open the door of the sun.
 Narrator: Find 𓁷 𓎟 𓅓 in the grid to open the door of the river.
 <<wordsearch>>

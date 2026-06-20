@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 7b239d7360a5372448b3c856829d8305
+guid: ae883bb5221a9084290521dd96e03924
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4538705923021813642
-    second: PlayerCharacterBastNeutralExp_0
+      213: 2173126940303646557
+    second: PlayerCharacterBastConcerned_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerCharacterBastNeutralExp_0
+      name: PlayerCharacterBastConcerned_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1024
-        height: 1481
+        x: 4
+        y: 3
+        width: 310
+        height: 560
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 678c25692074301c0800000000000000
-      internalID: -4538705923021813642
+      spriteID: d5f51a0407f782e10800000000000000
+      internalID: 2173126940303646557
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PlayerCharacterBastNeutralExp_0: -4538705923021813642
+      PlayerCharacterBastConcerned_0: 2173126940303646557
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
