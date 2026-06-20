@@ -1,45 +1,36 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Yarn.Unity;
 
 // PortraitSwitcher
 //
-// A Dialogue Presenter that swaps a portrait image based on who is
-// speaking AND what expression their line is tagged with.
+// A Dialogue Presenter that controls one portrait image on screen.
+// Run two instances side by side — one configured with NPC characters
+// (left portrait), one configured with the player character (right
+// portrait) — to get a two-portrait VN layout.
 //
-// HOW EXPRESSIONS WORK:
-// In your .yarn script, add an #expression:name tag to the end of any
-// line. For example:
+// DIMMING BEHAVIOUR:
+// Rather than hiding the portrait when it's not this character's turn,
+// it stays on screen at a dimmed opacity, and brightens back up when
+// they're speaking again. This keeps both portraits visible throughout
+// the conversation, which reads as more polished than portraits
+// popping in and out.
 //
+// EXPRESSIONS:
+// Add an #expression:name tag to the end of any line in your .yarn
+// script to choose a specific expression sprite, e.g.:
 //     Pharaoh: You have done well. #expression:happy
-//     Pharaoh: This cannot be... #expression:shocked
-//     Pharaoh: Welcome, traveller.
-//
-// That last line has no #expression tag, so it falls back to whichever
-// expression is marked "Is Default" for that character in the Inspector.
-//
-// EACH EXPRESSION IS A SEPARATE, INDEPENDENT SPRITE — there is no
-// sprite sheet or atlas involved. You import each expression PNG into
-// Unity individually (Texture Type: Sprite (2D and UI)) and drag each
-// one into its own slot in the list below.
+// A line with no tag uses whichever expression is marked "Is Default".
 //
 // SETUP:
-// 1. Create an empty GameObject, name it "PortraitSwitcher".
-// 2. Attach this script.
-// 3. Drag your PortraitImage (a UI Image) into the portraitImage slot.
-// 4. Build the Characters list:
-//      - One entry per speaking character (name must match exactly
-//        what appears before ':' in your .yarn lines)
-//      - Inside each character, add one entry per expression sprite,
-//        e.g. "neutral", "happy", "shocked", "angry" — each pointing
-//        to its own separate sprite file
-//      - Tick "Is Default" on exactly one expression per character —
-//        this is shown whenever a line has no #expression tag
-// 5. Click your Dialogue Runner / Dialogue System object.
-// 6. In the "Dialogue Presenters" list, add this PortraitSwitcher
-//    object alongside your existing Line Presenter.
+// 1. Create an empty GameObject, attach this script.
+// 2. Drag a UI Image into the Portrait Image slot.
+// 3. Build the Characters list — for a single-portrait-per-side setup,
+//    add just the one character this instance is responsible for.
+// 4. Adjust Active Alpha / Inactive Alpha / Dim Fade Duration to taste.
+// 5. Add this object to the Dialogue Runner's "Dialogue Presenters" list.
 
 public class PortraitSwitcher : DialoguePresenterBase
 {
@@ -49,28 +40,55 @@ public class PortraitSwitcher : DialoguePresenterBase
     [System.Serializable]
     public class Expression
     {
-        public string expressionName; // e.g. "neutral", "happy", "shocked"
-        public Sprite sprite;         // a single independent image file
-        public bool isDefault;        // shown when a line has no #expression tag
+        public string expressionName;
+        public Sprite sprite;
+        public bool isDefault;
     }
 
     [System.Serializable]
     public class CharacterPortraits
     {
-        public string characterName;          // must match the speaker name in .yarn lines
+        public string characterName;
         public List<Expression> expressions = new List<Expression>();
     }
 
     [Header("Characters and Expressions")]
     public List<CharacterPortraits> characters = new List<CharacterPortraits>();
 
-    // The tag prefix to look for, e.g. a line tagged #expression:happy
+    [Header("Dimming")]
+    [Range(0f, 1f)] public float activeAlpha = 1f;
+    [Range(0f, 1f)] public float inactiveAlpha = 0.4f;
+    public float dimFadeDuration = 0.3f;
+
     private const string ExpressionTagPrefix = "expression:";
+
+    // Tracks the currently running fade so a new one can cleanly
+    // interrupt it without overlapping coroutines stacking up
+    private Coroutine activeFadeCoroutine;
 
     // ── Required abstract members of DialoguePresenterBase ──────────────────
 
     public override YarnTask OnDialogueStartedAsync()
     {
+        // Show this character's default expression, dimmed, as soon as
+        // the conversation begins — so both portraits are visible from
+        // the very first line, rather than popping in later.
+        if (characters.Count > 0 && characters[0].expressions.Count > 0)
+        {
+            CharacterPortraits firstCharacter = characters[0];
+
+            Expression defaultExpression = firstCharacter.expressions.Find(e => e.isDefault)
+                ?? firstCharacter.expressions[0];
+
+            portraitImage.sprite = defaultExpression.sprite;
+            portraitImage.enabled = true;
+            SetAlphaInstant(inactiveAlpha);
+        }
+        else
+        {
+            portraitImage.enabled = false;
+        }
+
         return YarnTask.CompletedTask;
     }
 
@@ -88,16 +106,19 @@ public class PortraitSwitcher : DialoguePresenterBase
             return YarnTask.CompletedTask;
         }
 
-        // Find this character's entry
         CharacterPortraits character = characters.Find(c => c.characterName == speaker);
 
         if (character == null || character.expressions.Count == 0)
         {
-            portraitImage.enabled = false;
+            // This line isn't spoken by any character this switcher
+            // manages — dim instead of hiding, keeping the last
+            // expression shown on screen
+            FadeTo(inactiveAlpha);
             return YarnTask.CompletedTask;
         }
 
-        // Look for an #expression:xyz tag on this line
+        // It IS this switcher's character speaking — pick the
+        // requested expression (or the default) and brighten
         string requestedExpression = GetRequestedExpression(line);
 
         Expression chosen = null;
@@ -107,14 +128,11 @@ public class PortraitSwitcher : DialoguePresenterBase
             chosen = character.expressions.Find(e => e.expressionName == requestedExpression);
         }
 
-        // No tag, or the tagged expression wasn't found — fall back
-        // to whichever expression is marked as default
         if (chosen == null)
         {
             chosen = character.expressions.Find(e => e.isDefault);
         }
 
-        // Still nothing — just use the first expression in the list
         if (chosen == null)
         {
             chosen = character.expressions[0];
@@ -122,12 +140,11 @@ public class PortraitSwitcher : DialoguePresenterBase
 
         portraitImage.sprite = chosen.sprite;
         portraitImage.enabled = true;
+        FadeTo(activeAlpha);
 
         return YarnTask.CompletedTask;
     }
 
-    // Scans the line's metadata tags for one starting with "expression:"
-    // and returns the part after the colon, e.g. #expression:happy → "happy"
     private string GetRequestedExpression(LocalizedLine line)
     {
         if (line.Metadata == null) return null;
@@ -141,6 +158,43 @@ public class PortraitSwitcher : DialoguePresenterBase
         }
 
         return null;
+    }
+
+    // ── Alpha fading ──────────────────────────────────────────────────────
+
+    private void FadeTo(float targetAlpha)
+    {
+        if (activeFadeCoroutine != null)
+        {
+            StopCoroutine(activeFadeCoroutine);
+        }
+
+        activeFadeCoroutine = StartCoroutine(FadeAlphaCoroutine(targetAlpha));
+    }
+
+    private IEnumerator FadeAlphaCoroutine(float targetAlpha)
+    {
+        Color startColor = portraitImage.color;
+        float startAlpha = startColor.a;
+        float elapsed = 0f;
+
+        while (elapsed < dimFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / dimFadeDuration);
+            SetAlphaInstant(Mathf.Lerp(startAlpha, targetAlpha, t));
+            yield return null;
+        }
+
+        SetAlphaInstant(targetAlpha);
+        activeFadeCoroutine = null;
+    }
+
+    private void SetAlphaInstant(float alpha)
+    {
+        Color c = portraitImage.color;
+        c.a = alpha;
+        portraitImage.color = c;
     }
 
     // This presenter never shows options — your Line/Options Presenter

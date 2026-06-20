@@ -2,7 +2,7 @@
 ---
 <<declare $selectedPath = "">>
 Narrator: The Pharaoh's tomb lies before you, sealed by two doors.
-Narrator: Which door will you open? #expression:laughing
+Meritamun: Which door will I open? 
 Narrator: Find 𓀀 𓁐 𓃀 in the grid to open the door of the sun.
 Narrator: Find 𓁷 𓎟 𓅓 in the grid to open the door of the river.
 <<wordsearch>>
@@ -12,4 +12,5 @@ Narrator: Find 𓁷 𓎟 𓅓 in the grid to open the door of the river.
     Narrator: The river door yields. The sound of rushing water echoes. 𓁷 𓎟 𓅓
 <<endif>>
 Narrator: Your journey continues...
+<<fadetoday BackgroundManager>>
 ===

@@ -1,41 +1,57 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using Yarn.Unity;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BackgroundManager
+// BackgroundManager — Yarn Spinner version
 //
-// Crossfades between a daytime and nighttime background sprite.
+// Crossfades between a nighttime and daytime background sprite.
+// The scene STARTS AT NIGHT — this matters for the guard clauses below,
+// which prevent redundant fades (e.g. calling <<fadetonight>> when it's
+// already night does nothing).
+//
+// Both fade methods are registered directly as Yarn commands via the
+// [YarnCommand] attribute:
+//
+//     <<fadetonight BackgroundManager>>
+//     <<fadetoday BackgroundManager>>
+//
+// The second word must match the exact name of the GameObject this
+// script is attached to in the Hierarchy.
+//
+// Because these are coroutines, Yarn Spinner automatically PAUSES the
+// dialogue until the fade finishes.
 //
 // SETUP IN UNITY:
-// 1. Create two UI Image objects on your Canvas, stacked on top of each other,
-//    both stretching to fill the full canvas. Name them:
+// 1. Two UI Image objects on your Canvas, stacked on top of each other,
+//    both stretching to fill the full canvas:
 //      - BackgroundBottom  (sits behind)
 //      - BackgroundTop     (sits in front, this is the one that fades)
-//    Make sure BackgroundBottom is above BackgroundTop in the Hierarchy
-//    so that BackgroundTop renders on top.
+//    BackgroundBottom must sit ABOVE BackgroundTop in the Hierarchy
+//    list so BackgroundTop renders on top. Both must sit above your
+//    dialogue UI in render order too (i.e. higher in the Hierarchy list).
 //
-// 2. Attach this script to an empty GameObject called BackgroundManager.
+// 2. Attach this script to a GameObject named "BackgroundManager".
 //
 // 3. In the Inspector assign:
 //      - Bottom Layer  → BackgroundBottom Image
 //      - Top Layer     → BackgroundTop Image
 //      - Day Sprite    → your daytime background sprite
 //      - Night Sprite  → your nighttime background sprite
-//      - Fade Duration → how long the crossfade takes in seconds (default 1.5)
+//      - Fade Duration → how long the crossfade takes in seconds
 //
-// 4. To trigger a fade, call from a Dialogue System Sequencer node:
-//      SendMessage(FadeToNight, BackgroundManager, WorldSpace)
-//      SendMessage(FadeToDay,   BackgroundManager, WorldSpace)
+// 4. In your .yarn script:
+//
+//        Narrator: Your journey continues...
+//        <<fadetoday BackgroundManager>>
+//        ===
 // ─────────────────────────────────────────────────────────────────────────────
 
 public class BackgroundManager : MonoBehaviour
 {
     [Header("Background Image Layers")]
-    // The bottom image layer — always shows the current background
     public Image bottomLayer;
-
-    // The top image layer — fades in over the bottom to reveal the new background
     public Image topLayer;
 
     [Header("Sprites")]
@@ -43,62 +59,58 @@ public class BackgroundManager : MonoBehaviour
     public Sprite nightSprite;
 
     [Header("Settings")]
-    // How long the crossfade takes in seconds
     public float fadeDuration = 1.5f;
 
-    // Tracks whether a fade is currently in progress
-    // Prevents overlapping fades if triggered rapidly
     private bool isFading = false;
 
-    // Tracks which background is currently showing
-    private bool isDay = true;
+    // The scene now STARTS AT NIGHT, so this begins as false.
+    // false = currently night, true = currently day
+    private bool isDay = false;
 
     void Start()
     {
-        // Initialise both layers to the daytime background
-        // Bottom layer fully visible, top layer fully transparent
-        bottomLayer.sprite = daySprite;
-        topLayer.sprite = daySprite;
+        // Initialise both layers to the NIGHTTIME background,
+        // matching how the game actually begins
+        bottomLayer.sprite = nightSprite;
+        topLayer.sprite = nightSprite;
 
         SetAlpha(bottomLayer, 1f);
         SetAlpha(topLayer, 0f);
 
-        isDay = true;
-    }
-
-    // ── Public methods called by Dialogue System Sequencer ────────────────────
-
-    // Call via: SendMessage(FadeToNight, BackgroundManager, WorldSpace)
-    public void FadeToNight()
-    {
-        if (isFading) return;
-        if (!isDay) return;   // already night, do nothing
-
-        StartCoroutine(CrossFade(nightSprite));
         isDay = false;
     }
 
-    // Call via: SendMessage(FadeToDay, BackgroundManager, WorldSpace)
-    public void FadeToDay()
-    {
-        if (isFading) return;
-        if (isDay) return;   // already day, do nothing
+    // ── Yarn-callable commands ─────────────────────────────────────────────
 
-        StartCoroutine(CrossFade(daySprite));
-        isDay = true;
+    [YarnCommand("fadetonight")]
+    public IEnumerator FadeToNight()
+    {
+        if (isFading) yield break;
+        if (!isDay) yield break;   // already night, nothing to do
+
+        isDay = false;
+        yield return StartCoroutine(CrossFade(nightSprite));
     }
 
-    // ── Crossfade coroutine ───────────────────────────────────────────────────
+    [YarnCommand("fadetoday")]
+    public IEnumerator FadeToDay()
+    {
+        if (isFading) yield break;
+        if (isDay) yield break;   // already day, nothing to do
 
-    IEnumerator CrossFade(Sprite targetSprite)
+        isDay = true;
+        yield return StartCoroutine(CrossFade(daySprite));
+    }
+
+    // ── Crossfade coroutine ───────────────────────────────────────────────
+
+    private IEnumerator CrossFade(Sprite targetSprite)
     {
         isFading = true;
 
-        // Place the new sprite on the top layer, fully transparent
         topLayer.sprite = targetSprite;
         SetAlpha(topLayer, 0f);
 
-        // Fade the top layer in over the bottom layer
         float elapsed = 0f;
 
         while (elapsed < fadeDuration)
@@ -109,10 +121,6 @@ public class BackgroundManager : MonoBehaviour
             yield return null;
         }
 
-        // Crossfade complete:
-        // Snap the bottom layer to the new sprite and hide the top layer again.
-        // This keeps the bottom layer always showing the current background,
-        // ready for the next crossfade.
         bottomLayer.sprite = targetSprite;
         SetAlpha(bottomLayer, 1f);
         SetAlpha(topLayer, 0f);
@@ -120,9 +128,7 @@ public class BackgroundManager : MonoBehaviour
         isFading = false;
     }
 
-    // ── Helper ────────────────────────────────────────────────────────────────
-
-    void SetAlpha(Image image, float alpha)
+    private void SetAlpha(Image image, float alpha)
     {
         Color c = image.color;
         c.a = alpha;
