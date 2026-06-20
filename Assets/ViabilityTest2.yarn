@@ -3,13 +3,12 @@
 <<declare $selectedPath = "">>
 Narrator: The Pharaoh's tomb lies before you, sealed by two doors.
 Meritamun: Which door will I open? 
-Narrator: Find 𓀀 𓁐 𓃀 in the grid to open the door of the sun.
-Narrator: Find 𓁷 𓎟 𓅓 in the grid to open the door of the river.
+Narrator: Find 𓀀 𓁐 𓃀 in the grid to open the door of the sun. Find 𓁷 𓎟 𓅓 in the grid to open the door of the river. 
 <<wordsearch>>
 <<if $selectedPath == "Path_A">>
     Narrator: The door of the sun grinds open. Light floods the chamber. 𓀀 𓁐 𓃀
 <<elseif $selectedPath == "Path_B">>
-    Narrator: The river door yields. The sound of rushing water echoes. 𓁷 𓎟 𓅓
+    Narrator: The river door yields. The sound of rushing water echoes. 𓁷 𓎟 𓅓 #expression:happy
 <<endif>>
 Narrator: Your journey continues...
 <<fadetoday BackgroundManager>>
