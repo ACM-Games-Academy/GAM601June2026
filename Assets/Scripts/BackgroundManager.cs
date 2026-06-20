@@ -61,10 +61,19 @@ public class BackgroundManager : MonoBehaviour
     [Header("Settings")]
     public float fadeDuration = 1.5f;
 
+    [Header("Wordsearch Visibility")]
+    // The top-level wordsearch UI object (your GridPanel, or a parent
+    // panel wrapping it). Shown when day arrives, hidden at night.
+    public GameObject wordsearchPanel;
+
+    // Optional but recommended: also reference GridManager so we can
+    // force input off the moment night begins, as a safety net in
+    // case a puzzle was left mid-solve.
+    public GridManager gridManager;
+
     private bool isFading = false;
 
-    // The scene now STARTS AT NIGHT, so this begins as false.
-    // false = currently night, true = currently day
+    // The scene STARTS AT NIGHT — see Start() below.
     private bool isDay = false;
 
     void Start()
@@ -78,6 +87,18 @@ public class BackgroundManager : MonoBehaviour
         SetAlpha(topLayer, 0f);
 
         isDay = false;
+
+        // The game starts at night — the wordsearch shouldn't be
+        // visible or interactive until the first daytime sequence
+        if (wordsearchPanel != null)
+        {
+            wordsearchPanel.SetActive(false);
+        }
+
+        if (gridManager != null)
+        {
+            gridManager.inputEnabled = false;
+        }
     }
 
     // ── Yarn-callable commands ─────────────────────────────────────────────
@@ -89,6 +110,21 @@ public class BackgroundManager : MonoBehaviour
         if (!isDay) yield break;   // already night, nothing to do
 
         isDay = false;
+
+        // Hide the wordsearch immediately — night gameplay shouldn't
+        // show it at all, even while the background is mid-fade
+        if (wordsearchPanel != null)
+        {
+            wordsearchPanel.SetActive(false);
+        }
+
+        // Safety net: force input off in case a puzzle was left
+        // unsolved when night arrived
+        if (gridManager != null)
+        {
+            gridManager.inputEnabled = false;
+        }
+
         yield return StartCoroutine(CrossFade(nightSprite));
     }
 
@@ -100,6 +136,12 @@ public class BackgroundManager : MonoBehaviour
 
         isDay = true;
         yield return StartCoroutine(CrossFade(daySprite));
+
+        // Reveal the wordsearch now that daytime has fully arrived
+        if (wordsearchPanel != null)
+        {
+            wordsearchPanel.SetActive(true);
+        }
     }
 
     // ── Crossfade coroutine ───────────────────────────────────────────────

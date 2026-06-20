@@ -1043,7 +1043,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: startNode
-      value: ViabilityTest
+      value: NightToDayTest
       objectReference: {fileID: 0}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: yarnProject
@@ -1280,6 +1280,8 @@ MonoBehaviour:
   daySprite: {fileID: 7980238798014242262, guid: a2949a1ba2ee9ef48b4c817e712f8156, type: 3}
   nightSprite: {fileID: -4065028796746238123, guid: d0a1cd1140ccb9f40abfcb4ca828b796, type: 3}
   fadeDuration: 1.5
+  wordsearchPanel: {fileID: 1505255842}
+  gridManager: {fileID: 555015186}
 --- !u!4 &1952591782
 Transform:
   m_ObjectHideFlags: 0

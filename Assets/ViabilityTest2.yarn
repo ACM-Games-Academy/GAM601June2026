@@ -1,14 +1,30 @@
-﻿title: ViabilityTest
+﻿title: NightToDayTest
 ---
 <<declare $selectedPath = "">>
-Narrator: The Pharaoh's tomb lies before you, sealed by two doors.
-Meritamun: Which door will I open? 
-Narrator: Find 𓀀 𓁐 𓃀 in the grid to open the door of the sun. Find 𓁷 𓎟 𓅓 in the grid to open the door of the river. #wordsearch
-<<if $selectedPath == "Path_A">>
-    Narrator: The door of the sun grinds open. Light floods the chamber. 𓀀 𓁐 𓃀
-<<elseif $selectedPath == "Path_B">>
-    Narrator: The river door yields. The sound of rushing water echoes. 𓁷 𓎟 𓅓 #expression:happy
-<<endif>>
-Narrator: Your journey continues...
+
+Narrator: The desert sky deepens into darkness as the temple falls silent.
+Anubis: Mortal. The hour of judgement has not yet come. Rest now.
+Narrator: You settle in for the night, the stars wheeling slowly overhead...
+
 <<fadetoday BackgroundManager>>
+
+Narrator: Dawn breaks over the temple, golden light spilling across the stone.
+Pharaoh: Awake, traveller. Today, you must prove your wisdom.
+Pharaoh: Two doors stand before you, each sealed by an ancient ward.
+Pharaoh: Find 𓀀 𓁐 𓃀 in the grid to open the door of the sun.
+Pharaoh: Find 𓁷 𓎟 𓅓 in the grid to open the door of the river. #wordsearch
+
+<<if $selectedPath == "Path_A">>
+    Pharaoh: You have chosen the path of the sun. Light floods the chamber. 𓀀 𓁐 𓃀
+    Narrator: A new dawn awaits beyond the threshold.
+<<elseif $selectedPath == "Path_B">>
+    Pharaoh: You have chosen the path of the river. Water rushes through ancient channels. 𓁷 𓎟 𓅓
+    Narrator: The sound of flowing water echoes through stone corridors.
+<<endif>>
+
+Narrator: As the sun begins to set once more, the temple grows quiet.
+
+<<fadetonight BackgroundManager>>
+
+Narrator: Night falls again over the sands...
 ===
