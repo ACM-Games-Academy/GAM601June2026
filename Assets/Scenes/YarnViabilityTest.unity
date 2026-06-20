@@ -150,6 +150,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WordsearchDialogueBridge
   dialogueRunner: {fileID: 1762748326}
   gridManager: {fileID: 555015186}
+  lineAdvancer: {fileID: 947237894}
+  continueButton: {fileID: 1125608447}
 --- !u!4 &21300822
 Transform:
   m_ObjectHideFlags: 0
@@ -741,6 +743,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 894972451}
   m_CullTransparentMesh: 1
+--- !u!114 &947237894 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3859336324316773513, guid: 52571f68872914e24837210513edea1d, type: 3}
+  m_PrefabInstance: {fileID: 1737646042}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61503eb6a998a4af68e0dcbec4aad8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1125608447 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2958262986393358535, guid: 52571f68872914e24837210513edea1d, type: 3}
+  m_PrefabInstance: {fileID: 1737646042}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1505255842
 GameObject:
   m_ObjectHideFlags: 0
@@ -1027,7 +1051,7 @@ PrefabInstance:
       objectReference: {fileID: 7545569452688597077, guid: 3f2b4fd77bd5d6341a5ef99f0c101cc9, type: 3}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: dialoguePresenters.Array.size
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: 'dialoguePresenters.Array.data[3]'
@@ -1037,6 +1061,10 @@ PrefabInstance:
       propertyPath: 'dialoguePresenters.Array.data[4]'
       value: 
       objectReference: {fileID: 782780934}
+    - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
+      propertyPath: 'dialoguePresenters.Array.data[5]'
+      value: 
+      objectReference: {fileID: 21300821}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
