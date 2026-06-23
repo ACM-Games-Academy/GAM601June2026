@@ -2,29 +2,20 @@
 ---
 <<declare $selectedPath = "">>
 
-Narrator: The desert sky deepens into darkness as the temple falls silent.
-Anubis: Mortal. The hour of judgement has not yet come. Rest now.
-Narrator: You settle in for the night, the stars wheeling slowly overhead...
+Narrator: The desert sky deepens into darkness.
+Anubis: Rest now, mortal. The hour of judgement has not yet come.
 
 <<fadetoday BackgroundManager>>
 
-Narrator: Dawn breaks over the temple, golden light spilling across the stone.
-Pharaoh: Awake, traveller. Today, you must prove your wisdom.
-Pharaoh: Two doors stand before you, each sealed by an ancient ward.
-Pharaoh: Find 𓀀 𓁐 𓃀 in the grid to open the door of the sun.
-Pharaoh: Find 𓁷 𓎟 𓅓 in the grid to open the door of the river. #wordsearch
-
+<<setpuzzle 𓀀𓃀𓅓:Path_A|𓅓𓎟𓎟:Path_B>>
+Scholar: I seek a student who knows the sacred texts.
+Scholar: Find 𓀀𓃀𓅓 to prove mastery of the sun. Find 𓅓𓎟𓎟 to show mastery of the river. #wordsearch
 <<if $selectedPath == "Path_A">>
-    Pharaoh: You have chosen the path of the sun. Light floods the chamber. 𓀀 𓁐 𓃀
-    Narrator: A new dawn awaits beyond the threshold.
+    Scholar: Remarkable. You know the sun glyphs.
 <<elseif $selectedPath == "Path_B">>
-    Pharaoh: You have chosen the path of the river. Water rushes through ancient channels. 𓁷 𓎟 𓅓
-    Narrator: The sound of flowing water echoes through stone corridors.
+    Scholar: The river speaks to you, I see.
 <<endif>>
 
-Narrator: As the sun begins to set once more, the temple grows quiet.
-
 <<fadetonight BackgroundManager>>
-
-Narrator: Night falls again over the sands...
+Narrator: Night returns. The stars wheel slowly overhead.
 ===

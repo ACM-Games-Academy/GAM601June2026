@@ -1,43 +1,41 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Yarn.Unity;
 
 // WordsearchDialogueBridge
 //
-// Locks the dialogue's Continue button while the wordsearch puzzle is
-// active, so the player can't click past the hint line — meaning it
-// simply stays on screen exactly as displayed, with no need for any
-// separate recap panel.
+// Connects the wordsearch puzzle to Yarn Spinner.
 //
-// HOW IT WORKS:
-// Tag the LAST hint line before the puzzle should activate with
-// #wordsearch, e.g.:
+// Registers ONE Yarn command:
 //
-//     Narrator: Find these symbols 𓀀 𓁐 𓃀 to open the door of the sun.
-//     Narrator: Find these symbols 𓁷 𓎟 𓅓 to open the door of the river. #wordsearch
-//     <<if $selectedPath == "Path_A">>
-//         ...
+//   <<setpuzzle symbols:branchValue|symbols:branchValue>>
 //
-// (No <<wordsearch>> command needed any more — delete it from your
-// .yarn file if it's still there.)
+// Each word group is:
+//   - A run of hieroglyphs (each glyph is a UTF-16 surrogate pair)
+//   - A colon separator
+//   - A plain ASCII branch value
+// Multiple words are separated by |
 //
-// When that tagged line is shown:
-//   1. The Line Advancer is disabled — the Continue button stops
-//      responding to clicks, so the line can't be dismissed.
-//   2. The wordsearch grid becomes interactive.
-// The line stays fully visible the whole time the player is solving
-// the puzzle. Once GridManager reports a word was found:
-//   3. $selectedPath is set.
-//   4. The Line Advancer is re-enabled — Continue works again, and
-//      the player can click through to see the branch that plays.
+// Example:
+//   <<setpuzzle 𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B>>
+//
+// This fires synchronously (no dialogue pause) so the grid rebuilds
+// while the NPC's opening lines are playing.
+//
+// The #wordsearch tag on the LAST hint line then locks the Continue
+// button and activates grid input:
+//
+//   Scholar: Find 𓀀𓁐𓃀 to prove your knowledge. #wordsearch
+//
+// Once the player finds a word, $selectedPath is set and the dialogue
+// advances automatically via RequestNextLine().
 //
 // SETUP:
-// 1. Attach this script to an empty GameObject (e.g. "WordsearchBridge").
-// 2. Drag your GridManager into gridManager.
-// 3. Drag the Line Advancer component (found on your Dialogue System /
-//    Canvas object) into lineAdvancer.
-// 4. Click your Dialogue Runner / Dialogue System object, find the
-//    "Dialogue Presenters" list, and add this WordsearchBridge object
-//    to it (alongside Line Presenter and your PortraitSwitchers).
+// 1. Attach to an empty GameObject called "WordsearchBridge".
+// 2. Register it in the Dialogue Runner's "Dialogue Presenters" list.
+// 3. Assign Dialogue Runner, Grid Manager, Line Advancer,
+//    Continue Button in the Inspector.
 
 public class WordsearchDialogueBridge : DialoguePresenterBase
 {
@@ -45,17 +43,19 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public DialogueRunner dialogueRunner;
     public GridManager gridManager;
     public LineAdvancer lineAdvancer;
+    public Button continueButton;
 
-    // The actual visible Continue arrow Button. Disabling the
-    // LineAdvancer component alone only stops Unity's automatic
-    // Update loop on it — it does NOT stop a UI Button's OnClick()
-    // from firing if it's wired to call a method directly. Setting
-    // Button.interactable = false is what actually blocks the click.
-    public UnityEngine.UI.Button continueButton;
-
-    [Header("Settings")]
-    // The tag to look for at the end of a line, e.g. "#wordsearch"
     private const string WordsearchTag = "wordsearch";
+    private const char WordSeparator = '|';
+    private const char ValueSeparator = ':';
+
+    void Awake()
+    {
+        // Register <<setpuzzle ...>> as a synchronous command.
+        // It returns void so Yarn fires it and immediately continues
+        // to the next line — no dialogue pause while the grid rebuilds.
+        dialogueRunner.AddCommandHandler<string>("setpuzzle", SetPuzzleCommand);
+    }
 
     void OnEnable()
     {
@@ -69,16 +69,123 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             gridManager.OnWordFound -= HandleWordFound;
     }
 
-    // Called by GridManager's event when the player solves the puzzle
+    // ── <<setpuzzle>> command ─────────────────────────────────────────────
+
+    // Parses the argument string and loads the puzzle directly into
+    // GridManager — no ScriptableObject lookup needed.
+    //
+    // Argument format: "𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B"
+    //   Split by | to get word groups: ["𓀀𓁐𓃀:Path_A", "𓁷𓎟𓅓:Path_B"]
+    //   Each group splits at : to get symbols string + branch value
+    //   Symbols string is parsed glyph-by-glyph using surrogate pairs
+
+    private void SetPuzzleCommand(string arg)
+    {
+        if (gridManager == null)
+        {
+            Debug.LogWarning("WordsearchDialogueBridge: GridManager not assigned.");
+            return;
+        }
+
+        string[] wordGroups = arg.Split(WordSeparator);
+
+        if (wordGroups.Length == 0)
+        {
+            Debug.LogWarning("WordsearchDialogueBridge: <<setpuzzle>> received empty argument.");
+            return;
+        }
+
+        List<GridManager.InlineWord> words = new List<GridManager.InlineWord>();
+
+        for (int g = 0; g < wordGroups.Length; g++)
+        {
+            string group = wordGroups[g].Trim();
+
+            // Find the LAST colon to split symbols from branch value.
+            // Using LastIndexOf means any colons that somehow appear in
+            // the symbol string (there shouldn't be any) won't break parsing.
+            int colonIndex = group.LastIndexOf(ValueSeparator);
+
+            if (colonIndex < 0)
+            {
+                Debug.LogWarning("WordsearchDialogueBridge: Word group '" + group +
+                                 "' has no colon separator. Expected format: symbols:BranchValue");
+                continue;
+            }
+
+            string symbolsString = group.Substring(0, colonIndex);
+            string branchValue = group.Substring(colonIndex + 1);
+
+            // Split the symbols string into individual glyphs.
+            // Each Egyptian Hieroglyph is a UTF-16 surrogate pair (2 chars).
+            // We step through the string taking 2 chars at a time when
+            // a high surrogate is detected, or 1 char for BMP characters.
+            List<string> symbols = SplitIntoGlyphs(symbolsString);
+
+            if (symbols.Count == 0)
+            {
+                Debug.LogWarning("WordsearchDialogueBridge: Word group '" + group +
+                                 "' produced no symbols after parsing.");
+                continue;
+            }
+
+            words.Add(new GridManager.InlineWord
+            {
+                wordName = "Word_" + g,
+                symbols = symbols.ToArray(),
+                branchValue = branchValue
+            });
+
+            Debug.Log("WordsearchDialogueBridge: Parsed word " + g +
+                      " — " + symbols.Count + " glyphs → branchValue: " + branchValue);
+        }
+
+        if (words.Count > 0)
+        {
+            gridManager.LoadInlinePuzzle(words);
+        }
+        else
+        {
+            Debug.LogWarning("WordsearchDialogueBridge: <<setpuzzle>> produced no valid words.");
+        }
+    }
+
+    // Splits a string into individual glyphs, handling surrogate pairs
+    // correctly so each Egyptian Hieroglyph becomes one string entry.
+    private List<string> SplitIntoGlyphs(string input)
+    {
+        List<string> glyphs = new List<string>();
+        int i = 0;
+
+        while (i < input.Length)
+        {
+            if (char.IsHighSurrogate(input[i]) && i + 1 < input.Length &&
+                char.IsLowSurrogate(input[i + 1]))
+            {
+                // Supplementary plane character — take both chars as one glyph
+                glyphs.Add(input.Substring(i, 2));
+                i += 2;
+            }
+            else
+            {
+                // BMP character — take one char as one glyph
+                glyphs.Add(input.Substring(i, 1));
+                i += 1;
+            }
+        }
+
+        return glyphs;
+    }
+
+    // ── Word found ────────────────────────────────────────────────────────
+
     private void HandleWordFound(string branchValue)
     {
-        // Write the result so the upcoming <<if>> branches can read it
         if (dialogueRunner != null)
         {
             dialogueRunner.VariableStorage.SetValue("$selectedPath", branchValue);
         }
 
-        // Restore normal Continue behaviour for future lines
         if (lineAdvancer != null)
         {
             lineAdvancer.enabled = true;
@@ -89,20 +196,15 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             continueButton.interactable = true;
         }
 
-        // Immediately advance the dialogue ourselves, simulating the
-        // exact same click the Continue button would normally send —
-        // this is the same method its OnClick() calls internally.
-        // No player click needed; the branch plays the moment the
-        // correct word is found.
         if (dialogueRunner != null)
         {
             dialogueRunner.RequestNextLine();
         }
 
-        Debug.Log("Wordsearch complete — $selectedPath = " + branchValue + " — auto-advancing.");
+        Debug.Log("WordsearchDialogueBridge: Answer registered — $selectedPath = " + branchValue);
     }
 
-    // ── Required abstract members of DialoguePresenterBase ──────────────────
+    // ── DialoguePresenterBase ─────────────────────────────────────────────
 
     public override YarnTask OnDialogueStartedAsync()
     {
@@ -114,37 +216,15 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         return YarnTask.CompletedTask;
     }
 
-    // Called for every line. This presenter doesn't display anything —
-    // it just watches for the #wordsearch tag and locks/unlocks input
-    // around it. Returns immediately either way, so it never blocks
-    // the Line Presenter from doing its normal job.
     public override YarnTask RunLineAsync(LocalizedLine line, LineCancellationToken token)
     {
         if (HasWordsearchTag(line))
         {
-            // Lock the Continue button so this line can't be dismissed.
-            // Both are set for safety: interactable=false is what
-            // actually blocks a UI click; disabling the component
-            // additionally stops any keyboard/global-input polling
-            // LineAdvancer might also be doing.
-            if (lineAdvancer != null)
-            {
-                lineAdvancer.enabled = false;
-            }
+            if (lineAdvancer != null) lineAdvancer.enabled = false;
+            if (continueButton != null) continueButton.interactable = false;
+            if (gridManager != null) gridManager.inputEnabled = true;
 
-            if (continueButton != null)
-            {
-                continueButton.interactable = false;
-            }
-
-            // Let the player start solving immediately while this
-            // line is still showing on screen
-            if (gridManager != null)
-            {
-                gridManager.inputEnabled = true;
-            }
-
-            Debug.Log("Wordsearch active — Continue locked until solved.");
+            Debug.Log("WordsearchDialogueBridge: Wordsearch active — Continue locked.");
         }
 
         return YarnTask.CompletedTask;
@@ -153,12 +233,8 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     private bool HasWordsearchTag(LocalizedLine line)
     {
         if (line.Metadata == null) return false;
-
         foreach (string tag in line.Metadata)
-        {
             if (tag == WordsearchTag) return true;
-        }
-
         return false;
     }
 
