@@ -1,6 +1,5 @@
 title: FourAnswerTest
 ---
-<<declare $selectedPath = "">>
 
 Narrator: The desert sky deepens into darkness.
 Anubis: Four doors stand sealed in the chamber beyond. Rest, and choose at dawn.
