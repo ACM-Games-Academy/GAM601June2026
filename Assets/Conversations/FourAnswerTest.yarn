@@ -1,0 +1,27 @@
+title: FourAnswerTest
+---
+<<declare $selectedPath = "">>
+
+Narrator: The desert sky deepens into darkness.
+Anubis: Four doors stand sealed in the chamber beyond. Rest, and choose at dawn.
+
+<<fadetoday BackgroundManager>>
+
+<<setpuzzle 𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B|𓌱𓈖𓅓:Path_C|𓎟𓀀𓈖:Path_D>>
+Pharaoh: Find 𓀀𓁐𓃀 for the sun.<br>Find 𓁷𓎟𓅓 for the river.<br>Find 𓌱𓈖𓅓 for the tomb.<br>Find 𓎟𓀀𓈖 for the stars. #wordsearch
+
+<<if $selectedPath == "Path_A">>
+    Pharaoh: The sun's light floods the chamber. 𓀀𓁐𓃀
+<<elseif $selectedPath == "Path_B">>
+    Pharaoh: The river's waters rush through ancient channels. 𓁷𓎟𓅓
+<<elseif $selectedPath == "Path_C">>
+    Pharaoh: The tomb yawns open into darkness. 𓌱𓈖𓅓
+<<elseif $selectedPath == "Path_D">>
+    Pharaoh: The stars wheel overhead as the door parts. 𓎟𓀀𓈖
+<<endif>>
+
+Narrator: Your path is chosen. The way ahead awaits.
+
+<<fadetonight BackgroundManager>>
+Narrator: Night returns over the sands.
+===

@@ -1,0 +1,15 @@
+{
+  "projectFileVersion": 4,
+  "sourceFiles": [
+    "FourAnswerTest.yarn"
+  ],
+  "excludeFiles": [
+    "**/*~/*",
+    "./Samples/Yarn Spinner*/*"
+  ],
+  "localisation": {},
+  "baseLanguage": "en",
+  "compilerOptions": {
+    "diagnosticsSeverity": {}
+  }
+}

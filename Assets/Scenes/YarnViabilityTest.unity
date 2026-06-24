@@ -273,13 +273,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PortraitSwitcher
   portraitImage: {fileID: 71583056}
   characters:
-  - characterName: Narrator
+  - characterName: Sekhmet
     expressions:
     - expressionName: neutral
-      sprite: {fileID: 21300000, guid: a5e7d43d9e30c504399f2a2d32c74c36, type: 3}
+      sprite: {fileID: 3027608493817868074, guid: cf2fd7a72223ddd42a764997e1100113, type: 3}
       isDefault: 1
-    - expressionName: happy
-      sprite: {fileID: -6790972691640027924, guid: 483da01378cac5645bcac692b2742257, type: 3}
+  - characterName: Thoth
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: -9054836810116371543, guid: 3a3adf46d4a0e064a910317161ab4d44, type: 3}
+      isDefault: 1
+  - characterName: Amenhotep
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: 5850573037209348168, guid: 27398305f5c1e85469591534358ecb2f, type: 3}
+      isDefault: 1
+  - characterName: Nitiqret
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: -2957247089684709745, guid: 09cd70073b558fa4e91059d5c44efb9c, type: 3}
       isDefault: 1
   activeAlpha: 1
   inactiveAlpha: 0.4
@@ -578,30 +590,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 918bd14d5e6dc3644952ac1ea00b7cdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
+  cellPrefab: {fileID: 6022698627717161595, guid: bfe6be79a2b7ad64c877705d48446934, type: 3}
+  gridPanel: {fileID: 1505255843}
+  defaultGridWidth: 6
+  defaultGridHeight: 6
+  fillHieroglyphs:
+  - "\U00013077"
+  - "\U0001339F"
+  - "\U00013000"
+  - "\U00013050"
+  - "\U000130C0"
+  - "\U00013216"
+  - "\U00013331"
+  - "\U00013153"
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   foundColor: {r: 0, g: 1, b: 0, a: 1}
   inputEnabled: 0
-  gridWidth: 6
-  gridHeight: 6
   wordLength: 3
-  cellPrefab: {fileID: 6022698627717161595, guid: bfe6be79a2b7ad64c877705d48446934, type: 3}
-  gridPanel: {fileID: 1505255843}
-  wordsToHide:
-  - wordName: Word1
-    symbols:
-    - "\U00013000 "
-    - "\U00013050"
-    - "\U000130C0"
-    isFound: 0
-    branchValue: Path_A
-  - wordName: Word2
-    symbols:
-    - "\U00013077"
-    - "\U0001339F"
-    - "\U00013153"
-    isFound: 0
-    branchValue: Path_B
 --- !u!1 &782780933
 GameObject:
   m_ObjectHideFlags: 0
@@ -1043,12 +1049,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: startNode
-      value: NightToDayTest
+      value: FourAnswerTest
       objectReference: {fileID: 0}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: yarnProject
       value: 
-      objectReference: {fileID: 7545569452688597077, guid: 3f2b4fd77bd5d6341a5ef99f0c101cc9, type: 3}
+      objectReference: {fileID: 7545569452688597077, guid: 83b09c3720cc50d4ba88b8696b42baff, type: 3}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: dialoguePresenters.Array.size
       value: 6
