@@ -242,7 +242,7 @@ RectTransform:
   m_AnchoredPosition: {x: -602, y: -198}
   m_SizeDelta: {x: 904.5688, y: 1221.2}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &204712174
+--- !u!1 &76763301
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -250,40 +250,63 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 204712176}
-  - component: {fileID: 204712175}
+  - component: {fileID: 76763303}
+  - component: {fileID: 76763302}
   m_Layer: 0
-  m_Name: PortraitSwitcher
+  m_Name: PortraitManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &204712175
+--- !u!114 &76763302
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 204712174}
+  m_GameObject: {fileID: 76763301}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c11b44caef326b4496ef79ec3279bca, type: 3}
+  m_Script: {fileID: 11500000, guid: a68d7f957141c914f80bb877de81a877, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PortraitSwitcher
-  portraitImage: {fileID: 71583056}
+  m_EditorClassIdentifier: Assembly-CSharp::PortraitManager
+  dialogueRunner: {fileID: 0}
+  slots:
+  - slotName: Left
+    portraitImage: {fileID: 71583056}
+  - slotName: Right
+    portraitImage: {fileID: 1910097534}
   characters:
+  - characterName: Meritamun
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: 1107929987921621965, guid: 0ac7cc5b3a9924d4da789d13d2e86ad6, type: 3}
+      isDefault: 1
+    - expressionName: concerned
+      sprite: {fileID: -2159943673894480513, guid: ca9d273351ce0c3419d5b88999a58d58, type: 3}
+      isDefault: 0
   - characterName: Sekhmet
     expressions:
     - expressionName: neutral
       sprite: {fileID: 3027608493817868074, guid: cf2fd7a72223ddd42a764997e1100113, type: 3}
       isDefault: 1
+  - characterName: Bes
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: -7174769146454565493, guid: 4c581772c416a2d4eb53dceb87c59adf, type: 3}
+      isDefault: 1
   - characterName: Thoth
     expressions:
     - expressionName: neutral
-      sprite: {fileID: -9054836810116371543, guid: 3a3adf46d4a0e064a910317161ab4d44, type: 3}
+      sprite: {fileID: 5850573037209348168, guid: 27398305f5c1e85469591534358ecb2f, type: 3}
       isDefault: 1
-  - characterName: Amenhotep
+  - characterName: Bes
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: -7174769146454565493, guid: 4c581772c416a2d4eb53dceb87c59adf, type: 3}
+      isDefault: 1
+  - characterName: Ahmenhotep
     expressions:
     - expressionName: neutral
       sprite: {fileID: 5850573037209348168, guid: 27398305f5c1e85469591534358ecb2f, type: 3}
@@ -293,9 +316,63 @@ MonoBehaviour:
     - expressionName: neutral
       sprite: {fileID: -2957247089684709745, guid: 09cd70073b558fa4e91059d5c44efb9c, type: 3}
       isDefault: 1
+  - characterName: Harwa
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: 5724168595349758334, guid: b891db1e04443f8429a4e65afe1b71e4, type: 3}
+      isDefault: 1
+  - characterName: Bast
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: 4685268456472416524, guid: 08d0b1c4956ef7149a13dd3c20827cfe, type: 3}
+      isDefault: 1
+  - characterName: Ahmose
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: -6929615374293376062, guid: 0b7afc5c0c5bbf1479d16ed8d33db643, type: 3}
+      isDefault: 1
+  - characterName: Cat_Meritamun
+    expressions:
+    - expressionName: neutral
+      sprite: {fileID: -2894877667557902327, guid: 00f8f17874179d14e8370ec17b971d79, type: 3}
+      isDefault: 1
+    - expressionName: pawraised
+      sprite: {fileID: -6790972691640027924, guid: 483da01378cac5645bcac692b2742257, type: 3}
+      isDefault: 1
   activeAlpha: 1
   inactiveAlpha: 0.4
   dimFadeDuration: 0.3
+--- !u!4 &76763303
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76763301}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1599.54, y: 469.40942, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &204712174
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 204712176}
+  m_Layer: 0
+  m_Name: PortraitSwitcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &204712176
 Transform:
   m_ObjectHideFlags: 0
@@ -662,7 +739,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 782780935}
-  - component: {fileID: 782780934}
   m_Layer: 0
   m_Name: PlayerPortraitSwitcher
   m_TagString: Untagged
@@ -670,40 +746,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &782780934
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 782780933}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c11b44caef326b4496ef79ec3279bca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PortraitSwitcher
-  portraitImage: {fileID: 1910097534}
-  characters:
-  - characterName: Meritamun
-    expressions:
-    - expressionName: neutral
-      sprite: {fileID: 1107929987921621965, guid: 0ac7cc5b3a9924d4da789d13d2e86ad6, type: 3}
-      isDefault: 1
-    - expressionName: surprise
-      sprite: {fileID: 3038545804949072821, guid: 4a86cf4e6c9f6154382c32adec399e73, type: 3}
-      isDefault: 0
-    - expressionName: doubtful
-      sprite: {fileID: 2173126940303646557, guid: ae883bb5221a9084290521dd96e03924, type: 3}
-      isDefault: 0
-    - expressionName: catneutral
-      sprite: {fileID: -2894877667557902327, guid: 00f8f17874179d14e8370ec17b971d79, type: 3}
-      isDefault: 0
-    - expressionName: catpawup
-      sprite: {fileID: -6790972691640027924, guid: 483da01378cac5645bcac692b2742257, type: 3}
-      isDefault: 0
-  activeAlpha: 1
-  inactiveAlpha: 0.4
-  dimFadeDuration: 0.3
 --- !u!4 &782780935
 Transform:
   m_ObjectHideFlags: 0
@@ -1114,16 +1156,16 @@ PrefabInstance:
       objectReference: {fileID: 7545569452688597077, guid: b5762bc3f85ceb24c93f128e2a631551, type: 3}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: dialoguePresenters.Array.size
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: 'dialoguePresenters.Array.data[3]'
       value: 
-      objectReference: {fileID: 204712175}
+      objectReference: {fileID: 21300821}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: 'dialoguePresenters.Array.data[4]'
       value: 
-      objectReference: {fileID: 782780934}
+      objectReference: {fileID: 76763302}
     - target: {fileID: 8309902628685535410, guid: 52571f68872914e24837210513edea1d, type: 3}
       propertyPath: 'dialoguePresenters.Array.data[5]'
       value: 
@@ -1377,3 +1419,4 @@ SceneRoots:
   - {fileID: 782780935}
   - {fileID: 1952591782}
   - {fileID: 211717039}
+  - {fileID: 76763303}
