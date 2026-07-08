@@ -12,16 +12,16 @@ NPC_Human1: Four symbols are carved above the gate. Which do you trace? <br> Fin
 
 <<if $selectedPath == "Path_A">>
     NPC_Human1: You trace the mark of GodA. The air grows warm.
-    <<addgodaffinity GodA 2>>
+    <<addgodaffinity Thoth 2>>
 <<elseif $selectedPath == "Path_B">>
     NPC_Human1: You trace the mark of GodB. Shadows gather at your feet.
-    <<addgodaffinity GodB 2>>
+    <<addgodaffinity Bast 2>>
 <<elseif $selectedPath == "Path_C">>
     NPC_Human1: You trace the mark of HumanA. The crowd murmurs approval.
-    <<addhumanaffinity HumanA 2>>
+    <<addhumanaffinity Nitiqret 2>>
 <<elseif $selectedPath == "Path_D">>
     NPC_Human1: You trace the mark of HumanB. A merchant nods from across the square.
-    <<addhumanaffinity HumanB 2>>
+    <<addhumanaffinity Harwa 2>>
 <<endif>>
 
 <<fadetonight BackgroundManager>>
@@ -34,16 +34,16 @@ NPC_Human2: A second gate. A second choice. The symbols shift.<br> Find 𓀀𓃀
 
 <<if $selectedPath == "Path_A">>
     NPC_Human2: The sun gods GodC influence grows stronger around you.
-    <<addgodaffinity GodC 2>>
+    <<addgodaffinity Bes 2>>
 <<elseif $selectedPath == "Path_B">>
     NPC_Human2: The river gods GodD current pulls at your steps.
-    <<addgodaffinity GodD 2>>
+    <<addgodaffinity Sekhmet 2>>
 <<elseif $selectedPath == "Path_C">>
     NPC_Human2: The scholars Human C will remember your name.
-    <<addhumanaffinity HumanC 2>>
+    <<addhumanaffinity Ptahhotep 2>>
 <<elseif $selectedPath == "Path_D">>
     NPC_Human2: The merchant Human D quarter opens its doors to you.
-    <<addhumanaffinity HumanD 2>>
+    <<addhumanaffinity Chaos 2>>
 <<endif>>
 
 <<fadetonight BackgroundManager>>
@@ -52,82 +52,82 @@ Narrator: The final night descends. All choices are made. The stars align.
 
 ===
 
-title: Ending_GodA_HumanA
+title: Ending_Thoth_Nitiqret
 ---
 Narrator: GodA and HumanA ending. Ending 1 of 16.
 ===
 
-title: Ending_GodA_HumanB
+title: Ending_Thoth_Harwa
 ---
 Narrator: GodA and HumanB ending. Ending 2 of 16.
 ===
 
-title: Ending_GodA_HumanC
+title: Ending_Thoth_Ptahhotep
 ---
 Narrator: GodA and HumanC ending. Ending 3 of 16.
 ===
 
-title: Ending_GodA_HumanD
+title: Ending_Thoth_Chaos
 ---
 Narrator: GodA and HumanD ending. Ending 4 of 16.
 ===
 
-title: Ending_GodB_HumanA
+title: Ending_Bast_Nitiqret
 ---
 Narrator: GodB and HumanA ending. Ending 5 of 16.
 ===
 
-title: Ending_GodB_HumanB
+title: Ending_Bast_Harwa
 ---
 Narrator: GodB and HumanB ending. Ending 6 of 16.
 ===
 
-title: Ending_GodB_HumanC
+title: Ending_Bast_Ptahhotep
 ---
 Narrator: GodB and HumanC ending. Ending 7 of 16.
 ===
 
-title: Ending_GodB_HumanD
+title: Ending_Bast_Chaos
 ---
 Narrator: GodB and HumanD ending. Ending 8 of 16.
 ===
 
-title: Ending_GodC_HumanA
+title: Ending_Bes_Nitiqret
 ---
 Narrator: GodC and HumanA ending. Ending 9 of 16.
 ===
 
-title: Ending_GodC_HumanB
+title: Ending_Bes_Harwa
 ---
 Narrator: GodC and HumanB ending. Ending 10 of 16.
 ===
 
-title: Ending_GodC_HumanC
+title: Ending_Bes_Ptahhotep
 ---
 Narrator: GodC and HumanC ending. Ending 11 of 16.
 ===
 
-title: Ending_GodC_HumanD
+title: Ending_Bes_Chaos
 ---
 Narrator: GodC and HumanD ending. Ending 12 of 16.
 ===
 
-title: Ending_GodD_HumanA
+title: Ending_Sekhmet_Nitiqret
 ---
 Narrator: GodD and HumanA ending. Ending 13 of 16.
 ===
 
-title: Ending_GodD_HumanB
+title: Ending_Sekhmet_Harwa
 ---
 Narrator: GodD and HumanB ending. Ending 14 of 16.
 ===
 
-title: Ending_GodD_HumanC
+title: Ending_Sekhmet_Ptahhotep
 ---
 Narrator: GodD and HumanC ending. Ending 15 of 16.
 ===
 
-title: Ending_GodD_HumanD
+title: Ending_Sekhmet_Chaos
 ---
 Narrator: GodD and HumanD ending. Ending 16 of 16.
 ===

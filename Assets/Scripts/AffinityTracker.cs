@@ -41,18 +41,18 @@ public class AffinityTracker : MonoBehaviour
 
     private Dictionary<string, int> godAffinities = new Dictionary<string, int>()
     {
-        { "GodA",  0 },
-        { "GodB",  0 },
-        { "GodC",  0 },
-        { "GodD",  0 }
+        { "Thoth",  0 },
+        { "Bast",  0 },
+        { "Bes",  0 },
+        { "Sekhmet",  0 }
     };
 
     private Dictionary<string, int> humanAffinities = new Dictionary<string, int>()
     {
-        { "HumanA", 0 },
-        { "HumanB", 0 },
-        { "HumanC", 0 },
-        { "HumanD", 0 }
+        { "Nitiqret", 0 },
+        { "Harwa", 0 },
+        { "Ptahhotep", 0 },
+        { "Chaos", 0 }
     };
 
     void Awake()

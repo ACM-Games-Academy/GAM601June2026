@@ -23,9 +23,9 @@ public class AffinityBalanceWindow : EditorWindow
     // ── EDIT THESE to match your AffinityTracker.cs names ──────────────────
     // When you rename placeholders to real lore names, update them here too.
     private static readonly string[] GodNames =
-        { "GodA", "GodB", "GodC", "GodD" };
+        { "Thoth", "Bast", "Bes", "Sekhmet" };
     private static readonly string[] HumanNames =
-        { "HumanA", "HumanB", "HumanC", "HumanD" };
+        { "Nitiqret", "Harwa", "Ptahhotep", "Chaos" };
 
     // Folder to scan, relative to the project root. Adjust if your .yarn
     // files live elsewhere.
