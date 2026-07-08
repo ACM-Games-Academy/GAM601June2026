@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: "\U00013000"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 33118ae83ab6e9848a85464e8ad4f642, type: 2}
   m_sharedMaterial: {fileID: 329449698044526165, guid: 33118ae83ab6e9848a85464e8ad4f642, type: 2}
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4278190080
   m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
