@@ -13,10 +13,7 @@ Thoth: Mortal. You stand at a crossroads. Choose carefully when dawn comes.
 <<showportrait Left Nitiqret>>
 <<setpuzzle 𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B|𓌱𓈖𓅓:Path_C|𓎟𓀀𓈖:Path_D>>
 Nitiqret: Four symbols are carved above the gate. Which do you trace?
-Nitiqret: Find 𓀀𓁐𓃀 the mark of Thoth.
-Nitiqret: Find 𓁷𓎟𓅓 the mark of Bast.
-Nitiqret: Find 𓌱𓈖𓅓 the mark of the scholars.
-Nitiqret: Find 𓎟𓀀𓈖 the mark of the merchants. #wordsearch
+Nitiqret: Find 𓀀𓁐𓃀 the mark of Thoth.<br> Find 𓁷𓎟𓅓 the mark of Bast.<br>Find 𓌱𓈖𓅓 the mark of the scholars. <br>Find 𓎟𓀀𓈖 the mark of the merchants. #wordsearch
 
 <<if $selectedPath == "Path_A">>
     Nitiqret: You trace the mark of Thoth. The air grows warm. #expression:surprised
@@ -41,10 +38,7 @@ Narrator: Night returns. The choice settles into your bones.
 <<showportrait Left Harwa>>
 <<setpuzzle 𓀀𓃀𓁐:Path_A|𓅓𓎟𓁷:Path_B|𓈖𓌱𓅓:Path_C|𓀀𓎟𓈖:Path_D>>
 Harwa: A second gate. A second choice. The symbols shift.
-Harwa: Find 𓀀𓃀𓁐 the sun god calls again.
-Harwa: Find 𓅓𓎟𓁷 the river god beckons.
-Harwa: Find 𓈖𓌱𓅓 the scholars have a task for you.
-Harwa: Find 𓀀𓎟𓈖 the merchants need a decision. #wordsearch
+Harwa: Find 𓀀𓃀𓁐 the sun god calls again.<br>Find 𓅓𓎟𓁷 the river god beckons.<br>Find 𓈖𓌱𓅓 the scholars have a task for you.<br>Find 𓀀𓎟𓈖 the merchants need a decision. #wordsearch
 
 <<if $selectedPath == "Path_A">>
     Harwa: Thoth's influence grows stronger around you. #expression:neutral
