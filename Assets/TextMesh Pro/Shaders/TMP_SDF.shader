@@ -1,4 +1,4 @@
-Shader "TextMeshPro/Distance Field" {
+Shader "TextMeshPro/Distance Field TESTBOLD" {
 
 Properties {
 	_FaceTex			("Face Texture", 2D) = "white" {}
@@ -187,7 +187,7 @@ SubShader {
 			if (UNITY_MATRIX_P[3][3] == 0) scale = lerp(abs(scale) * (1 - _PerspectiveFilter), scale, abs(dot(UnityObjectToWorldNormal(input.normal.xyz), normalize(WorldSpaceViewDir(vert)))));
 
 			float weight = lerp(_WeightNormal, _WeightBold, bold) / 4.0;
-			weight = (weight + _FaceDilate) * _ScaleRatioA * 0.5;
+			weight = (weight + _FaceDilate + 0.35) * _ScaleRatioA * 0.5;
 
 			float bias =(.5 - weight) + (.5 / scale);
 

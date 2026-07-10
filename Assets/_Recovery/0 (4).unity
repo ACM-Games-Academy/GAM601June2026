@@ -299,7 +299,7 @@ MonoBehaviour:
   - characterName: Thoth
     expressions:
     - expressionName: neutral
-      sprite: {fileID: 5850573037209348168, guid: 27398305f5c1e85469591534358ecb2f, type: 3}
+      sprite: {fileID: -9054836810116371543, guid: 3a3adf46d4a0e064a910317161ab4d44, type: 3}
       isDefault: 1
   - characterName: Bes
     expressions:
@@ -316,6 +316,9 @@ MonoBehaviour:
     - expressionName: neutral
       sprite: {fileID: -2957247089684709745, guid: 09cd70073b558fa4e91059d5c44efb9c, type: 3}
       isDefault: 1
+    - expressionName: happy
+      sprite: {fileID: -7891821857857684601, guid: df666f3ad8c84d44885ebfee74d1518c, type: 3}
+      isDefault: 0
   - characterName: Harwa
     expressions:
     - expressionName: neutral
