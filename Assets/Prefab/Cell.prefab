@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\U00013000"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 33118ae83ab6e9848a85464e8ad4f642, type: 2}
-  m_sharedMaterial: {fileID: 329449698044526165, guid: 33118ae83ab6e9848a85464e8ad4f642, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ddc615970b32a3242ae673ce790a9fae, type: 2}
+  m_sharedMaterial: {fileID: 5652933056270662206, guid: ddc615970b32a3242ae673ce790a9fae, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
