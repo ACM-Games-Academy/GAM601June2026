@@ -6,43 +6,37 @@ using Yarn.Unity;
 
 // PortraitManager
 //
-// Replaces the old PortraitSwitcher / PlayerPortraitSwitcher pair with
-// ONE script that manages any number of on-screen portrait "slots".
-//
-// Instead of hard-coding "left = NPCs, right = player", you decide at
-// runtime — from your .yarn file — exactly which character appears in
-// which slot, and when. This supports scenes with 2, 3, 4 or more
-// characters simply by adding more slots.
+// Manages any number of on-screen portrait "slots", explicitly shown
+// and hidden from .yarn commands, and (new) slides a NameTab UI panel
+// to sit above whichever slot is currently speaking.
 //
 // YARN COMMANDS:
 //
-//   <<showportrait Left Pharaoh>>
-//   Puts Pharaoh into the slot named "Left", dimmed, ready to speak.
+//   <<showportrait Left Pharaoh>>      Puts Pharaoh into the "Left" slot.
+//   <<hideportrait Left>>              Removes whoever is in "Left".
+//   <<hideallportraits>>               Clears every slot at once.
 //
-//   <<hideportrait Left>>
-//   Removes whoever is currently in the "Left" slot.
+// NAME TAB SLIDING:
 //
-//   <<hideallportraits>>
-//   Clears every slot at once. Use this at the start or end of a
-//   scene to guarantee nothing carries over from the previous one.
+// Whenever the current line's speaker is found to occupy a slot, the
+// NameTab RectTransform smoothly slides its horizontal position to
+// that slot's configured X position. The tab's vertical position is
+// left untouched — that's still handled by NameTab's own anchor
+// pinned to the dialogue panel's top edge, exactly as before.
 //
-// Whichever character is currently SPEAKING (matching the name before
-// the colon in a dialogue line) automatically brightens. Everyone else
-// assigned to a slot dims, but stays visible until explicitly hidden.
-//
-// SETUP:
-// 1. Create one UI Image per portrait position you want on screen
-//    (e.g. "PortraitLeft", "PortraitRight", "PortraitCenter").
-// 2. Create one empty GameObject called "PortraitManager" and attach
-//    this script.
-// 3. In the Inspector, fill in the Slots list — one entry per Image,
-//    each given a short Slot Name (e.g. "Left", "Right", "Center").
-// 4. Fill in the Characters list — every character in your game, with
-//    their expression sprites, in ONE shared list (no more splitting
-//    NPCs and player into separate scripts).
-// 5. Add this PortraitManager object to the Dialogue Runner's
-//    "Dialogue Presenters" list. Remove the old PortraitSwitcher and
-//    PlayerPortraitSwitcher entries if they're still there.
+// SETUP FOR NAME TAB SLIDING (in addition to existing slot/character setup):
+// 1. On NameTab's Rect Transform, make sure it is NOT horizontally
+//    stretched — Anchor Min X and Anchor Max X should be equal (e.g.
+//    both 0, pinned to the left) so its Width stays fixed and its
+//    horizontal position is driven by Anchored Position X.
+// 2. Drag NameTab's RectTransform into the "Name Tab Rect" field below.
+// 3. Fill in the "Slot Tab Positions" list — one entry per slot,
+//    with the Anchored X value you want the tab to slide to for that
+//    slot. The easiest way to find these numbers: manually drag
+//    NameTab in the Scene view to sit above each portrait in turn,
+//    and read off its "Pos X" value from the Rect Transform each time
+//    — that's the number to type into that slot's entry.
+// 4. Adjust "Tab Move Duration" to taste (0.25s is a natural default).
 
 public class PortraitManager : DialoguePresenterBase
 {
@@ -81,6 +75,24 @@ public class PortraitManager : DialoguePresenterBase
     [Range(0f, 1f)] public float activeAlpha = 1f;
     [Range(0f, 1f)] public float inactiveAlpha = 0.4f;
     public float dimFadeDuration = 0.3f;
+
+    [Header("Name Tab Sliding")]
+    // The NameTab panel's RectTransform. Its vertical position should
+    // already be pinned to the dialogue panel's top edge via its own
+    // anchor setup — this script only ever touches its X position.
+    public RectTransform nameTabRect;
+
+    [System.Serializable]
+    public class SlotTabPosition
+    {
+        public string slotName;  // must match a slot name in 'slots' above
+        public float anchoredX; // the Pos X to slide NameTab to for this slot
+    }
+
+    public List<SlotTabPosition> slotTabPositions = new List<SlotTabPosition>();
+    public float tabMoveDuration = 0.25f;
+
+    private Coroutine tabMoveCoroutine;
 
     private const string ExpressionTagPrefix = "expression:";
 
@@ -206,6 +218,10 @@ public class PortraitManager : DialoguePresenterBase
                 }
 
                 FadeTo(slot, activeAlpha);
+
+                // This slot's character is the one speaking this line —
+                // slide the NameTab to sit above this slot's position
+                MoveNameTabToSlot(slot.slotName);
             }
             else
             {
@@ -227,6 +243,49 @@ public class PortraitManager : DialoguePresenterBase
         }
 
         return null;
+    }
+
+    // ── Name tab sliding ─────────────────────────────────────────────────
+
+    private void MoveNameTabToSlot(string slotName)
+    {
+        if (nameTabRect == null) return;
+
+        SlotTabPosition targetPos = slotTabPositions.Find(p => p.slotName == slotName);
+        if (targetPos == null)
+        {
+            // No configured position for this slot — leave the tab where it is
+            return;
+        }
+
+        if (tabMoveCoroutine != null)
+        {
+            StopCoroutine(tabMoveCoroutine);
+        }
+
+        tabMoveCoroutine = StartCoroutine(MoveTabCoroutine(targetPos.anchoredX));
+    }
+
+    private IEnumerator MoveTabCoroutine(float targetX)
+    {
+        Vector2 startPos = nameTabRect.anchoredPosition;
+        // Only X changes — Y stays exactly as it already is, since that's
+        // still being driven by NameTab's own anchor pinned to the panel's
+        // top edge, independent of this script.
+        Vector2 targetPos = new Vector2(targetX, startPos.y);
+
+        float elapsed = 0f;
+
+        while (elapsed < tabMoveDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / tabMoveDuration);
+            nameTabRect.anchoredPosition = Vector2.Lerp(startPos, targetPos, t);
+            yield return null;
+        }
+
+        nameTabRect.anchoredPosition = targetPos;
+        tabMoveCoroutine = null;
     }
 
     // ── Fading ────────────────────────────────────────────────────────────

@@ -5,12 +5,18 @@
 Narrator: The stars burn cold above the temple. The gods watch. The city sleeps.
 
 <<showportrait Left Thoth>>
-Thoth: Mortal. You stand at a crossroads. Choose carefully when dawn comes.
-<<hideallportraits>>
+Thoth: Mortal. You stand at a crossroads. Choose carefully when dawn comes. #expression:neutral
 
+<<showportrait Right Bast>>
+Bast: He speaks true. We are both watching tonight. #expression:neutral
+
+<<hideallportraits>>
 <<fadetoday BackgroundManager>>
 
-<<showportrait Left Nitiqret>>
+<<showportrait CenterLeft Nitiqret>>
+<<showportrait CenterRight Bast>>
+Bast: Watch closely, mortal. The gate remembers all who pass. #expression:neutral
+
 <<setpuzzle 𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B|𓌱𓈖𓅓:Path_C|𓎟𓀀𓈖:Path_D>>
 Nitiqret: Four symbols are carved above the gate. Which do you trace?
 Nitiqret: Find 𓀀𓁐𓃀 the mark of Thoth.<br> Find 𓁷𓎟𓅓 the mark of Bast.<br>Find 𓌱𓈖𓅓 the mark of the scholars. <br>Find 𓎟𓀀𓈖 the mark of the merchants. #wordsearch
@@ -29,13 +35,20 @@ Nitiqret: Find 𓀀𓁐𓃀 the mark of Thoth.<br> Find 𓁷𓎟𓅓 the mark of
     <<addhumanaffinity Harwa 2>>
 <<endif>>
 
+<<hideportrait CenterRight>>
+<<showportrait Right Harwa>>
+Harwa: Word of this will reach the merchant quarter by nightfall. #expression:neutral
+
 <<hideallportraits>>
 <<fadetonight BackgroundManager>>
 Narrator: Night returns. The choice settles into your bones.
 
 <<fadetoday BackgroundManager>>
 
-<<showportrait Left Harwa>>
+<<showportrait Right Harwa>>
+<<showportrait Left Thoth>>
+Thoth: A second gate awaits. I will be watching this one too. #expression:neutral
+
 <<setpuzzle 𓀀𓃀𓁐:Path_A|𓅓𓎟𓁷:Path_B|𓈖𓌱𓅓:Path_C|𓀀𓎟𓈖:Path_D>>
 Harwa: A second gate. A second choice. The symbols shift.
 Harwa: Find 𓀀𓃀𓁐 the sun god calls again.<br>Find 𓅓𓎟𓁷 the river god beckons.<br>Find 𓈖𓌱𓅓 the scholars have a task for you.<br>Find 𓀀𓎟𓈖 the merchants need a decision. #wordsearch
@@ -54,6 +67,10 @@ Harwa: Find 𓀀𓃀𓁐 the sun god calls again.<br>Find 𓅓𓎟𓁷 the river
     <<addhumanaffinity Harwa 2>>
 <<endif>>
 
+<<hideportrait Left>>
+<<showportrait CenterLeft Nitiqret>>
+Nitiqret: Two gates passed. Two marks made. The night watches what comes next. #expression:neutral
+
 <<hideallportraits>>
 <<fadetonight BackgroundManager>>
 Narrator: The final night descends. All choices are made. The stars align.
@@ -63,80 +80,80 @@ Narrator: The final night descends. All choices are made. The stars align.
 
 title: Ending_Thoth_Nitiqret
 ---
-Narrator: [ENDING] Thoth and Nitiqret. Ending 1 of 16.
+Narrator: ENDING - Thoth and Nitiqret. Ending 1 of 16.
 ===
 
 title: Ending_Thoth_Harwa
 ---
-Narrator: [ENDING] Thoth and Harwa. Ending 2 of 16.
+Narrator: ENDING - Thoth and Harwa. Ending 2 of 16.
 ===
 
 title: Ending_Thoth_Ptahhotep
 ---
-Narrator: [ENDING] Thoth and Ptahhotep. Ending 3 of 16.
+Narrator: ENDING - Thoth and Ptahhotep. Ending 3 of 16.
 ===
 
 title: Ending_Thoth_Chaos
 ---
-Narrator: [ENDING] Thoth and Chaos. Ending 4 of 16.
+Narrator: ENDING - Thoth and Chaos. Ending 4 of 16.
 ===
 
 title: Ending_Bast_Nitiqret
 ---
-Narrator: [ENDING] Bast and Nitiqret. Ending 5 of 16.
+Narrator: ENDING - Bast and Nitiqret. Ending 5 of 16.
 ===
 
 title: Ending_Bast_Harwa
 ---
-Narrator: [ENDING] Bast and Harwa. Ending 6 of 16.
+Narrator: ENDING - Bast and Harwa. Ending 6 of 16.
 ===
 
 title: Ending_Bast_Ptahhotep
 ---
-Narrator: [ENDING] Bast and Ptahhotep. Ending 7 of 16.
+Narrator: ENDING - Bast and Ptahhotep. Ending 7 of 16.
 ===
 
 title: Ending_Bast_Chaos
 ---
-Narrator: [ENDING] Bast and Chaos. Ending 8 of 16.
+Narrator: ENDING - Bast and Chaos. Ending 8 of 16.
 ===
 
 title: Ending_Bes_Nitiqret
 ---
-Narrator: [ENDING] Bes and Nitiqret. Ending 9 of 16.
+Narrator: ENDING - Bes and Nitiqret. Ending 9 of 16.
 ===
 
 title: Ending_Bes_Harwa
 ---
-Narrator: [ENDING] Bes and Harwa. Ending 10 of 16.
+Narrator: ENDING - Bes and Harwa. Ending 10 of 16.
 ===
 
 title: Ending_Bes_Ptahhotep
 ---
-Narrator: [ENDING] Bes and Ptahhotep. Ending 11 of 16.
+Narrator: ENDING - Bes and Ptahhotep. Ending 11 of 16.
 ===
 
 title: Ending_Bes_Chaos
 ---
-Narrator: [ENDING] Bes and Chaos. Ending 12 of 16.
+Narrator: ENDING - Bes and Chaos. Ending 12 of 16.
 ===
 
 title: Ending_Sekhmet_Nitiqret
 ---
-Narrator: [ENDING] Sekhmet and Nitiqret. Ending 13 of 16.
+Narrator: ENDING - Sekhmet and Nitiqret. Ending 13 of 16.
 ===
 
 title: Ending_Sekhmet_Harwa
 ---
-Narrator: [ENDING] Sekhmet and Harwa. Ending 14 of 16.
+Narrator: ENDING - Sekhmet and Harwa. Ending 14 of 16.
 ===
 
 title: Ending_Sekhmet_Ptahhotep
 ---
-Narrator: [ENDING] Sekhmet and Ptahhotep. Ending 15 of 16.
+Narrator: ENDING - Sekhmet and Ptahhotep. Ending 15 of 16.
 ===
 
 title: Ending_Sekhmet_Chaos
 ---
-Narrator: [ENDING] Sekhmet and Chaos. Ending 16 of 16.
+Narrator: ENDING - Sekhmet and Chaos. Ending 16 of 16.
 ===
