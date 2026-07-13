@@ -1,0 +1,183 @@
+﻿title: Prototype
+---
+<<declare $selectedPath = "">>
+<<hideallportraits>>
+<<wait 2>>
+<<showportrait Left Sekhmet>>
+<<wait 1>>
+Sekhmet: The fate of Egypt is at a crossroads. #expression:neutral
+Sekhmet: You carry messages of the divine will to mortals: you are our eyes in the mortal realm. You are to help us guide them to glory. Is that understood? #expression:neutral
+
+<<showportrait Right Meritamun>>
+Meritamun: I am your vassal, Lady Sekhmet, as well as your vessel – your will is my desire. My whole being is your sacred work, your will and your holy vision.#expression:neutral
+
+<<showportrait CenterLeft Bes>>
+Bes: BUT YOU MADE HER INTO A CAT!? I must register my objection here, Sekhmet. Small cats are in the domestic sphere and therefore in MY realm of influence! Felines are for killing snakes around the house! Not for whatever THIS is that you’re trying to do! #expression:neutral
+
+<<showportrait Left Sekhmet>>
+Sekhmet: I never try, I only execute. Look here Meritamun – Lord Bes orders you to be bound by holy decree to kill snakes and rats around the Temple. That is also part of our divine will. #expression:neutral
+
+<<showportrait Right Meritamun>>
+Meritamun: My joy is the will of the Gods, absolutely. No snakes or rats will besmirch the temple grounds… #expression:neutral
+
+<<hideallportraits>>
+<<fadetoday BackgroundManager>>
+<<setpuzzle 𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B>>
+
+<<showportrait Left Amenhotep>>
+Amenhotep: I ask forgiveness for this small blasphemy, but I feel the holy City of Thebes is not the same without Meritamun here. My trust in your divine plan wavered on this score, and I came here to this sanctum to unburden myself.  #expression:neutral
+Amenhotep: The arrival of a new Temple Cat has however eased my sorrow somewhat – I have to admit that the local snakes have been feeling the thunder of her paws. 
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *purrrrrr* #expression:neutral
+Amenhotep: Meritamun’s younger sister Nitiqret is now appointed God’s Wife of Amun. I think she needs your guidance, but is a bit too proud to ask. 
+Amenhotep: And of course there is the little child, my son. Knots of worry gnaw at me day and night, and so I come to ask your guidance on this – should I :
+<<setpuzzle 𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B>>
+
+Amenhotep: Write𓀀 to𓁐 our𓃀 child's grandmother and ask her for news of our little one? Or <br> would it be much safer to not𓁷 send𓎟 letters𓅓 too often lest he be discovered? #wordsearch
+<<if $selectedPath == "Path_A">>
+    Amenhotep: I shall write to Neferura straight away! 
+    <<addgodaffinity Bes 1>> 
+    <<addhumanaffinity Chaos 1>>
+<<elseif $selectedPath == "Path_B">>
+    Amenhotep: It is true that Ahmose's spies are everywhere, Neferura and I should be as caerful as possible.
+    <<addgodaffinity Thoth 1>> 
+    <<addhumanaffinity Ptahhotep 1>>
+<<endif>>
+
+<<hideportrait Right>>
+
+<<setpuzzle 𓀀𓃀𓁐:Path_A|𓅓𓎟𓁷:Path_B>>
+
+<<showportrait Left Ahmose>>
+Ahmose: I’ve placed my second daughter here as God’s Wife of Amun and my eldest son Harwa to ease her way politically. Both of them here in Thebes, here in your divine care, oh Gods. #expression:neutral
+Ahmose: That business with Meritamun needed to be buried, and quickly. Honestly I can’t wait to get rid of that rat bastard of a high priest Amenhotep but he’s a bit too secure here in Thebes – he has too many connections with the local elite families.
+Ahmose:  But here’s my question to the great divinities that may be in this holy place, would it be wiser to :
+
+Ahmose: Make𓀀 a𓃀 move𓁐 against Amenhotep? Or <br> Let𓅓 him𓎟 be𓁷 and try to work with him remaining in his post as high priest? #wordsearch
+
+<<if $selectedPath == "Path_A">>
+    Amenhotep: Yes, yes… As soon as Harwa and Nitiqret are settled here I’m going to oust him. I’ll have to see what I can do to start discrediting him, immediately…
+    <<addgodaffinity Sekhmet 1>> <<addhumanaffinity Harwa 1>>
+<<elseif $selectedPath == "Path_B">>
+    Amenhotep: I suppose that is the safer option, at least until Harwa and Nitiqret are settled here. 
+    <<addgodaffinity Bast 1>> <<addhumanaffinity Nitiqret>>
+<<endif>>
+
+<<hideallportraits>>
+<<fadetonight BackgroundManager>>
+Narrator: Night returns. The choice settles into your bones.
+
+<<fadetoday BackgroundManager>>
+
+<<showportrait Right Harwa>>
+<<showportrait Left Thoth>>
+Thoth: A second gate awaits. I will be watching this one too. #expression:neutral
+
+<<setpuzzle 𓀀𓃀𓁐:Path_A|𓅓𓎟𓁷:Path_B|𓈖𓌱𓅓:Path_C|𓀀𓎟𓈖:Path_D>>
+Harwa: A second gate. A second choice. The symbols shift.
+Harwa: Find 𓀀𓃀𓁐 the sun god calls again.<br>Find 𓅓𓎟𓁷 the river god beckons.<br>Find 𓈖𓌱𓅓 the scholars have a task for you.<br>Find 𓀀𓎟𓈖 the merchants need a decision. #wordsearch
+
+<<if $selectedPath == "Path_A">>
+    Harwa: Thoth's influence grows stronger around you. #expression:neutral
+    <<addgodaffinity Thoth 2>>
+<<elseif $selectedPath == "Path_B">>
+    Harwa: Bast's current pulls at your steps. #expression:surprised
+    <<addgodaffinity Bast 2>>
+<<elseif $selectedPath == "Path_C">>
+    Harwa: The scholars will remember your name. #expression:happy
+    <<addhumanaffinity Nitiqret 2>>
+<<elseif $selectedPath == "Path_D">>
+    Harwa: The merchant quarter opens its doors to you. #expression:happy
+    <<addhumanaffinity Harwa 2>>
+<<endif>>
+
+<<hideportrait Left>>
+<<showportrait CenterLeft Nitiqret>>
+Nitiqret: Two gates passed. Two marks made. The night watches what comes next. #expression:neutral
+
+<<hideallportraits>>
+<<fadetonight BackgroundManager>>
+Narrator: The final night descends. All choices are made. The stars align.
+<<checkending>>
+
+===
+
+title: Ending_Thoth_Nitiqret
+---
+Narrator: ENDING - Thoth and Nitiqret. Ending 1 of 16.
+===
+
+title: Ending_Thoth_Harwa
+---
+Narrator: ENDING - Thoth and Harwa. Ending 2 of 16.
+===
+
+title: Ending_Thoth_Ptahhotep
+---
+Narrator: ENDING - Thoth and Ptahhotep. Ending 3 of 16.
+===
+
+title: Ending_Thoth_Chaos
+---
+Narrator: ENDING - Thoth and Chaos. Ending 4 of 16.
+===
+
+title: Ending_Bast_Nitiqret
+---
+Narrator: ENDING - Bast and Nitiqret. Ending 5 of 16.
+===
+
+title: Ending_Bast_Harwa
+---
+Narrator: ENDING - Bast and Harwa. Ending 6 of 16.
+===
+
+title: Ending_Bast_Ptahhotep
+---
+Narrator: ENDING - Bast and Ptahhotep. Ending 7 of 16.
+===
+
+title: Ending_Bast_Chaos
+---
+Narrator: ENDING - Bast and Chaos. Ending 8 of 16.
+===
+
+title: Ending_Bes_Nitiqret
+---
+Narrator: ENDING - Bes and Nitiqret. Ending 9 of 16.
+===
+
+title: Ending_Bes_Harwa
+---
+Narrator: ENDING - Bes and Harwa. Ending 10 of 16.
+===
+
+title: Ending_Bes_Ptahhotep
+---
+Narrator: ENDING - Bes and Ptahhotep. Ending 11 of 16.
+===
+
+title: Ending_Bes_Chaos
+---
+Narrator: ENDING - Bes and Chaos. Ending 12 of 16.
+===
+
+title: Ending_Sekhmet_Nitiqret
+---
+Narrator: ENDING - Sekhmet and Nitiqret. Ending 13 of 16.
+===
+
+title: Ending_Sekhmet_Harwa
+---
+Narrator: ENDING - Sekhmet and Harwa. Ending 14 of 16.
+===
+
+title: Ending_Sekhmet_Ptahhotep
+---
+Narrator: ENDING - Sekhmet and Ptahhotep. Ending 15 of 16.
+===
+
+title: Ending_Sekhmet_Chaos
+---
+Narrator: ENDING - Sekhmet and Chaos. Ending 16 of 16.
+===

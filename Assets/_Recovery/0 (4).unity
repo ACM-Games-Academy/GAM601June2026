@@ -285,7 +285,7 @@ MonoBehaviour:
   - characterName: Meritamun
     expressions:
     - expressionName: neutral
-      sprite: {fileID: -6803635062738612951, guid: e32799f7db032c749b8d12b11c687039, type: 3}
+      sprite: {fileID: 1107929987921621965, guid: 0ac7cc5b3a9924d4da789d13d2e86ad6, type: 3}
       isDefault: 1
   - characterName: Sekhmet
     expressions:
@@ -307,10 +307,10 @@ MonoBehaviour:
     - expressionName: neutral
       sprite: {fileID: -7174769146454565493, guid: 4c581772c416a2d4eb53dceb87c59adf, type: 3}
       isDefault: 1
-  - characterName: Amenhotep
+  - characterName: Ahmenhotep
     expressions:
     - expressionName: neutral
-      sprite: {fileID: -1695199138293954906, guid: cb0b3266ef1a94348b2c3f79282134a3, type: 3}
+      sprite: {fileID: 5850573037209348168, guid: 27398305f5c1e85469591534358ecb2f, type: 3}
       isDefault: 1
   - characterName: Nitiqret
     expressions:
@@ -342,7 +342,7 @@ MonoBehaviour:
       isDefault: 1
     - expressionName: pawraised
       sprite: {fileID: -6790972691640027924, guid: 483da01378cac5645bcac692b2742257, type: 3}
-      isDefault: 0
+      isDefault: 1
   activeAlpha: 1
   inactiveAlpha: 0.4
   dimFadeDuration: 0.3
@@ -717,7 +717,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!224 &265541504
 RectTransform:
@@ -2753,7 +2753,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bec29c0a230741bdac901dba8da47ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  yarnProject: {fileID: 7545569452688597077, guid: 4124df48165accc468fd1751c35b92ca, type: 3}
+  yarnProject: {fileID: 7545569452688597077, guid: b5762bc3f85ceb24c93f128e2a631551, type: 3}
   variableStorage: {fileID: 8635081094267406207}
   lineProvider: {fileID: 0}
   saliencyStrategy: 0
@@ -2765,7 +2765,7 @@ MonoBehaviour:
   - {fileID: 76763302}
   verboseLogging: 0
   autoStart: 1
-  startNode: Prototype
+  startNode: AffinityTest
   runSelectedOptionAsLine: 0
   allowOptionFallthrough: 1
   onNodeStart:
