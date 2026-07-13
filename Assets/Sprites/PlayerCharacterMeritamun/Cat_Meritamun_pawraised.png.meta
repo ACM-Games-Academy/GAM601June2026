@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 483da01378cac5645bcac692b2742257
+guid: e4504c4c057338142a2cdbb0838611a1
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6790972691640027924
-    second: PlayerCharacterCatPawUp_0
+      213: 1750887369478447619
+    second: ChatGPT Image Jul 13, 2026, 06_01_17 PM (1)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerCharacterCatPawUp_0
+      name: ChatGPT Image Jul 13, 2026, 06_01_17 PM (1)_0
       rect:
         serializedVersion: 2
-        x: 23
-        y: 52
-        width: 347
-        height: 483
+        x: 66
+        y: 141
+        width: 930
+        height: 1306
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ce4fa6b215e91c1a0800000000000000
-      internalID: -6790972691640027924
+      spriteID: 3022b7339c66c4810800000000000000
+      internalID: 1750887369478447619
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PlayerCharacterCatPawUp_0: -6790972691640027924
+      ChatGPT Image Jul 13, 2026, 06_01_17 PM (1)_0: 1750887369478447619
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

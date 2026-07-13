@@ -51,6 +51,8 @@ Amenhotep: Write𓀀 to𓁐 our𓃀 child's grandmother and ask her for news of 
 <<showportrait Left Ahmose>>
 Ahmose: I’ve placed my second daughter here as God’s Wife of Amun and my eldest son Harwa to ease her way politically. Both of them here in Thebes, here in your divine care, oh Gods. #expression:neutral
 Ahmose: That business with Meritamun needed to be buried, and quickly. Honestly I can’t wait to get rid of that rat bastard of a high priest Amenhotep but he’s a bit too secure here in Thebes – he has too many connections with the local elite families.
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *purrrrrr* #expression:neutral
 Ahmose:  But here’s my question to the great divinities that may be in this holy place, would it be wiser to :
 
 Ahmose: Make𓀀 a𓃀 move𓁐 against Amenhotep? Or <br> Let𓅓 him𓎟 be𓁷 and try to work with him remaining in his post as high priest? #wordsearch
@@ -60,7 +62,7 @@ Ahmose: Make𓀀 a𓃀 move𓁐 against Amenhotep? Or <br> Let𓅓 him𓎟 be�
     <<addgodaffinity Sekhmet 1>> <<addhumanaffinity Harwa 1>>
 <<elseif $selectedPath == "Path_B">>
     Amenhotep: I suppose that is the safer option, at least until Harwa and Nitiqret are settled here. 
-    <<addgodaffinity Bast 1>> <<addhumanaffinity Nitiqret>>
+    <<addgodaffinity Bast 1>> <<addhumanaffinity Nitiqret 1>>
 <<endif>>
 
 <<hideallportraits>>

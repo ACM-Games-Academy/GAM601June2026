@@ -165,7 +165,42 @@ public class PortraitManager : DialoguePresenterBase
             HidePortrait(slot.slotName);
         }
     }
+    // Find which slot (if any) a character currently occupies, and swap
+    // their displayed expression directly — used by hover effects etc.
+    public void SetExpression(string characterName, string expressionName)
+    {
+        foreach (SlotConfig slot in slots)
+        {
+            if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
+            if (assigned != characterName) continue;
 
+            CharacterPortraits character = characters.Find(c => c.characterName == characterName);
+            if (character == null) return;
+
+            Expression chosen = character.expressions.Find(e => e.expressionName == expressionName);
+            if (chosen == null)
+                chosen = character.expressions.Find(e => e.isDefault);
+
+            if (chosen != null)
+                slot.portraitImage.sprite = chosen.sprite;
+
+            return;
+        }
+    }
+
+    // Force a character's portrait to full (or dimmed) brightness,
+    // independent of who is currently speaking.
+    public void SetBrightness(string characterName, bool bright)
+    {
+        foreach (SlotConfig slot in slots)
+        {
+            if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
+            if (assigned != characterName) continue;
+
+            FadeTo(slot, bright ? activeAlpha : inactiveAlpha);
+            return;
+        }
+    }
     // ── DialoguePresenterBase ─────────────────────────────────────────────
 
     public override YarnTask OnDialogueStartedAsync()
