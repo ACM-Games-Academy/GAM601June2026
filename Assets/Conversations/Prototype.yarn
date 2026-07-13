@@ -57,12 +57,15 @@ Ahmose:  But here’s my question to the great divinities that may be in this ho
 
 Ahmose: Make𓀀 a𓃀 move𓁐 against Amenhotep? Or <br> Let𓅓 him𓎟 be𓁷 and try to work with him remaining in his post as high priest? #wordsearch
 
-<<if $selectedPath == "Path_A">>
-    Amenhotep: Yes, yes… As soon as Harwa and Nitiqret are settled here I’m going to oust him. I’ll have to see what I can do to start discrediting him, immediately…
-    <<addgodaffinity Sekhmet 1>> <<addhumanaffinity Harwa 1>>
-<<elseif $selectedPath == "Path_B">>
-    Amenhotep: I suppose that is the safer option, at least until Harwa and Nitiqret are settled here. 
-    <<addgodaffinity Bast 1>> <<addhumanaffinity Nitiqret 1>>
+<<if $selectedPath == "Path_A">>  
+    Ahmose: Yes, yes… As soon as Harwa and Nitiqret are settled here I’m going to oust him. I’ll have to see what I can do to start discrediting him, immediately…
+        <<addgodaffinity Sekhmet 1>> 
+        <<addhumanaffinity Harwa 1>>
+
+    <<elseif $selectedPath == "Path_B">>
+    Ahmose: I suppose that is the safer option, at least until Harwa and Nitiqret are settled here. 
+        <<addgodaffinity Bast 1>> 
+        <<addhumanaffinity Nitiqret 1>>
 <<endif>>
 
 <<hideallportraits>>

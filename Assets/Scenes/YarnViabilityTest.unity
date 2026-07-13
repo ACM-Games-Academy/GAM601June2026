@@ -341,7 +341,7 @@ MonoBehaviour:
       sprite: {fileID: -2894877667557902327, guid: 00f8f17874179d14e8370ec17b971d79, type: 3}
       isDefault: 1
     - expressionName: pawraised
-      sprite: {fileID: -6790972691640027924, guid: 483da01378cac5645bcac692b2742257, type: 3}
+      sprite: {fileID: 1750887369478447619, guid: e4504c4c057338142a2cdbb0838611a1, type: 3}
       isDefault: 0
   activeAlpha: 1
   inactiveAlpha: 0.4
@@ -1125,6 +1125,7 @@ GameObject:
   - component: {fileID: 1505255846}
   - component: {fileID: 1505255845}
   - component: {fileID: 1505255844}
+  - component: {fileID: 1505255847}
   m_Layer: 5
   m_Name: GridPanel
   m_TagString: Untagged
@@ -1213,6 +1214,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1505255842}
   m_CullTransparentMesh: 1
+--- !u!114 &1505255847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1505255842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbbc8134ae8e66d498310dc009a1b0f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridHoverExpression
+  portraitManager: {fileID: 76763302}
+  gridManager: {fileID: 555015186}
+  characterName: Cat_Meritamun
+  hoverExpression: pawraised
+  normalExpression: neutral
 --- !u!1 &1897085956
 GameObject:
   m_ObjectHideFlags: 0
