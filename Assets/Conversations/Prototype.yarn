@@ -44,7 +44,7 @@ Amenhotep: Write𓀀 to𓁐 our𓃀 child's grandmother and ask her for news of 
     <<addhumanaffinity Ptahhotep 1>>
 <<endif>>
 
-<<hideportrait Right>>
+<<hideallportraits>>
 
 <<setpuzzle 𓀀𓃀𓁐:Path_A|𓅓𓎟𓁷:Path_B>>
 
@@ -69,40 +69,212 @@ Ahmose: Make𓀀 a𓃀 move𓁐 against Amenhotep? Or <br> Let𓅓 him𓎟 be�
 <<endif>>
 
 <<hideallportraits>>
-<<fadetonight BackgroundManager>>
-Narrator: Night returns. The choice settles into your bones.
 
-<<fadetoday BackgroundManager>>
+<<setpuzzle 𓌱𓈖𓅓:Path_A|𓀀𓈖𓅓:Path_B>>
 
-<<showportrait Right Harwa>>
-<<showportrait Left Thoth>>
-Thoth: A second gate awaits. I will be watching this one too. #expression:neutral
+<<showportrait Left Harwa>>
+Harwa: Chariot race with the boys tomorrow – Lady Sekhmet hear my prayers!
+Harwa: I heard from Amenhotep that a desert cat has blessed this holy temple with her grace and fury – and I just know that this is sign that I’ll win tomorrow. 
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *Purrrrrrr......*
+Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him I'd pray to ask the Gods, so here I am. Should I <br> join𓌱 the race𓈖 tomorrow𓅓? OR <br> Not𓀀 race𓈖 tomorrow𓅓? #wordsearch
+<<if $selectedPath == "Path_A">>  
+    Harwa: The Gods have spoken! Haha! On to victory!
+        <<addgodaffinity Sekhmet 1>> 
+        <<addhumanaffinity Chaos 1>>
 
-<<setpuzzle 𓀀𓃀𓁐:Path_A|𓅓𓎟𓁷:Path_B|𓈖𓌱𓅓:Path_C|𓀀𓎟𓈖:Path_D>>
-Harwa: A second gate. A second choice. The symbols shift.
-Harwa: Find 𓀀𓃀𓁐 the sun god calls again.<br>Find 𓅓𓎟𓁷 the river god beckons.<br>Find 𓈖𓌱𓅓 the scholars have a task for you.<br>Find 𓀀𓎟𓈖 the merchants need a decision. #wordsearch
-
-<<if $selectedPath == "Path_A">>
-    Harwa: Thoth's influence grows stronger around you. #expression:neutral
-    <<addgodaffinity Thoth 2>>
-<<elseif $selectedPath == "Path_B">>
-    Harwa: Bast's current pulls at your steps. #expression:surprised
-    <<addgodaffinity Bast 2>>
-<<elseif $selectedPath == "Path_C">>
-    Harwa: The scholars will remember your name. #expression:happy
-    <<addhumanaffinity Nitiqret 2>>
-<<elseif $selectedPath == "Path_D">>
-    Harwa: The merchant quarter opens its doors to you. #expression:happy
-    <<addhumanaffinity Harwa 2>>
+    <<elseif $selectedPath == "Path_B">>
+    Harwa:  Oh well, I suppose wisdom must prevail ... I'll sit this one out, but I WILL still place bets on the other racers...
+        <<addgodaffinity Thoth 1>> 
+        <<addhumanaffinity Chaos 1>>
 <<endif>>
-
-<<hideportrait Left>>
-<<showportrait CenterLeft Nitiqret>>
-Nitiqret: Two gates passed. Two marks made. The night watches what comes next. #expression:neutral
 
 <<hideallportraits>>
 <<fadetonight BackgroundManager>>
-Narrator: The final night descends. All choices are made. The stars align.
+
+<<showportrait Left Thoth>>
+Thoth: But dearest you know the mortals are very impressionable and if you give them a cat, they will probably end up doing exactly as the cat says, but in exactly the wrong way, so anyway why bother?
+<<showportrait CenterLeft Sekhmet>>
+Sekhmet: What is the point of you, Thoth, if you can’t use your imagination? And don’t you ‘dearest’ me it’s patronising. If I wanted that kind of self righteous nonsense I’d tickle Apep’s balls instead. 
+Thoth: ...
+<<showportrait Right Meritamun>>
+Meritamun: ... #expression:worried
+Thoth: Maybe not in front of the children?
+Sekhmet: ... no I suppose not. Meritamun you heard nothing and weren't here.
+Meritamun: Indeed – my Lady and my Lord, I wasn’t here and I heard nothing at all… #expression:worried
+
+<<hideallportraits>>
+
+<<fadetoday BackgroundManager>>
+
+<<setpuzzle 𓀀𓃀𓁐:Path_A|𓅓𓎟𓁷:Path_B>>
+
+<<showportrait Left Nitiqret>>
+Nitiqret: I don’t know why my mother has abandoned me.
+Nitiqret: One minute we were grieving Meritamun’s passing into the Duat, together as a family, the next minute it’s like she never even existed?
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *Purrrrrrr* 
+Nitiqret: I’m so lost. The nobles here hate me and I have literally no clue why. Harwa’s doing fine of course, making new friends at court left right and center. 
+Nitiqret: .... but actually I came here because I heard a cat has come to live here! And here you are!
+Cat_Meritamun: *PurrrrrrrRRRRRrrrr* 
+Nitiqret: Would you like <br> to be given a little scritch on𓀀 your𓃀 head𓁐? OR <br> would you like to be given a little ride on this𓅓 chariot𓎟 toy𓁷? #wordsearch
+
+<<if $selectedPath == "Path_A">>
+    Nitiqret: Wonderful! I shall pet you gently, and then maybe we can find you a little mouse to play with... #expression:happy
+    <<addgodaffinity Bes 1>>
+    <<addhumanaffinity Chaos 1>>
+<<elseif $selectedPath == "Path_B">>
+    Nitiqret: I knew you were a feisty one, just like Lady Sekhment, ROAR! #expression:happy
+    <<addgodaffinity Sekhmet 1>>
+    <<addhumanaffinity Harwa 1>>
+<<endif>>
+
+<<hideallportraits>>
+
+<<setpuzzle 𓅓𓎟𓁷:Path_A|𓀀𓎟𓈖:Path_B>>
+
+<<showportrait Left Harwa>>
+Harwa: Gods! I am so sick of losing at the dice table. Senemut never seems to lose nearly as much money as I do, I don't know what I'm doing wrong.
+Harwa: Father says I'm a terrible prince and I need to pray for guidance as to how to conduct myself.
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *Purrrrrrrr...*
+Harwa: So here I am, asking the gods...Should I <br> step𓅓 away𓎟 from𓁷 the dice table? or <br> go back and try to win back my𓀀 previous𓎟 losses𓈖? #wordsearch
+
+<<if $selectedPath == "Path_A">>
+    Harwa: As the Gods wish, I suppose… actually maybe this means I can go back to betting on Chariot races!
+    <<addgodaffinity Thoth 1>>
+    <<addhumanaffinity Ptahhotep 1>>
+<<elseif $selectedPath == "Path_B">>
+    Harwa: Yes! I knew the Gods were on my side all along! Ha! 
+    <<addgodaffinity Bes 1>>
+    <<addhumanaffinity Harwa 1>>
+<<endif>>
+
+<<hideallportraits>>
+<<fadetonight BackgroundManager>>
+<<showportrait Left Bast>>
+Bast: So, Meritamun – what is your lord father Pharoah Ahmose going to do about the Persians at the border? Will he sue for peace? 
+Bast: Growing up in the shadow of war is a difficult thing for a child such as yours, you know…
+<<showportrait Right Meritamun>>
+Meritamun: I’m sorry my lady Bast, but I confess I am confused – #expression:worried
+Meritamun: As I recall, I was by the great grace of your blessing, heavy with child when I died but the unborn babe didn’t survive my own death. #expression:worried
+Meritamun: …I agree with you, however – war can be hard on the very young and the very old.
+<<showportrait CenterLeft Sekhmet>>
+Sekhmet: Sue for peace? NO! That is not an option, put that out of your mind Meritamun. 
+Sekhmet: Egypt is sovereign and must remain so at all cost. 
+Sekhmet: What say your father Ahmose? What are his plans?
+Meritamun: My Lady – every day I sit in the temple as your eyes and ears …. but nothing as of yet on the mind of my father Ahmose regarding the Eastern threat. #expression:worried
+Sekhmet: You must find out faster, Meritamunn.
+<<showportrait Left Bes>>
+Bes: Find out faster? How exactly can you ask a CAT to find out faster, unless by ‘out’ you mean mice? You’ve made her A DOMESTIC CAT!
+Bes: Joy and vermin control, perhaps, but nobody is talking to CATS about platoon movements! 
+<<showportrait CenterRight Thoth>>
+Thoth: I really can’t say I didn’t tell you so Sekhmet my darling, viscous lioness, most hot of all the great feminine divines. 
+Thoth: If you want Egypt winning wars it's really much more about playing the long game of bolstering the grain silos and harnessing the faith of a tamed, well-fed, civilised populace… 
+Sekhmet: Again with the patronising advice, Thoth! OUT with all of you! This plan is mine and I am not listening to any more blethering nonsense from anyone! 
+Sekhmet: Meritamun keep at it – my blessings are upon you as you guide your father. 
+Meritamun: Yes of course Lady Sekhmet. 
+Thoth: Yes of course Lady Sekhmet. Anything for Lady Sekhmet. 
+Sekhmet: GAH!!!
+
+<<hideallportraits>>
+
+<<fadetoday BackgroundManager>>
+
+<<setpuzzle 𓃀𓀀𓎟:Path_A|𓎟𓌱𓅓:Path_B|𓌱𓈖𓅓:Path_C|𓎟𓀀𓈖:Path_D>>
+
+<<showportrait Left Harwa>>
+Harwa: Lost again at the races, rotten luck I suppose.
+Harwa: Father is asking me to spend more time with Nitiqret but honestly I can’t stand that simpering baby.
+Harwa: At least you are good company, Temple Cat. I wonder if you have a name?
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *Purrrrrr.....*
+Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓃀 Kitten𓀀 Beans𓎟 <br> Lioness𓎟 of the Ferocious𓌱 Desert Sands𓅓 <br> Mighty𓌱 Scourge𓈖 of Snakes𓅓 , or <br> ... Holy𓎟 Lady𓀀 of Thebes𓈖? #wordsearch
+
+<<if $selectedPath == "Path_A">>
+    Harwa: Sweet Kitten Beans it is! 
+    <<addgodaffinity Bes 1>>
+    <<addhumanaffinity Chaos 1>>
+<<elseif $selectedPath == "Path_B">>
+    Harwa: Lioness of the Ferocious Desert Sands it is! 
+    <<addgodaffinity Sekhmet 1>>
+    <<addhumanaffinity Harwa 1>>
+<<elseif $selectedPath == "Path_C">>
+    Harwa: Might Scourge of Snakes it is! 
+    <<addgodaffinity Bast 1>>
+    <<addhumanaffinity Ptahhotep 1>>
+<<elseif $selectedPath == "Path_D">>
+    Harwa: Holy Lady of Thebes it is!
+    <<addhumanaffinity Nitiqret 1>>
+    <<addgodaffinity Thoth 1>>
+<<endif>>
+
+<<hideallportraits>>
+
+<<setpuzzle 𓁷𓎟𓅓:Path_A|𓌱𓈖𓅓:Path_B>>
+
+
+<<showportrait Left Ahmose>>
+Ahmose: The state of the treasury is an absolute disgrace – it is only in private prayer to you, oh Gods, I can fully, honestly admit this. 
+Ahmose: Harvests have been mediocre to awful in the last few years. 
+Ahmose: There’s no chance of winning any kind of prolonged campaign against the Persians, because it would simply cost an amount of money we literally do not have.
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *Purrrrrr.....*
+Ahmose: What I actually need is some sort of distraction to bolster our support here in Thebes. Here are the choices I see before me, either of which are expensive but probably less expensive than a war. Should I <br> Marry𓁷 Nitiqret𓎟 to Harwa𓅓 in a lavish ceremony or <br> Start building𓌱 a new𓈖 temple𓅓 here in Thebes? #wordsearch 
+<<if $selectedPath == "Path_A">>
+    Ahmose: Oh dear. I am not looking forward to bullying them into that. The things a father has to do for Egypt! Not that I’m questioning your divine will, or anything. It was going to happen anyway and now is as good a time as any.
+    <<addgodaffinity Bast 1>>
+    <<addhumanaffinity Chaos 1>>
+<<elseif $selectedPath == "Path_B">>
+    Ahmose: Yes, yes... I shall start a magnificent new civic project, perfect pretext for a little extra taxation...
+    <<addgodaffinity Thoth 1>>
+    <<addhumanaffinity Nitiqret 1>>
+<<endif>>
+
+<<hideallportraits>>
+
+<<setpuzzle 𓅓𓎟𓁷:Path_A|𓀀𓎟𓈖:Path_B>>
+
+<<showportrait Left Nitiqret>>
+Nitiqret: Harwa is being mean to me and I must seek vengeance.
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *Purrrrrr.....*
+Nitiqret: What do you think? should I <br> Put𓅓 a𓎟 snake𓁷 in his bed or <br> Tell him he has to stop𓀀 throwing𓎟 dirt𓈖 at me in front of his friends to impress them? #wordsearch  
+
+<<if $selectedPath == "Path_A">>
+    Nitiqret: Oh! Good idea! I actually saw you catch a snake earlier… now where did you put it … #expression:happy
+    <<addgodaffinity Bes 1>>
+    <<addhumanaffinty Chaos 1>>
+<<elseif $selectedPath == "Path_B">>
+    Nitiqret: Oh alright. This is going to be difficult but since you are the wisest and most beautiful of cats I shall obey…where is that idiot brother of mine…
+    <<addgodaffinity Bast 1>>
+    <<addhumanaffinity Nitiqret 1>>
+<<endif>>
+
+<<hideallportraits>>
+
+<<setpuzzle 𓁐𓅓𓎟:Path_A|𓅓𓀀𓈖:Path_B>>
+
+
+<<showportrait Left Amenhotep>>
+Amenhotep: It’s not that I didn’t want to have a child with Meritamun – but the time wasn’t right and I was only trying to do right by her, for both of us.
+Amenhotep: Now Meritamun is dead and I’m here, alone, without her.
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: *Purrrrrr.....*
+Amenhotep: Our child has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust Neferura to keep my son safe far𓁐 away𓅓 from Thebes𓎟, or <br>Or send my own agents to seek out Neferura and bring her and the child𓅓 back𓀀 to Thebes𓈖? #wordsearch
+<<if $selectedPath == "Path_A">>
+    Amenhotep: Yes, that's probably the wiser option, his safety should be my main concern.
+    <<addgodaffinity Thoth 1>>
+    <<addhumanaffinty Ptahhotep 1>>
+<<elseif $selectedPath == "Path_B">>
+    Amenhotep: It would be so good to have a small piece of Meritamun here with me.
+    <<addgodaffinity Bast 1>>
+    <<addhumanaffinity Chaos 1>>
+<<endif>>
+
+<<hideallportraits>>
+<<fadetonight BackgroundManager>>
+Narrator: END OF CHAPTER 1
 <<checkending>>
 
 ===
