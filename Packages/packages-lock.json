@@ -284,11 +284,10 @@
       "url": "https://packages.unity.com"
     },
     "dev.yarnspinner.unity": {
-      "version": "3.2.4",
+      "version": "file:dev.yarnspinner.unity",
       "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
+      "source": "embedded",
+      "dependencies": {}
     },
     "dev.yarnspinner.unity.samples": {
       "version": "https://github.com/YarnSpinnerTool/YarnSpinner-Unity-Samples.git#current",
