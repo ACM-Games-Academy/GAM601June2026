@@ -165,6 +165,7 @@ public class PortraitManager : DialoguePresenterBase
             HidePortrait(slot.slotName);
         }
     }
+
     // Find which slot (if any) a character currently occupies, and swap
     // their displayed expression directly — used by hover effects etc.
     public void SetExpression(string characterName, string expressionName)
@@ -201,6 +202,7 @@ public class PortraitManager : DialoguePresenterBase
             return;
         }
     }
+
     // ── DialoguePresenterBase ─────────────────────────────────────────────
 
     public override YarnTask OnDialogueStartedAsync()
@@ -253,6 +255,13 @@ public class PortraitManager : DialoguePresenterBase
                 }
 
                 FadeTo(slot, activeAlpha);
+
+                // Push this slot's portrait to the front of the draw order
+                // so it renders on top of every other portrait sharing the
+                // same parent, regardless of their transparency. Without
+                // this, a dimmed portrait sitting later in the Hierarchy
+                // can still visually overlap a brighter one underneath it.
+                slot.portraitImage.transform.SetAsLastSibling();
 
                 // This slot's character is the one speaking this line —
                 // slide the NameTab to sit above this slot's position
