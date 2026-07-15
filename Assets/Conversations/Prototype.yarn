@@ -39,7 +39,7 @@ Amenhotep: Write𓀀 to𓁐 our𓃀 child's grandmother and ask her for news of 
     <<addgodaffinity Bes 1>> 
     <<addhumanaffinity Chaos 1>>
 <<elseif $selectedPath == "Path_B">>
-    Amenhotep: It is true that Ahmose's spies are everywhere, Neferura and I should be as caerful as possible.
+    Amenhotep: It is true that Ahmose's spies are everywhere, Neferura and I should be as careful as possible.
     <<addgodaffinity Thoth 1>> 
     <<addhumanaffinity Ptahhotep 1>>
 <<endif>>
@@ -217,7 +217,7 @@ Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓃀 Kitten�
 <<showportrait Left Ahmose>>
 Ahmose: The state of the treasury is an absolute disgrace – it is only in private prayer to you, oh Gods, I can fully, honestly admit this. 
 Ahmose: Harvests have been mediocre to awful in the last few years. 
-Ahmose: There’s no chance of winning any kind of prolonged campaign against the Persians, because it would simply cost an amount of money we literally do not have.
+Ahmose: There’s no chance of winning any kind of prolonged campaign against the Persians, because it would simply cost an amount of money we do not have.
 <<showportrait Right Cat_Meritamun>>
 Cat_Meritamun: *Purrrrrr.....*
 Ahmose: What I actually need is some sort of distraction to bolster our support here in Thebes. Here are the choices I see before me, either of which are expensive but probably less expensive than a war. Should I <br> Marry𓁷 Nitiqret𓎟 to Harwa𓅓 in a lavish ceremony or <br> Start building𓌱 a new𓈖 temple𓅓 here in Thebes? #wordsearch 
@@ -244,7 +244,7 @@ Nitiqret: What do you think? should I <br> Put𓅓 a𓎟 snake𓁷 in his bed or
 <<if $selectedPath == "Path_A">>
     Nitiqret: Oh! Good idea! I actually saw you catch a snake earlier… now where did you put it … #expression:happy
     <<addgodaffinity Bes 1>>
-    <<addhumanaffinty Chaos 1>>
+    <<addhumanaffinity Chaos 1>>
 <<elseif $selectedPath == "Path_B">>
     Nitiqret: Oh alright. This is going to be difficult but since you are the wisest and most beautiful of cats I shall obey…where is that idiot brother of mine…
     <<addgodaffinity Bast 1>>

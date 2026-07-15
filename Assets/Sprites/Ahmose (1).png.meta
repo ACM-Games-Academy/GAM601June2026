@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: cb0b3266ef1a94348b2c3f79282134a3
+guid: 06b2b865c727ee340b1b85bcd3e39efe
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1695199138293954906
-    second: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_0
-  - first:
-      213: -5606977440365596968
-    second: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_1
-  - first:
-      213: -5663253884547290877
-    second: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_2
-  - first:
-      213: 6550894462114185909
-    second: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_3
+      213: -6602605326545006164
+    second: Ahmose (1)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,89 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_0
+      name: Ahmose (1)_0
       rect:
         serializedVersion: 2
-        x: 3
-        y: 204
-        width: 938
-        height: 1468
+        x: 0
+        y: 8
+        width: 1024
+        height: 1469
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6a6c0728d517978e0800000000000000
-      internalID: -1695199138293954906
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_1
-      rect:
-        serializedVersion: 2
-        x: 206
-        y: 0
-        width: 15
-        height: 5
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8de216b99b30032b0800000000000000
-      internalID: -5606977440365596968
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_2
-      rect:
-        serializedVersion: 2
-        x: 230
-        y: 0
-        width: 10
-        height: 5
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 30925b2e8941861b0800000000000000
-      internalID: -5663253884547290877
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_3
-      rect:
-        serializedVersion: 2
-        x: 257
-        y: 0
-        width: 36
-        height: 6
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5b2c36f1ec379ea50800000000000000
-      internalID: 6550894462114185909
+      spriteID: ca1de270075de54a0800000000000000
+      internalID: -6602605326545006164
       vertices: []
       indices: 
       edges: []
@@ -200,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: e7ffd796ad00c7c4292b96d64a42cbcc
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -210,10 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_0: -1695199138293954906
-      ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_1: -5606977440365596968
-      ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_2: -5663253884547290877
-      ChatGPT Image Jul 13, 2026, 04_05_30 PM (1)_3: 6550894462114185909
+      Ahmose (1)_0: -6602605326545006164
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

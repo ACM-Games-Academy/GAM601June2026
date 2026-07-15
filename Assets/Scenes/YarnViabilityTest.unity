@@ -336,7 +336,7 @@ MonoBehaviour:
   - characterName: Ahmose
     expressions:
     - expressionName: neutral
-      sprite: {fileID: -6929615374293376062, guid: 0b7afc5c0c5bbf1479d16ed8d33db643, type: 3}
+      sprite: {fileID: -6602605326545006164, guid: 06b2b865c727ee340b1b85bcd3e39efe, type: 3}
       isDefault: 1
   - characterName: Cat_Meritamun
     expressions:
@@ -1234,6 +1234,8 @@ MonoBehaviour:
   characterName: Cat_Meritamun
   hoverExpression: pawraised
   normalExpression: neutral
+  hoverCursorTexture: {fileID: 2800000, guid: 1f908382a5ad69542ab9df8cdc390f64, type: 3}
+  cursorHotspot: {x: 0, y: 0}
 --- !u!1 &1897085956
 GameObject:
   m_ObjectHideFlags: 0
