@@ -4,15 +4,23 @@ using UnityEngine.UI;
 
 // PulseGlowEffect
 //
-// A fully self-contained "glow" VFX for UI. It needs no sprite or
-// prefab asset — it draws its own soft white radial-gradient circle
-// into a Texture2D at runtime, wraps that in a Sprite, and displays
-// it through an Image on its own GameObject.
+// A fully self-contained "ripple" VFX for UI, styled to look like rings
+// of sunlit water spreading outward from a central point. It needs no
+// sprite or prefab asset — it draws its own soft ring-shaped gradient
+// into a Texture2D at runtime (once, then shares it across every ripple
+// it spawns), wraps that in a Sprite, and displays it through an Image.
 //
-// On Start it pulses its alpha from 0 up to maxAlpha and back to 0,
-// easing in/out rather than moving linearly, once per 'pulseDuration'
-// seconds, for exactly 'pulseCount' cycles — then it destroys its own
-// GameObject, so callers never need to clean it up manually.
+// Each PulseGlowEffect instance IS a single expanding ring: on Start it
+// grows from a small starting size out to circleDiameter over
+// 'pulseDuration' seconds, easing out (fast start, slower finish, like
+// real ripples losing energy as they spread) while fading from maxAlpha
+// down to 0. Partway through that expansion (after 'rippleStagger'
+// seconds) it spawns a clone of itself — same center point, one fewer
+// remaining ripple — so a chain of overlapping rings radiates outward
+// continuously. 'pulseCount' controls how many rings the chain produces
+// in total. Every ring destroys its own GameObject once its own
+// expansion finishes, so the whole chain cleans itself up with nothing
+// left over.
 //
 // Designed to be dropped onto an empty GameObject anywhere in a UI
 // hierarchy (e.g. behind a character portrait) — its RectTransform
@@ -22,47 +30,64 @@ using UnityEngine.UI;
 [RequireComponent(typeof(RectTransform))]
 public class PulseGlowEffect : MonoBehaviour
 {
-    [Header("Pulse Settings")]
-    public float pulseDuration = 1.5f;   // seconds for one full fade-in-fade-out cycle
-    public int pulseCount = 3;          // how many cycles to play before self-destructing
-    [Range(0f, 1f)] public float maxAlpha = 0.85f;    // peak opacity reached mid-cycle
-    public Color glowColor = Color.white;
-    public float circleDiameter = 200f;  // on-screen size in UI units, roughly a head-sized glow
+    [Header("Ripple Settings")]
+    public float pulseDuration = 1.5f;   // seconds for one ring to expand and fade out
+    public int pulseCount = 3;          // how many rings the chain produces before stopping
+    [Range(0f, 1f)] public float maxAlpha = 0.85f;    // opacity each ring starts at
+    public Color glowColor = new Color(1f, 0.851f, 0.478f, 1f); // warm sunlit gold
+    public float circleDiameter = 200f;  // final on-screen ring size, roughly head-sized
+
+    [Header("Ripple Motion")]
+    [Range(0f, 1f)] public float startScale = 0.15f; // ring's starting size, as a fraction of circleDiameter
+    public float rippleStagger = 0.5f;   // delay before the next ring in the chain spawns
 
     [Header("Placement")]
     // Where on the parent's rect this effect anchors to, in normalized
     // (0-1) space — (0.5, 0.5) is dead center, (0.5, 1) is top-center,
     // etc. Portrait art is rarely centered on its own RectTransform (the
     // head usually sits well above the rect's vertical middle), so this
-    // plus anchoredOffset let a caller reposition the glow without
-    // touching code — e.g. anchorPoint (0.5, 1) with a small negative Y
-    // offset lands it right around the top of a character's head.
+    // plus anchoredOffset let a caller reposition the ripple's center
+    // without touching code.
     public Vector2 anchorPoint = new Vector2(0.5f, 0.5f);
     public Vector2 anchoredOffset = Vector2.zero;
 
     private Image glowImage;
     private RectTransform rectTransform;
 
+    // The ring texture is identical for every ripple this effect ever
+    // spawns, so it's generated once and shared rather than rebuilt
+    // per-instance.
+    private static Sprite cachedRingSprite;
+
     // Size of the generated gradient texture — high enough for a
     // smooth-looking edge without being wasteful at UI scale.
     private const int TextureSize = 128;
+
+    // Where the bright band of the ring sits and how soft its inner/
+    // outer edges are, both as fractions of the texture's radius.
+    private const float RingCenter = 0.72f;
+    private const float RingSoftness = 0.22f;
 
     void Start()
     {
         SetUpRectTransform();
         SetUpImage();
-        StartCoroutine(PulseRoutine());
+
+        StartCoroutine(ExpandAndFadeRoutine());
+
+        if (pulseCount > 1)
+        {
+            StartCoroutine(SpawnNextRippleAfterDelay());
+        }
     }
 
     // ── Setup ────────────────────────────────────────────────────────────
 
     // Positions this effect at anchorPoint (+ anchoredOffset) on whatever
-    // it was parented into, at a fixed circleDiameter size. Deliberately
-    // uses a single-point anchor (not a stretch-to-fill anchor) so the
-    // glow's size never depends on how big its parent's RectTransform
-    // happens to be — it always ends up as one circleDiameter-sized
-    // circle sitting at that anchor point, regardless of what it's
-    // parented into.
+    // it was parented into. Uses a single-point anchor (not a stretch-
+    // to-fill anchor) and a fixed sizeDelta so the ring's size never
+    // depends on how big its parent's RectTransform happens to be —
+    // growth is driven separately via localScale in the ripple coroutine.
     private void SetUpRectTransform()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -72,10 +97,11 @@ public class PulseGlowEffect : MonoBehaviour
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
         rectTransform.anchoredPosition = anchoredOffset;
         rectTransform.sizeDelta = new Vector2(circleDiameter, circleDiameter);
+        rectTransform.localScale = new Vector3(startScale, startScale, 1f);
     }
 
     // Adds an Image if this GameObject doesn't already have one, then
-    // feeds it a procedurally generated radial-gradient sprite.
+    // feeds it the shared procedurally generated ring sprite.
     private void SetUpImage()
     {
         glowImage = GetComponent<Image>();
@@ -84,17 +110,23 @@ public class PulseGlowEffect : MonoBehaviour
             glowImage = gameObject.AddComponent<Image>();
         }
 
-        glowImage.sprite = GenerateRadialGradientSprite();
+        if (cachedRingSprite == null)
+        {
+            cachedRingSprite = GenerateRingSprite();
+        }
+
+        glowImage.sprite = cachedRingSprite;
         glowImage.raycastTarget = false; // it's a background visual effect, not interactive
 
         Color startColor = glowColor;
-        startColor.a = 0f; // begin invisible; the pulse coroutine fades it in
+        startColor.a = 0f; // begin invisible; the ripple coroutine fades it in
         glowImage.color = startColor;
     }
 
-    // Builds a soft circular gradient: fully white and opaque at the
-    // center, smoothly fading to transparent at the edge.
-    private Sprite GenerateRadialGradientSprite()
+    // Builds a soft ring: transparent at the center, a bright band around
+    // RingCenter with a smooth falloff of width RingSoftness on both
+    // sides, then transparent again out to the texture's edge.
+    private Sprite GenerateRingSprite()
     {
         Texture2D texture = new Texture2D(TextureSize, TextureSize, TextureFormat.RGBA32, false);
         texture.wrapMode = TextureWrapMode.Clamp;
@@ -109,14 +141,14 @@ public class PulseGlowEffect : MonoBehaviour
             for (int x = 0; x < TextureSize; x++)
             {
                 float distance = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), center);
-                float normalizedDistance = Mathf.Clamp01(distance / maxDistance);
+                float normalizedDistance = distance / maxDistance;
 
-                // SmoothStep gives a soft, non-linear falloff — fully
-                // opaque at the center, easing down to fully transparent
-                // by the edge, instead of a harsh linear ring.
-                float alpha = 1f - Mathf.SmoothStep(0f, 1f, normalizedDistance);
+                float distanceFromRing = Mathf.Abs(normalizedDistance - RingCenter);
+                float alpha = 1f - Mathf.SmoothStep(0f, RingSoftness, distanceFromRing);
 
-                pixels[y * TextureSize + x] = new Color(1f, 1f, 1f, alpha);
+                if (normalizedDistance > 1f) alpha = 0f;
+
+                pixels[y * TextureSize + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(alpha));
             }
         }
 
@@ -129,41 +161,59 @@ public class PulseGlowEffect : MonoBehaviour
             new Vector2(0.5f, 0.5f));
     }
 
-    // ── Pulsing ──────────────────────────────────────────────────────────
+    // ── Rippling ─────────────────────────────────────────────────────────
 
-    private IEnumerator PulseRoutine()
+    // Grows this ring from startScale to full size while fading it out,
+    // easing the growth so it expands quickly at first and slows down —
+    // the way a real ripple loses energy as it spreads — then removes
+    // itself once fully faded.
+    private IEnumerator ExpandAndFadeRoutine()
     {
-        for (int i = 0; i < pulseCount; i++)
+        float elapsed = 0f;
+
+        while (elapsed < pulseDuration)
         {
-            float elapsed = 0f;
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / pulseDuration);
 
-            while (elapsed < pulseDuration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / pulseDuration);
+            float easedGrowth = 1f - (1f - t) * (1f - t); // quadratic ease-out
+            float scale = Mathf.Lerp(startScale, 1f, easedGrowth);
+            rectTransform.localScale = new Vector3(scale, scale, 1f);
 
-                SetAlpha(EaseInOutPulse(t) * maxAlpha);
+            float fade = Mathf.Pow(1f - t, 1.5f); // fades faster as the ring nears full size
+            SetAlpha(maxAlpha * fade);
 
-                yield return null;
-            }
+            yield return null;
         }
 
-        SetAlpha(0f);
         Destroy(gameObject);
     }
 
-    // Maps a normalized cycle position (0 -> 1) to a 0 -> 1 -> 0 curve
-    // that eases in and out at every turning point, instead of moving
-    // linearly. Built from two back-to-back SmoothSteps: one rising
-    // over the first half of the cycle, one falling over the second.
-    private float EaseInOutPulse(float t)
+    // Waits, then spawns the next ring in the chain — same center point,
+    // one fewer ripple remaining — so overlapping rings keep radiating
+    // outward for as long as pulseCount calls for.
+    private IEnumerator SpawnNextRippleAfterDelay()
     {
-        if (t <= 0.5f)
-        {
-            return Mathf.SmoothStep(0f, 1f, t / 0.5f);
-        }
+        yield return new WaitForSeconds(rippleStagger);
+        SpawnNextRipple();
+    }
 
-        return Mathf.SmoothStep(1f, 0f, (t - 0.5f) / 0.5f);
+    private void SpawnNextRipple()
+    {
+        GameObject nextRing = new GameObject("PulseGlowEffect", typeof(RectTransform));
+        nextRing.transform.SetParent(transform.parent, false);
+        nextRing.transform.SetAsFirstSibling(); // stay behind the portrait, same as this ring
+
+        PulseGlowEffect nextEffect = nextRing.AddComponent<PulseGlowEffect>();
+        nextEffect.pulseDuration = pulseDuration;
+        nextEffect.pulseCount = pulseCount - 1;
+        nextEffect.maxAlpha = maxAlpha;
+        nextEffect.glowColor = glowColor;
+        nextEffect.circleDiameter = circleDiameter;
+        nextEffect.startScale = startScale;
+        nextEffect.rippleStagger = rippleStagger;
+        nextEffect.anchorPoint = anchorPoint;
+        nextEffect.anchoredOffset = anchoredOffset;
     }
 
     private void SetAlpha(float alpha)

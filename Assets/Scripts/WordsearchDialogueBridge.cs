@@ -61,6 +61,9 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public Vector2 glowAnchorPoint = new Vector2(0.5f, 1f);
     public Vector2 glowAnchoredOffset = new Vector2(0f, -60f);
 
+    // Final size each ripple ring grows to, in UI units.
+    public float glowCircleDiameter = 350f;
+
     // Tracks whichever character's line most recently carried the
     // #wordsearch tag, so HandleWordFound knows who to glow without a
     // hardcoded name.
@@ -216,6 +219,7 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
                 PulseGlowEffect glow = effectObject.GetComponent<PulseGlowEffect>();
                 glow.anchorPoint = glowAnchorPoint;
                 glow.anchoredOffset = glowAnchoredOffset;
+                glow.circleDiameter = glowCircleDiameter;
             });
         }
 

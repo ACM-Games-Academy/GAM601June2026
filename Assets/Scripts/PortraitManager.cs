@@ -222,33 +222,78 @@ public class PortraitManager : DialoguePresenterBase
 
             // Prefer the slot's dedicated effect anchor so the glow sits
             // behind the portrait. If effectAnchor hasn't been wired up,
-            // fall back to parenting directly onto the portrait Image
-            // itself — that guarantees the glow lands exactly on the
-            // portrait regardless of how big the slot's outer container
-            // is, rather than centering on that container's own rect
-            // (which can be much larger than the portrait and drag the
-            // glow toward unrelated parts of the screen).
-            bool usingFallbackParent = slot.effectAnchor == null;
-            Transform effectParent = usingFallbackParent
-                ? slot.portraitImage.transform
-                : (Transform)slot.effectAnchor;
+            // build a throwaway anchor that mirrors the portrait's own
+            // rect exactly and sits directly behind it in the hierarchy —
+            // see CreateBehindPortraitAnchor for why the effect can't
+            // just be parented onto the portrait Image itself.
+            Transform effectParent;
+            GameObject fallbackAnchor = null;
+
+            if (slot.effectAnchor != null)
+            {
+                effectParent = slot.effectAnchor;
+            }
+            else
+            {
+                fallbackAnchor = CreateBehindPortraitAnchor(slot.portraitImage);
+                effectParent = fallbackAnchor.transform;
+            }
 
             GameObject effectObject = new GameObject("PulseGlowEffect", typeof(RectTransform));
             effectObject.transform.SetParent(effectParent, false);
 
-            if (usingFallbackParent)
-            {
-                // Draw behind the portrait Image rather than on top of it
-                effectObject.transform.SetAsFirstSibling();
-            }
-
-            effectObject.AddComponent<PulseGlowEffect>();
+            PulseGlowEffect glow = effectObject.AddComponent<PulseGlowEffect>();
 
             // Let the caller tweak pulse settings before Start() runs
             configureEffect?.Invoke(effectObject);
 
+            if (fallbackAnchor != null)
+            {
+                // The throwaway anchor only exists to host this effect's
+                // ripple chain, so clean it up once the chain — using
+                // whatever settings configureEffect may have changed —
+                // has fully finished, rather than leaving it in the
+                // hierarchy forever.
+                float chainLifetime = glow.pulseDuration
+                    + glow.rippleStagger * Mathf.Max(0, glow.pulseCount - 1)
+                    + 0.25f;
+                Destroy(fallbackAnchor, chainLifetime);
+            }
+
             return;
         }
+    }
+
+    // Builds a throwaway RectTransform that exactly mirrors a portrait
+    // Image's own rect (same anchors, pivot, position and size) and
+    // inserts it as that portrait's immediate sibling, directly before
+    // it in the hierarchy. uGUI always draws a parent's own Graphic
+    // before recursing into its children — sibling index can't override
+    // that — so an effect parented directly onto the portrait Image
+    // would always render in front of it, no matter its sibling index.
+    // Parenting the effect into this same-sized sibling instead, placed
+    // earlier in the draw order, is what actually gets it to render
+    // behind the portrait while still lining up with it visually.
+    private GameObject CreateBehindPortraitAnchor(Image portraitImage)
+    {
+        RectTransform portraitRect = portraitImage.rectTransform;
+
+        GameObject anchorObject = new GameObject("GlowAnchor (behind portrait)", typeof(RectTransform));
+        RectTransform anchorRect = anchorObject.GetComponent<RectTransform>();
+
+        anchorRect.SetParent(portraitRect.parent, false);
+        anchorRect.anchorMin = portraitRect.anchorMin;
+        anchorRect.anchorMax = portraitRect.anchorMax;
+        anchorRect.pivot = portraitRect.pivot;
+        anchorRect.anchoredPosition = portraitRect.anchoredPosition;
+        anchorRect.sizeDelta = portraitRect.sizeDelta;
+        anchorRect.localScale = portraitRect.localScale;
+
+        // Insert directly before the portrait so this anchor's whole
+        // subtree draws ahead of (i.e. behind) the portrait Image.
+        anchorRect.SetSiblingIndex(portraitRect.GetSiblingIndex());
+
+        return anchorObject;
     }
 
     // ── DialoguePresenterBase ─────────────────────────────────────────────
