@@ -64,6 +64,14 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // Final size each ripple ring grows to, in UI units.
     public float glowCircleDiameter = 350f;
 
+    [Header("Wrong Answer Wave")]
+    // Same anchor/offset/size convention as the glow settings above —
+    // tune in the Inspector until the wave sits where you want it
+    // relative to the portrait.
+    public Vector2 waveAnchorPoint = new Vector2(0.5f, 1f);
+    public Vector2 waveAnchoredOffset = new Vector2(0f, -60f);
+    public float waveCircleDiameter = 260f;
+
     [Header("Puzzle Backdrop")]
     // Semi-transparent panel shown behind the grid while it's unlocked,
     // to draw the player's eye to the puzzle. A plain generated Image —
@@ -94,13 +102,19 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     void OnEnable()
     {
         if (gridManager != null)
+        {
             gridManager.OnWordFound += HandleWordFound;
+            gridManager.OnWrongAnswer += HandleWrongAnswer;
+        }
     }
 
     void OnDisable()
     {
         if (gridManager != null)
+        {
             gridManager.OnWordFound -= HandleWordFound;
+            gridManager.OnWrongAnswer -= HandleWrongAnswer;
+        }
     }
 
     // ── <<setpuzzle>> command ─────────────────────────────────────────────
@@ -261,6 +275,36 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         }
     }
 
+    // ── Wrong answer ─────────────────────────────────────────────────────
+
+    private void HandleWrongAnswer()
+    {
+        // Swish a blue-grey wave behind the puzzle's asking character's
+        // portrait — same targeting rule as the success glow, just a
+        // different effect and settings.
+        string effectTarget = ResolveEffectTarget();
+
+        if (portraitManager != null && !string.IsNullOrEmpty(effectTarget))
+        {
+            portraitManager.PlayEffectOnCharacter<WrongAnswerWaveEffect>(effectTarget, wave =>
+            {
+                wave.anchorPoint = waveAnchorPoint;
+                wave.anchoredOffset = waveAnchoredOffset;
+                wave.circleDiameter = waveCircleDiameter;
+            });
+        }
+    }
+
+    // Which character's portrait an effect should target: the manual
+    // override if one is set, otherwise whichever character's line most
+    // recently carried the #wordsearch tag.
+    private string ResolveEffectTarget()
+    {
+        return !string.IsNullOrEmpty(glowCharacterName)
+            ? glowCharacterName
+            : currentWordsearchSpeaker;
+    }
+
     // ── Word found ────────────────────────────────────────────────────────
 
     private void HandleWordFound(string branchValue)
@@ -272,15 +316,12 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         // Pulse-glow the puzzle's asking character's portrait — runs for
         // every successful find, regardless of which branch was solved
         // or which NPC posed the question.
-        string glowTarget = !string.IsNullOrEmpty(glowCharacterName)
-            ? glowCharacterName
-            : currentWordsearchSpeaker;
+        string glowTarget = ResolveEffectTarget();
 
         if (portraitManager != null && !string.IsNullOrEmpty(glowTarget))
         {
-            portraitManager.PlayEffectOnCharacter(glowTarget, effectObject =>
+            portraitManager.PlayEffectOnCharacter<PulseGlowEffect>(glowTarget, glow =>
             {
-                PulseGlowEffect glow = effectObject.GetComponent<PulseGlowEffect>();
                 glow.anchorPoint = glowAnchorPoint;
                 glow.anchoredOffset = glowAnchoredOffset;
                 glow.circleDiameter = glowCircleDiameter;

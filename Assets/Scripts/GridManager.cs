@@ -47,6 +47,12 @@ public class GridManager : MonoBehaviour
     // Fired when a word is found — WordsearchDialogueBridge listens
     public event System.Action<string> OnWordFound;
 
+    // Fired whenever a full-length selection fails to match any unfound
+    // word — whether it wasn't a straight line at all, or was but didn't
+    // spell a valid answer. WordsearchDialogueBridge listens to play a
+    // wrong-answer effect.
+    public event System.Action OnWrongAnswer;
+
     // ── InlineWord: passed in from WordsearchDialogueBridge ──────────────
 
     // Defines one answer word parsed from a <<setpuzzle>> argument.
@@ -247,6 +253,11 @@ public class GridManager : MonoBehaviour
     {
         if (!IsStraightLine())
         {
+            // A full-length selection that isn't even a straight line
+            // can never match a word — it's still a wrong answer from
+            // the player's perspective, so this counts the same as the
+            // straight-line-but-no-match case below.
+            OnWrongAnswer?.Invoke();
             StartCoroutine(ClearSelectionWithDelay(0.5f));
             return;
         }
@@ -272,6 +283,9 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+
+        // Straight-line selection, but it didn't match any unfound word
+        OnWrongAnswer?.Invoke();
 
         StartCoroutine(ClearSelectionWithDelay(0.5f));
     }

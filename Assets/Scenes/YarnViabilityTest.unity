@@ -156,6 +156,12 @@ MonoBehaviour:
   glowCharacterName: 
   glowAnchorPoint: {x: 0.5, y: 1}
   glowAnchoredOffset: {x: -30, y: -60}
+  glowCircleDiameter: 350
+  waveAnchorPoint: {x: 0.5, y: 1}
+  waveAnchoredOffset: {x: 0, y: -60}
+  waveCircleDiameter: 260
+  puzzleBackdropColor: {r: 0.1, g: 0.1, b: 0.1, a: 0.8156863}
+  puzzleBackdropPadding: 40
 --- !u!4 &21300822
 Transform:
   m_ObjectHideFlags: 0
@@ -357,6 +363,8 @@ MonoBehaviour:
   activeAlpha: 1
   inactiveAlpha: 0.4
   dimFadeDuration: 0.3
+  slideOffsetX: 60
+  slideInDuration: 0.3
   nameTabRect: {fileID: 242145120}
   slotTabPositions:
   - slotName: Left

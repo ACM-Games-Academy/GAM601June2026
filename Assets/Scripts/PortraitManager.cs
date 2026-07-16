@@ -82,6 +82,13 @@ public class PortraitManager : DialoguePresenterBase
     [Range(0f, 1f)] public float inactiveAlpha = 0.4f;
     public float dimFadeDuration = 0.3f;
 
+    [Header("Portrait Slide-In")]
+    // When a portrait is shown, it starts offset this far to the right
+    // (in anchored-position UI units) and slides into its authored
+    // resting position instead of just popping in.
+    public float slideOffsetX = 60f;
+    public float slideInDuration = 0.3f;
+
     [Header("Name Tab Sliding")]
     // The NameTab panel's RectTransform. Its vertical position should
     // already be pinned to the dialogue panel's top edge via its own
@@ -98,6 +105,39 @@ public class PortraitManager : DialoguePresenterBase
     public List<SlotTabPosition> slotTabPositions = new List<SlotTabPosition>();
     public float tabMoveDuration = 0.25f;
 
+    // Shapes how NameTab eases across its main slide, evaluated over
+    // normalized time (0-1 in, 0-1 out). Defaults to a standard ease-in-
+    // out — drag the curve's middle tangents in the Inspector for a
+    // stronger, more visible accelerate/decelerate feel.
+    public AnimationCurve tabMoveEaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    // After the main slide finishes, NameTab overshoots past its target
+    // by this many UI units (in the direction of travel) and settles
+    // back, instead of stopping dead — a quick spring-like arrival.
+    public float tabBounceDistance = 10f;
+    public float tabBounceDuration = 0.15f;
+
+    // Shapes the overshoot-and-settle bounce (0 = at target, 1 = fully
+    // overshot), evaluated over normalized time. Defaults to a simple
+    // rise-then-fall bump — adjust in the Inspector for a snappier or
+    // softer bounce.
+    public AnimationCurve tabBounceCurve = CreateDefaultBounceCurve();
+
+    private static AnimationCurve CreateDefaultBounceCurve()
+    {
+        AnimationCurve curve = new AnimationCurve(
+            new Keyframe(0f, 0f),
+            new Keyframe(0.5f, 1f),
+            new Keyframe(1f, 0f));
+
+        for (int i = 0; i < curve.length; i++)
+        {
+            curve.SmoothTangents(i, 0f);
+        }
+
+        return curve;
+    }
+
     private Coroutine tabMoveCoroutine;
 
     private const string ExpressionTagPrefix = "expression:";
@@ -109,11 +149,26 @@ public class PortraitManager : DialoguePresenterBase
     // cleanly cancel an old one instead of them fighting each other
     private Dictionary<string, Coroutine> activeFades = new Dictionary<string, Coroutine>();
 
+    // Tracks the running slide-in coroutine per slot, same reasoning as
+    // activeFades above
+    private Dictionary<string, Coroutine> activeSlides = new Dictionary<string, Coroutine>();
+
+    // Each slot's authored resting position, captured once at startup so
+    // repeated slide-ins always animate from/to the correct place even
+    // if a portrait is re-shown mid-animation.
+    private Dictionary<string, Vector2> slotRestingPositions = new Dictionary<string, Vector2>();
+
     void Awake()
     {
         dialogueRunner.AddCommandHandler<string, string>("showportrait", ShowPortrait);
         dialogueRunner.AddCommandHandler<string>("hideportrait", HidePortrait);
         dialogueRunner.AddCommandHandler("hideallportraits", HideAllPortraits);
+
+        foreach (SlotConfig slot in slots)
+        {
+            if (slot.portraitImage != null)
+                slotRestingPositions[slot.slotName] = slot.portraitImage.rectTransform.anchoredPosition;
+        }
     }
 
     // ── Yarn commands ────────────────────────────────────────────────────
@@ -142,6 +197,8 @@ public class PortraitManager : DialoguePresenterBase
         slot.portraitImage.sprite = defaultExpression.sprite;
         slot.portraitImage.enabled = true;
         SetAlphaInstant(slot.portraitImage, inactiveAlpha);
+
+        SlideIn(slot);
     }
 
     private void HidePortrait(string slotName)
@@ -159,6 +216,17 @@ public class PortraitManager : DialoguePresenterBase
         {
             StopCoroutine(activeFades[slotName]);
             activeFades.Remove(slotName);
+        }
+
+        if (activeSlides.ContainsKey(slotName) && activeSlides[slotName] != null)
+        {
+            StopCoroutine(activeSlides[slotName]);
+            activeSlides.Remove(slotName);
+
+            // Snap back to the resting position so the portrait doesn't
+            // reappear mid-slide next time it's shown
+            if (slotRestingPositions.ContainsKey(slotName))
+                slot.portraitImage.rectTransform.anchoredPosition = slotRestingPositions[slotName];
         }
 
         slot.portraitImage.enabled = false;
@@ -210,55 +278,36 @@ public class PortraitManager : DialoguePresenterBase
     }
 
     // Find which slot (if any) a character currently occupies, and spawn
-    // a PulseGlowEffect behind their portrait. Does nothing if the
-    // character isn't currently assigned to any slot — that's an
+    // a TEffect behind their portrait (e.g. PulseGlowEffect for correct
+    // answers, WrongAnswerWaveEffect for incorrect ones). Does nothing
+    // if the character isn't currently assigned to any slot — that's an
     // expected case (e.g. they've left the scene), not an error.
-    public void PlayEffectOnCharacter(string characterName, System.Action<GameObject> configureEffect = null)
+    public void PlayEffectOnCharacter<TEffect>(string characterName, System.Action<TEffect> configureEffect = null)
+        where TEffect : MonoBehaviour
     {
         foreach (SlotConfig slot in slots)
         {
             if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
             if (assigned != characterName) continue;
 
-            // Prefer the slot's dedicated effect anchor so the glow sits
-            // behind the portrait. If effectAnchor hasn't been wired up,
-            // build a throwaway anchor that mirrors the portrait's own
-            // rect exactly and sits directly behind it in the hierarchy —
-            // see CreateBehindPortraitAnchor for why the effect can't
-            // just be parented onto the portrait Image itself.
-            Transform effectParent;
-            GameObject fallbackAnchor = null;
+            // Prefer the slot's dedicated effect anchor so the effect
+            // sits behind the portrait. If effectAnchor hasn't been
+            // wired up, build a throwaway anchor that mirrors the
+            // portrait's own rect exactly and sits directly behind it
+            // in the hierarchy — see CreateBehindPortraitAnchor for why
+            // the effect can't just be parented onto the portrait Image
+            // itself.
+            Transform effectParent = slot.effectAnchor != null
+                ? (Transform)slot.effectAnchor
+                : CreateBehindPortraitAnchor(slot.portraitImage).transform;
 
-            if (slot.effectAnchor != null)
-            {
-                effectParent = slot.effectAnchor;
-            }
-            else
-            {
-                fallbackAnchor = CreateBehindPortraitAnchor(slot.portraitImage);
-                effectParent = fallbackAnchor.transform;
-            }
-
-            GameObject effectObject = new GameObject("PulseGlowEffect", typeof(RectTransform));
+            GameObject effectObject = new GameObject(typeof(TEffect).Name, typeof(RectTransform));
             effectObject.transform.SetParent(effectParent, false);
 
-            PulseGlowEffect glow = effectObject.AddComponent<PulseGlowEffect>();
+            TEffect effect = effectObject.AddComponent<TEffect>();
 
-            // Let the caller tweak pulse settings before Start() runs
-            configureEffect?.Invoke(effectObject);
-
-            if (fallbackAnchor != null)
-            {
-                // The throwaway anchor only exists to host this effect's
-                // ripple chain, so clean it up once the chain — using
-                // whatever settings configureEffect may have changed —
-                // has fully finished, rather than leaving it in the
-                // hierarchy forever.
-                float chainLifetime = glow.pulseDuration
-                    + glow.rippleStagger * Mathf.Max(0, glow.pulseCount - 1)
-                    + 0.25f;
-                Destroy(fallbackAnchor, chainLifetime);
-            }
+            // Let the caller tweak settings before Start() runs
+            configureEffect?.Invoke(effect);
 
             return;
         }
@@ -293,7 +342,28 @@ public class PortraitManager : DialoguePresenterBase
         // subtree draws ahead of (i.e. behind) the portrait Image.
         anchorRect.SetSiblingIndex(portraitRect.GetSiblingIndex());
 
+        // This anchor only exists to host whatever effect gets parented
+        // into it — once that effect has destroyed itself, the anchor
+        // has nothing left to do. Rather than PortraitManager needing to
+        // know each effect type's own timing, the anchor just watches
+        // its own child count and cleans itself up once it's empty.
+        anchorObject.AddComponent<DestroyWhenEmpty>();
+
         return anchorObject;
+    }
+
+    // Destroys its own GameObject once it has no children left. Used to
+    // clean up throwaway effect anchors without PortraitManager needing
+    // to know how long any particular effect runs for.
+    private class DestroyWhenEmpty : MonoBehaviour
+    {
+        void Update()
+        {
+            if (transform.childCount == 0)
+            {
+                Destroy(gameObject);
+            }
+        }
     }
 
     // ── DialoguePresenterBase ─────────────────────────────────────────────
@@ -411,18 +481,78 @@ public class PortraitManager : DialoguePresenterBase
         // top edge, independent of this script.
         Vector2 targetPos = new Vector2(targetX, startPos.y);
 
+        // Which way NameTab is travelling, so the bounce below overshoots
+        // further in that same direction rather than snapping backwards.
+        float travelDirection = Mathf.Sign(targetPos.x - startPos.x);
+
+        // ── Main slide: eases from a standing start, accelerating away
+        // from startPos and decelerating into targetPos, instead of
+        // moving at a constant stiff speed.
         float elapsed = 0f;
 
         while (elapsed < tabMoveDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / tabMoveDuration);
-            nameTabRect.anchoredPosition = Vector2.Lerp(startPos, targetPos, t);
+            float eased = tabMoveEaseCurve.Evaluate(t);
+            nameTabRect.anchoredPosition = Vector2.LerpUnclamped(startPos, targetPos, eased);
+            yield return null;
+        }
+
+        // ── Bounce: overshoot slightly past targetPos in the direction
+        // of travel, then ease back — a quick spring-like arrival rather
+        // than a hard stop.
+        Vector2 overshootPos = targetPos + new Vector2(travelDirection * tabBounceDistance, 0f);
+        elapsed = 0f;
+
+        while (elapsed < tabBounceDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / tabBounceDuration);
+            float bounceT = tabBounceCurve.Evaluate(t);
+            nameTabRect.anchoredPosition = Vector2.LerpUnclamped(targetPos, overshootPos, bounceT);
             yield return null;
         }
 
         nameTabRect.anchoredPosition = targetPos;
         tabMoveCoroutine = null;
+    }
+
+    // ── Slide-in ─────────────────────────────────────────────────────────
+
+    private void SlideIn(SlotConfig slot)
+    {
+        if (!slotRestingPositions.ContainsKey(slot.slotName)) return;
+
+        if (activeSlides.ContainsKey(slot.slotName) && activeSlides[slot.slotName] != null)
+        {
+            StopCoroutine(activeSlides[slot.slotName]);
+        }
+
+        activeSlides[slot.slotName] = StartCoroutine(SlideInCoroutine(slot));
+    }
+
+    private IEnumerator SlideInCoroutine(SlotConfig slot)
+    {
+        RectTransform rect = slot.portraitImage.rectTransform;
+        Vector2 restingPosition = slotRestingPositions[slot.slotName];
+        Vector2 startPosition = restingPosition + new Vector2(slideOffsetX, 0f);
+
+        rect.anchoredPosition = startPosition;
+
+        float elapsed = 0f;
+
+        while (elapsed < slideInDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / slideInDuration);
+            float eased = 1f - (1f - t) * (1f - t); // ease-out: quick start, gentle settle
+            rect.anchoredPosition = Vector2.Lerp(startPosition, restingPosition, eased);
+            yield return null;
+        }
+
+        rect.anchoredPosition = restingPosition;
+        activeSlides[slot.slotName] = null;
     }
 
     // ── Fading ────────────────────────────────────────────────────────────
