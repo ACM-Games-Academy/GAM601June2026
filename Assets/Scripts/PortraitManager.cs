@@ -189,6 +189,16 @@ public class PortraitManager : DialoguePresenterBase
             return;
         }
 
+        // Already showing this character in this slot — treat as a
+        // no-op rather than re-sliding them in. This is what lets a
+        // scripted cutscene (e.g. CrossfadeCharacterInSlot) hand control
+        // back to a later <<showportrait>> call for the same character
+        // without a redundant pop-in.
+        if (slotAssignments.TryGetValue(slotName, out string alreadyAssigned) && alreadyAssigned == characterName)
+        {
+            return;
+        }
+
         slotAssignments[slotName] = characterName;
 
         Expression defaultExpression = character.expressions.Find(e => e.isDefault)
@@ -238,6 +248,80 @@ public class PortraitManager : DialoguePresenterBase
         {
             HidePortrait(slot.slotName);
         }
+    }
+
+    // Crossfades whichever character is showing in a slot to a
+    // different character's default expression, in place, instead of
+    // an instant swap — used for one-off cinematic reveals (e.g. the
+    // opening day sequence's Meritamun -> Cat_Meritamun transformation).
+    // A temporary Image fades in on top of the slot's portrait WHILE the
+    // portrait itself fades out in the same loop — unlike a background
+    // (a fully opaque rectangle, where fading a new layer in alone looks
+    // identical to a true crossfade), portrait art has transparent
+    // regions and mismatched silhouettes, so the old portrait has to be
+    // faded out explicitly or it stays visible through the gaps.
+    public IEnumerator CrossfadeCharacterInSlot(string slotName, string newCharacterName, float duration)
+    {
+        SlotConfig slot = slots.Find(s => s.slotName == slotName);
+        if (slot == null)
+        {
+            Debug.LogWarning("PortraitManager: No slot named '" + slotName + "'.");
+            yield break;
+        }
+
+        CharacterPortraits newCharacter = characters.Find(c => c.characterName == newCharacterName);
+        if (newCharacter == null || newCharacter.expressions.Count == 0)
+        {
+            Debug.LogWarning("PortraitManager: No character named '" + newCharacterName + "' with expressions set up.");
+            yield break;
+        }
+
+        Expression defaultExpression = newCharacter.expressions.Find(e => e.isDefault)
+            ?? newCharacter.expressions[0];
+
+        RectTransform portraitRect = slot.portraitImage.rectTransform;
+
+        GameObject crossfadeObject = new GameObject("PortraitCrossfade", typeof(RectTransform));
+        RectTransform crossfadeRect = crossfadeObject.GetComponent<RectTransform>();
+
+        crossfadeRect.SetParent(portraitRect.parent, false);
+        crossfadeRect.anchorMin = portraitRect.anchorMin;
+        crossfadeRect.anchorMax = portraitRect.anchorMax;
+        crossfadeRect.pivot = portraitRect.pivot;
+        crossfadeRect.anchoredPosition = portraitRect.anchoredPosition;
+        crossfadeRect.sizeDelta = portraitRect.sizeDelta;
+        crossfadeRect.localScale = portraitRect.localScale;
+        crossfadeRect.SetSiblingIndex(portraitRect.GetSiblingIndex() + 1); // render just in front of the portrait
+
+        Image crossfadeImage = crossfadeObject.AddComponent<Image>();
+        crossfadeImage.sprite = defaultExpression.sprite;
+        crossfadeImage.raycastTarget = false;
+        SetAlphaInstant(crossfadeImage, 0f);
+
+        float startAlpha = slot.portraitImage.color.a;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // Old portrait fades out while the new one fades in, in
+            // lockstep, so neither one's solidity outpaces the other's
+            SetAlphaInstant(slot.portraitImage, Mathf.Lerp(startAlpha, 0f, t));
+            SetAlphaInstant(crossfadeImage, Mathf.Lerp(0f, activeAlpha, t));
+
+            yield return null;
+        }
+
+        // The slot now truly shows the new character at full opacity,
+        // exactly as if <<showportrait>> had been called for them
+        slotAssignments[slotName] = newCharacterName;
+        slot.portraitImage.sprite = defaultExpression.sprite;
+        slot.portraitImage.enabled = true;
+        SetAlphaInstant(slot.portraitImage, activeAlpha);
+
+        Destroy(crossfadeObject);
     }
 
     // Find which slot (if any) a character currently occupies, and swap

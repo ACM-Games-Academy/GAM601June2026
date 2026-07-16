@@ -20,8 +20,9 @@ Sekhmet: I never try, I only execute. Look here Meritamun – Lord Bes orders yo
 <<showportrait Right Meritamun>>
 Meritamun: My joy is the will of the Gods, absolutely. No snakes or rats will besmirch the temple grounds… #expression:neutral
 
-<<hideallportraits>>
-<<fadetoday BackgroundManager>>
+<<hideportrait Left>>
+<<hideportrait CenterLeft>>
+<<openingdayreveal OpeningDayReveal>>
 <<setpuzzle 𓀀𓁐𓃀:Path_A|𓁷𓎟𓅓:Path_B>>
 
 <<showportrait Left Amenhotep>>

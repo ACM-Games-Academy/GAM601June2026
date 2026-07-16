@@ -144,6 +144,67 @@ public class BackgroundManager : MonoBehaviour
         }
     }
 
+    // ── Opening day reveal (cutscene helpers) ───────────────────────────────
+    //
+    // Used by OpeningDayRevealSequence for the one-off opening transition,
+    // where the screen fades to black BEHIND a portrait (which stays
+    // visible, since topLayer already renders behind the portraits
+    // canvas), rather than straight-crossfading to the day sprite.
+
+    // Fades topLayer to solid opaque black, covering bottomLayer (and
+    // anything else drawn behind the portraits) without touching
+    // whichever portrait is currently on top of it.
+    public IEnumerator FadeToBlackOverlay(float duration)
+    {
+        isFading = true;
+
+        topLayer.color = new Color(0f, 0f, 0f, 0f);
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Clamp01(elapsed / duration);
+            topLayer.color = new Color(0f, 0f, 0f, alpha);
+            yield return null;
+        }
+
+        topLayer.color = new Color(0f, 0f, 0f, 1f);
+    }
+
+    // While fully hidden behind the black overlay, swaps bottomLayer
+    // straight to daySprite (no visible pop, since topLayer is fully
+    // opaque at this point), then fades the black overlay back out to
+    // reveal it. Mirrors FadeToDay's bookkeeping (isDay, wordsearchPanel).
+    public IEnumerator RevealDayFromBlackOverlay(float duration)
+    {
+        bottomLayer.sprite = daySprite;
+        SetAlpha(bottomLayer, 1f);
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, Mathf.Clamp01(elapsed / duration));
+            topLayer.color = new Color(0f, 0f, 0f, alpha);
+            yield return null;
+        }
+
+        // Reset topLayer to its normal resting state (transparent white)
+        // now that it's invisible, so later ordinary day/night
+        // crossfades — which only ever touch alpha, not RGB — behave
+        // exactly as they did before this cutscene ran.
+        topLayer.color = new Color(1f, 1f, 1f, 0f);
+
+        isDay = true;
+        isFading = false;
+
+        if (wordsearchPanel != null)
+        {
+            wordsearchPanel.SetActive(true);
+        }
+    }
+
     // ── Crossfade coroutine ───────────────────────────────────────────────
 
     private IEnumerator CrossFade(Sprite targetSprite)
