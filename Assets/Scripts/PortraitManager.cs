@@ -48,6 +48,12 @@ public class PortraitManager : DialoguePresenterBase
     {
         public string slotName;      // e.g. "Left", "Right", "Center"
         public Image portraitImage; // the UI Image for this position
+
+        // Optional empty RectTransform sitting behind the portrait,
+        // meant for visual effects (glows, etc.) to be parented into.
+        // If left unassigned, effects fall back to the portrait's own
+        // parent so nothing new needs to be wired up to keep working.
+        public RectTransform effectAnchor;
     }
 
     [System.Serializable]
@@ -199,6 +205,48 @@ public class PortraitManager : DialoguePresenterBase
             if (assigned != characterName) continue;
 
             FadeTo(slot, bright ? activeAlpha : inactiveAlpha);
+            return;
+        }
+    }
+
+    // Find which slot (if any) a character currently occupies, and spawn
+    // a PulseGlowEffect behind their portrait. Does nothing if the
+    // character isn't currently assigned to any slot — that's an
+    // expected case (e.g. they've left the scene), not an error.
+    public void PlayEffectOnCharacter(string characterName, System.Action<GameObject> configureEffect = null)
+    {
+        foreach (SlotConfig slot in slots)
+        {
+            if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
+            if (assigned != characterName) continue;
+
+            // Prefer the slot's dedicated effect anchor so the glow sits
+            // behind the portrait. If effectAnchor hasn't been wired up,
+            // fall back to parenting directly onto the portrait Image
+            // itself — that guarantees the glow lands exactly on the
+            // portrait regardless of how big the slot's outer container
+            // is, rather than centering on that container's own rect
+            // (which can be much larger than the portrait and drag the
+            // glow toward unrelated parts of the screen).
+            bool usingFallbackParent = slot.effectAnchor == null;
+            Transform effectParent = usingFallbackParent
+                ? slot.portraitImage.transform
+                : (Transform)slot.effectAnchor;
+
+            GameObject effectObject = new GameObject("PulseGlowEffect", typeof(RectTransform));
+            effectObject.transform.SetParent(effectParent, false);
+
+            if (usingFallbackParent)
+            {
+                // Draw behind the portrait Image rather than on top of it
+                effectObject.transform.SetAsFirstSibling();
+            }
+
+            effectObject.AddComponent<PulseGlowEffect>();
+
+            // Let the caller tweak pulse settings before Start() runs
+            configureEffect?.Invoke(effectObject);
+
             return;
         }
     }

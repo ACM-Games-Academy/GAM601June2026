@@ -30,7 +30,7 @@ public class GridHoverExpression : MonoBehaviour, IPointerEnterHandler, IPointer
     public Texture2D hoverCursorTexture;
 
     // The point within the texture that acts as the actual click
-    // position — for a paw print, this is usually near the top-left
+    // position ï¿½ for a paw print, this is usually near the top-left
     // pad or centre, adjusted to taste. (0,0) is the texture's top-left.
     public Vector2 cursorHotspot = Vector2.zero;
 
@@ -70,8 +70,6 @@ public class GridHoverExpression : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (gridManager != null && !gridManager.inputEnabled) return;
-
         portraitManager.SetExpression(characterName, normalExpression);
 
         // Passing null reverts to the system's default cursor

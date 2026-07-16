@@ -44,6 +44,27 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public GridManager gridManager;
     public LineAdvancer lineAdvancer;
     public Button continueButton;
+    public PortraitManager portraitManager;
+
+    [Header("Word Found Glow")]
+    // Manual override: if set, the glow always targets this character
+    // regardless of who asked the puzzle's question. Leave blank (the
+    // default) to auto-target whichever character's line carried the
+    // #wordsearch tag — that's what lets one puzzle flow serve every
+    // NPC (Amenhotep, Ahmose, Harwa, Nitiqret, ...) correctly.
+    public string glowCharacterName = "";
+
+    // Where the glow anchors on the portrait's rect (0.5, 1 = top-center)
+    // and a pixel nudge from there — tune these two in the Inspector
+    // until the glow sits over the character's head, no code changes
+    // needed.
+    public Vector2 glowAnchorPoint = new Vector2(0.5f, 1f);
+    public Vector2 glowAnchoredOffset = new Vector2(0f, -60f);
+
+    // Tracks whichever character's line most recently carried the
+    // #wordsearch tag, so HandleWordFound knows who to glow without a
+    // hardcoded name.
+    private string currentWordsearchSpeaker;
 
     private const string WordsearchTag = "wordsearch";
     private const char WordSeparator = '|';
@@ -181,6 +202,23 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
 
     private void HandleWordFound(string branchValue)
     {
+        // Pulse-glow the puzzle's asking character's portrait — runs for
+        // every successful find, regardless of which branch was solved
+        // or which NPC posed the question.
+        string glowTarget = !string.IsNullOrEmpty(glowCharacterName)
+            ? glowCharacterName
+            : currentWordsearchSpeaker;
+
+        if (portraitManager != null && !string.IsNullOrEmpty(glowTarget))
+        {
+            portraitManager.PlayEffectOnCharacter(glowTarget, effectObject =>
+            {
+                PulseGlowEffect glow = effectObject.GetComponent<PulseGlowEffect>();
+                glow.anchorPoint = glowAnchorPoint;
+                glow.anchoredOffset = glowAnchoredOffset;
+            });
+        }
+
         if (dialogueRunner != null)
         {
             dialogueRunner.VariableStorage.SetValue("$selectedPath", branchValue);
@@ -223,6 +261,13 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             if (lineAdvancer != null) lineAdvancer.enabled = false;
             if (continueButton != null) continueButton.interactable = false;
             if (gridManager != null) gridManager.inputEnabled = true;
+
+            // Remember who's asking this puzzle's question so the glow
+            // can target the right NPC when the answer is found — the
+            // same wordsearch flow is reused across many different
+            // characters (Amenhotep, Ahmose, Harwa, Nitiqret, ...), so
+            // this can't be a single hardcoded name.
+            currentWordsearchSpeaker = line.CharacterName;
 
             Debug.Log("WordsearchDialogueBridge: Wordsearch active — Continue locked.");
         }
