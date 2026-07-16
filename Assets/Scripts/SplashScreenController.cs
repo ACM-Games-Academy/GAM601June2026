@@ -33,6 +33,11 @@ public class SplashScreenController : MonoBehaviour
     public Sprite meritamunWorriedSprite;
     public Sprite catMeritamunPawRaisedSprite;
 
+    [Header("Font")]
+    // Applied to both the title and the Play button label. Leave blank
+    // to fall back to TextMeshPro's default project font.
+    public TMP_FontAsset gameFont;
+
     [Header("Title")]
     public string gameTitle = "BAST";
     public int titleFontSize = 180;
@@ -145,6 +150,7 @@ public class SplashScreenController : MonoBehaviour
         text.color = titleColor;
         text.fontStyle = FontStyles.Bold;
         text.raycastTarget = false;
+        if (gameFont != null) text.font = gameFont;
     }
 
     private void CreatePlayButton(RectTransform parent)
@@ -180,6 +186,7 @@ public class SplashScreenController : MonoBehaviour
         label.color = Color.white;
         label.fontStyle = FontStyles.Bold;
         label.raycastTarget = false;
+        if (gameFont != null) label.font = gameFont;
     }
 
     private void OnPlayButtonClicked()
