@@ -52,6 +52,11 @@ public class SplashScreenController : MonoBehaviour
     {
         EnsureEventSystem();
         BuildSplashScreen();
+
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.PlayMusic();
+        }
     }
 
     // ── Setup ────────────────────────────────────────────────────────────

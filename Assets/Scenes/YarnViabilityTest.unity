@@ -163,6 +163,7 @@ MonoBehaviour:
   waveAnchoredOffset: {x: 0, y: -60}
   waveCircleDiameter: 260
   wrongAnswerSoundEffectName: WrongAnswerChord
+  cellScuffSoundEffectName: CellScuff
   puzzleBackdropColor: {r: 0.1, g: 0.1, b: 0.1, a: 0.8156863}
   puzzleBackdropPadding: 40
 --- !u!4 &21300822
@@ -993,6 +994,8 @@ MonoBehaviour:
   foundColor: {r: 0, g: 1, b: 0, a: 1}
   inputEnabled: 0
   wordLength: 3
+  wrongAnswerReactionDelay: 0.4
+  correctAnswerReactionDelay: 1
 --- !u!1 &782780933
 GameObject:
   m_ObjectHideFlags: 0
@@ -1818,8 +1821,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Character Name
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d3ad7626796f021459f44cdf43b0b1dc, type: 2}
+  m_sharedMaterial: {fileID: -8762298523845595830, guid: d3ad7626796f021459f44cdf43b0b1dc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1956,8 +1959,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Here's a big long line of dialogue, ready to be shown to the player.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d3ad7626796f021459f44cdf43b0b1dc, type: 2}
+  m_sharedMaterial: {fileID: -8762298523845595830, guid: d3ad7626796f021459f44cdf43b0b1dc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

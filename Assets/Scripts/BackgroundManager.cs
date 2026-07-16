@@ -99,6 +99,14 @@ public class BackgroundManager : MonoBehaviour
         {
             gridManager.inputEnabled = false;
         }
+
+        // Music may still be playing (faded in) from the splash screen —
+        // the scene starts at night, so fade it back out rather than
+        // leaving it running.
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.StopMusic();
+        }
     }
 
     // ── Yarn-callable commands ─────────────────────────────────────────────
@@ -125,6 +133,11 @@ public class BackgroundManager : MonoBehaviour
             gridManager.inputEnabled = false;
         }
 
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.StopMusic();
+        }
+
         yield return StartCoroutine(CrossFade(nightSprite));
     }
 
@@ -135,6 +148,12 @@ public class BackgroundManager : MonoBehaviour
         if (isDay) yield break;   // already day, nothing to do
 
         isDay = true;
+
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.PlayMusic();
+        }
+
         yield return StartCoroutine(CrossFade(daySprite));
 
         // Reveal the wordsearch now that daytime has fully arrived
@@ -180,6 +199,11 @@ public class BackgroundManager : MonoBehaviour
     {
         bottomLayer.sprite = daySprite;
         SetAlpha(bottomLayer, 1f);
+
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.PlayMusic();
+        }
 
         float elapsed = 0f;
         while (elapsed < duration)
