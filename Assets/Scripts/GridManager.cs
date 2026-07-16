@@ -224,7 +224,15 @@ public class GridManager : MonoBehaviour
         if (!inputEnabled) return;
         if (isClearingSelection) return;
         if (cell.isPartOfFoundWord) return;
-        if (selectedCells.Contains(cell)) return;
+
+        if (selectedCells.Contains(cell))
+        {
+            // Clicking an already-selected cell again deselects it
+            // instead of doing nothing.
+            selectedCells.Remove(cell);
+            cell.ResetColour();
+            return;
+        }
 
         selectedCells.Add(cell);
         cell.SetHighlight(selectedColor);

@@ -64,10 +64,20 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // Final size each ripple ring grows to, in UI units.
     public float glowCircleDiameter = 350f;
 
+    [Header("Puzzle Backdrop")]
+    // Semi-transparent panel shown behind the grid while it's unlocked,
+    // to draw the player's eye to the puzzle. A plain generated Image —
+    // no sprite asset required.
+    public Color puzzleBackdropColor = new Color(0.1f, 0.1f, 0.1f, 0.6f);
+    public float puzzleBackdropPadding = 40f; // how much larger than the grid, per side
+
     // Tracks whichever character's line most recently carried the
     // #wordsearch tag, so HandleWordFound knows who to glow without a
     // hardcoded name.
     private string currentWordsearchSpeaker;
+
+    // The currently displayed puzzle backdrop, if any.
+    private GameObject puzzleBackdropObject;
 
     private const string WordsearchTag = "wordsearch";
     private const char WordSeparator = '|';
@@ -201,10 +211,64 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         return glyphs;
     }
 
+    // ── Puzzle backdrop ──────────────────────────────────────────────────
+
+    // Shows a semi-transparent square behind the grid, sized slightly
+    // larger than the grid itself, to highlight that the puzzle is
+    // active and waiting on the player.
+    private void ShowPuzzleBackdrop()
+    {
+        if (gridManager == null || gridManager.gridPanel == null) return;
+
+        RectTransform gridRect = gridManager.gridPanel as RectTransform;
+        if (gridRect == null) return;
+
+        HidePuzzleBackdrop(); // avoid stacking backdrops across puzzles
+
+        GameObject backdropObject = new GameObject("PuzzleBackdrop", typeof(RectTransform));
+        RectTransform backdropRect = backdropObject.GetComponent<RectTransform>();
+
+        // Mirror the grid's own rect, then pad it out on every side so
+        // it reads as a slightly larger square sitting behind the grid.
+        backdropRect.SetParent(gridRect.parent, false);
+        backdropRect.anchorMin = gridRect.anchorMin;
+        backdropRect.anchorMax = gridRect.anchorMax;
+        backdropRect.pivot = gridRect.pivot;
+        backdropRect.anchoredPosition = gridRect.anchoredPosition;
+        backdropRect.sizeDelta = gridRect.sizeDelta + new Vector2(puzzleBackdropPadding, puzzleBackdropPadding) * 2f;
+        backdropRect.localScale = gridRect.localScale;
+
+        // uGUI always draws a parent's own graphic before its children,
+        // but sibling order still governs draw order between elements
+        // sharing a parent — insert directly before the grid so this
+        // backdrop renders behind it instead of on top.
+        backdropRect.SetSiblingIndex(gridRect.GetSiblingIndex());
+
+        Image backdropImage = backdropObject.AddComponent<Image>();
+        backdropImage.color = puzzleBackdropColor; // no sprite needed — Image renders a solid rect by default
+        backdropImage.raycastTarget = false; // purely decorative, must not intercept grid cell clicks
+
+        puzzleBackdropObject = backdropObject;
+    }
+
+    // Removes the puzzle backdrop, if one is currently showing.
+    private void HidePuzzleBackdrop()
+    {
+        if (puzzleBackdropObject != null)
+        {
+            Destroy(puzzleBackdropObject);
+            puzzleBackdropObject = null;
+        }
+    }
+
     // ── Word found ────────────────────────────────────────────────────────
 
     private void HandleWordFound(string branchValue)
     {
+        // The puzzle's been solved — the highlighting backdrop has
+        // served its purpose.
+        HidePuzzleBackdrop();
+
         // Pulse-glow the puzzle's asking character's portrait — runs for
         // every successful find, regardless of which branch was solved
         // or which NPC posed the question.
@@ -250,11 +314,15 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
 
     public override YarnTask OnDialogueStartedAsync()
     {
+        // Safety net: guarantee no backdrop is left over from a
+        // previous playtest or scene when a fresh conversation begins
+        HidePuzzleBackdrop();
         return YarnTask.CompletedTask;
     }
 
     public override YarnTask OnDialogueCompleteAsync()
     {
+        HidePuzzleBackdrop();
         return YarnTask.CompletedTask;
     }
 
@@ -265,6 +333,8 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             if (lineAdvancer != null) lineAdvancer.enabled = false;
             if (continueButton != null) continueButton.interactable = false;
             if (gridManager != null) gridManager.inputEnabled = true;
+
+            ShowPuzzleBackdrop();
 
             // Remember who's asking this puzzle's question so the glow
             // can target the right NPC when the answer is found — the

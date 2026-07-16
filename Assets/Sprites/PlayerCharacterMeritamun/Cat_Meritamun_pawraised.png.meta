@@ -103,12 +103,12 @@ TextureImporter:
       name: ChatGPT Image Jul 13, 2026, 06_01_17 PM (1)_0
       rect:
         serializedVersion: 2
-        x: 66
+        x: 37
         y: 141
-        width: 930
+        width: 929
         height: 1306
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: d5e34ef8e619e804fb9b565cb9471cda
     internalID: 0
     vertices: []
     indices: 
