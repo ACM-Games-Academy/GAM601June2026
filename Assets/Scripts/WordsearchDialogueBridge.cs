@@ -45,6 +45,7 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public LineAdvancer lineAdvancer;
     public Button continueButton;
     public PortraitManager portraitManager;
+    public SoundEffectManager soundEffectManager;
 
     [Header("Word Found Glow")]
     // Manual override: if set, the glow always targets this character
@@ -64,6 +65,10 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // Final size each ripple ring grows to, in UI units.
     public float glowCircleDiameter = 350f;
 
+    // Celebratory sound played alongside the ripple glow every time a
+    // correct word is found.
+    public string correctAnswerSoundEffectName = "CelebratoryChoir";
+
     [Header("Wrong Answer Wave")]
     // Same anchor/offset/size convention as the glow settings above —
     // tune in the Inspector until the wave sits where you want it
@@ -71,6 +76,10 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public Vector2 waveAnchorPoint = new Vector2(0.5f, 1f);
     public Vector2 waveAnchoredOffset = new Vector2(0f, -60f);
     public float waveCircleDiameter = 260f;
+
+    // Negative-feedback sound played alongside the wave every time a
+    // wrong answer is selected.
+    public string wrongAnswerSoundEffectName = "WrongAnswerChord";
 
     [Header("Puzzle Backdrop")]
     // Semi-transparent panel shown behind the grid while it's unlocked,
@@ -293,6 +302,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
                 wave.circleDiameter = waveCircleDiameter;
             });
         }
+
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(wrongAnswerSoundEffectName);
+        }
     }
 
     // Which character's portrait an effect should target: the manual
@@ -326,6 +340,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
                 glow.anchoredOffset = glowAnchoredOffset;
                 glow.circleDiameter = glowCircleDiameter;
             });
+        }
+
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(correctAnswerSoundEffectName);
         }
 
         if (dialogueRunner != null)

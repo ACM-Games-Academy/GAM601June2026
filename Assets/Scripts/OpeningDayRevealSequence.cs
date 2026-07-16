@@ -25,8 +25,10 @@ using Yarn.Unity;
 // SETUP IN UNITY:
 // 1. Attach this script to an empty GameObject named "OpeningDayReveal".
 // 2. In the Inspector assign:
-//      - Background Manager → the scene's BackgroundManager component
-//      - Portrait Manager   → the scene's PortraitManager component
+//      - Background Manager  → the scene's BackgroundManager component
+//      - Portrait Manager    → the scene's PortraitManager component
+//      - Sound Effect Manager → the scene's SoundEffectManager component
+//        (optional — the crossfade chime is skipped if left unassigned)
 // 3. In your .yarn script, in place of <<hideallportraits>> +
 //    <<fadetoday BackgroundManager>>, keep Meritamun's portrait showing
 //    and call:
@@ -40,10 +42,12 @@ public class OpeningDayRevealSequence : MonoBehaviour
     [Header("References")]
     public BackgroundManager backgroundManager;
     public PortraitManager portraitManager;
+    public SoundEffectManager soundEffectManager;
 
     [Header("Reveal Settings")]
     public string portraitSlotName = "Right";
     public string revealCharacterName = "Cat_Meritamun";
+    public string crossfadeSoundEffectName = "MagicalTinkle";
 
     public float fadeToBlackDuration = 1f;
     public float portraitCrossfadeDuration = 1.2f;
@@ -59,6 +63,12 @@ public class OpeningDayRevealSequence : MonoBehaviour
         }
 
         yield return backgroundManager.FadeToBlackOverlay(fadeToBlackDuration);
+
+        // A little magic sparkle right as Meritamun transforms
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(crossfadeSoundEffectName);
+        }
 
         yield return portraitManager.CrossfadeCharacterInSlot(
             portraitSlotName, revealCharacterName, portraitCrossfadeDuration);
