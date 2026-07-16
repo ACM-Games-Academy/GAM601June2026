@@ -44,6 +44,13 @@ public class GridManager : MonoBehaviour
 
     public int wordLength = 3;
 
+    [Header("Answer Reaction Timing")]
+    // Pause between the player's final selection and the NPC-side
+    // reaction (portrait effect + sound) firing, so the two don't land
+    // on top of each other.
+    public float wrongAnswerReactionDelay = 0.4f;
+    public float correctAnswerReactionDelay = 1.0f;
+
     // Fired when a word is found — WordsearchDialogueBridge listens
     public event System.Action<string> OnWordFound;
 
@@ -52,6 +59,11 @@ public class GridManager : MonoBehaviour
     // spell a valid answer. WordsearchDialogueBridge listens to play a
     // wrong-answer effect.
     public event System.Action OnWrongAnswer;
+
+    // Fired whenever a cell is selected OR deselected (not on found/
+    // wrong-answer clears) — WordsearchDialogueBridge listens to play a
+    // random scuff sound.
+    public event System.Action OnCellSelectionChanged;
 
     // ── InlineWord: passed in from WordsearchDialogueBridge ──────────────
 
@@ -237,11 +249,13 @@ public class GridManager : MonoBehaviour
             // instead of doing nothing.
             selectedCells.Remove(cell);
             cell.ResetColour();
+            OnCellSelectionChanged?.Invoke();
             return;
         }
 
         selectedCells.Add(cell);
         cell.SetHighlight(selectedColor);
+        OnCellSelectionChanged?.Invoke();
 
         if (selectedCells.Count >= wordLength)
         {
@@ -257,8 +271,8 @@ public class GridManager : MonoBehaviour
             // can never match a word — it's still a wrong answer from
             // the player's perspective, so this counts the same as the
             // straight-line-but-no-match case below.
-            OnWrongAnswer?.Invoke();
             StartCoroutine(ClearSelectionWithDelay(0.5f));
+            StartCoroutine(FireWrongAnswerAfterDelay());
             return;
         }
 
@@ -285,9 +299,19 @@ public class GridManager : MonoBehaviour
         }
 
         // Straight-line selection, but it didn't match any unfound word
-        OnWrongAnswer?.Invoke();
-
         StartCoroutine(ClearSelectionWithDelay(0.5f));
+        StartCoroutine(FireWrongAnswerAfterDelay());
+    }
+
+    // Waits wrongAnswerReactionDelay before firing OnWrongAnswer, so the
+    // NPC-side reaction doesn't land in the same instant as the player's
+    // last selection click. Runs alongside (not instead of)
+    // ClearSelectionWithDelay, which still handles the immediate red
+    // flash on the cells themselves.
+    private IEnumerator FireWrongAnswerAfterDelay()
+    {
+        yield return new WaitForSeconds(wrongAnswerReactionDelay);
+        OnWrongAnswer?.Invoke();
     }
 
     private bool IsStraightLine()
@@ -333,7 +357,7 @@ public class GridManager : MonoBehaviour
             cell.isPartOfFoundWord = true;
         }
 
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(correctAnswerReactionDelay);
 
         selectedCells.Clear();
         isClearingSelection = false;

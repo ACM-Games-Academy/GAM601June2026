@@ -210,4 +210,80 @@ public static class ProceduralAudioClips
         clip.SetData(samples, 0);
         return clip;
     }
+
+    // A short "dirt scuffing" texture — filtered noise with a bumpy,
+    // uneven envelope, like a paw dragging over rough carved stone.
+    // Filtered/shaped noise bursts are the standard technique for
+    // scrape/scuff/footstep sounds, so this holds up much better than
+    // a tonal synth would. variantSeed picks a different duration,
+    // filter darkness and bump pattern each time, for the 5-ish
+    // distinct variants needed so repeated cell taps don't sound
+    // identical. Uses its own System.Random (seeded per variant)
+    // rather than UnityEngine.Random, so generating clips never
+    // disturbs the game's own random state.
+    public static AudioClip GenerateScuffSound(int variantSeed)
+    {
+        System.Random rng = new System.Random(variantSeed);
+
+        float duration = 0.18f + (float)rng.NextDouble() * 0.12f; // 0.18s-0.30s
+        int totalSamples = Mathf.CeilToInt(duration * SampleRate);
+        float[] samples = new float[totalSamples];
+
+        // Lower = duller/rougher scrape, higher = brighter/scratchier
+        float filterAmount = 0.55f + (float)rng.NextDouble() * 0.25f;
+
+        // A few little bumps within the clip simulate a paw catching on
+        // carved grooves as it drags, instead of one smooth noise burst
+        int bumpCount = 2 + rng.Next(0, 3); // 2-4 bumps
+        float[] bumpTimes = new float[bumpCount];
+        for (int b = 0; b < bumpCount; b++)
+        {
+            bumpTimes[b] = (float)rng.NextDouble() * duration;
+        }
+
+        float filteredPrev = 0f;
+
+        for (int i = 0; i < totalSamples; i++)
+        {
+            float t = i / (float)SampleRate;
+
+            float raw = (float)(rng.NextDouble() * 2.0 - 1.0);
+            float filtered = filteredPrev * filterAmount + raw * (1f - filterAmount);
+            filteredPrev = filtered;
+
+            // Quick fade in, gradual fade out across the whole clip
+            float baseEnvelope = Mathf.Clamp01(t / 0.02f) * Mathf.Clamp01((duration - t) / (duration * 0.6f));
+
+            // Extra emphasis near each bump time for an uneven,
+            // scrubby texture rather than a flat noise swell
+            float bumpEnvelope = 0f;
+            foreach (float bumpTime in bumpTimes)
+            {
+                float distance = t - bumpTime;
+                bumpEnvelope += Mathf.Exp(-distance * distance * 900f);
+            }
+
+            float envelope = baseEnvelope * (0.5f + 0.5f * Mathf.Clamp01(bumpEnvelope));
+
+            samples[i] = filtered * envelope * 0.5f;
+        }
+
+        // Normalize
+        float peak = 0f;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
+        }
+        if (peak > 1f)
+        {
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] /= peak;
+            }
+        }
+
+        AudioClip clip = AudioClip.Create("CellScuff_Procedural_" + variantSeed, totalSamples, 1, SampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
 }

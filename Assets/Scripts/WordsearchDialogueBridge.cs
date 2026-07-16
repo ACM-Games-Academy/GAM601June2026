@@ -81,6 +81,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // wrong answer is selected.
     public string wrongAnswerSoundEffectName = "WrongAnswerChord";
 
+    [Header("Cell Selection")]
+    // A random variant of this effect plays every time a cell is
+    // selected OR deselected during puzzle solving.
+    public string cellScuffSoundEffectName = "CellScuff";
+
     [Header("Puzzle Backdrop")]
     // Semi-transparent panel shown behind the grid while it's unlocked,
     // to draw the player's eye to the puzzle. A plain generated Image —
@@ -114,6 +119,7 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         {
             gridManager.OnWordFound += HandleWordFound;
             gridManager.OnWrongAnswer += HandleWrongAnswer;
+            gridManager.OnCellSelectionChanged += HandleCellSelectionChanged;
         }
     }
 
@@ -123,6 +129,7 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         {
             gridManager.OnWordFound -= HandleWordFound;
             gridManager.OnWrongAnswer -= HandleWrongAnswer;
+            gridManager.OnCellSelectionChanged -= HandleCellSelectionChanged;
         }
     }
 
@@ -306,6 +313,16 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         if (soundEffectManager != null)
         {
             soundEffectManager.PlaySoundEffect(wrongAnswerSoundEffectName);
+        }
+    }
+
+    // ── Cell selection ───────────────────────────────────────────────────
+
+    private void HandleCellSelectionChanged()
+    {
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(cellScuffSoundEffectName);
         }
     }
 
