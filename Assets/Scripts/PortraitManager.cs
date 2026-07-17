@@ -172,7 +172,7 @@ public class PortraitManager : DialoguePresenterBase
 
     public Vector2 angerPulseAnchorPoint = new Vector2(0.5f, 0.5f);
     public Vector2 angerPulseAnchoredOffset = Vector2.zero;
-    public float angerPulseCircleDiameter = 300f;
+    public float angerPulseCircleDiameter = 700f; // deliberately large — testing whether it was being fully covered by the portrait art at the old, smaller default
 
     public string angerSoundEffectName = "AngerStinger";
 
@@ -292,10 +292,31 @@ public class PortraitManager : DialoguePresenterBase
     // currently in any slot.
     private void TriggerAngerReaction(string characterName)
     {
+        // TEMPORARY diagnostics for tracking down why the pulse isn't
+        // appearing — safe to remove once resolved.
+        Debug.Log("[AngerDebug] TriggerAngerReaction('" + characterName + "') called.");
+
+        bool foundInSlot = false;
+        foreach (SlotConfig s in slots)
+        {
+            if (slotAssignments.TryGetValue(s.slotName, out string a) && a == characterName)
+            {
+                foundInSlot = true;
+                Debug.Log("[AngerDebug] '" + characterName + "' is currently in slot '" + s.slotName + "'.");
+            }
+        }
+        if (!foundInSlot)
+        {
+            Debug.LogWarning("[AngerDebug] '" + characterName + "' is NOT assigned to any slot right now — " +
+                              "PlayEffectOnCharacter will silently do nothing. Check the <<showportrait>> call " +
+                              "actually ran for this exact character name (case-sensitive) before <<angerreaction>>.");
+        }
+
         ShakePortrait(characterName, angerShakeDuration, angerShakeIntensity, angerShakeCount);
 
         PlayEffectOnCharacter<AngerPulseEffect>(characterName, pulse =>
         {
+            Debug.Log("[AngerDebug] configureEffect running on new AngerPulseEffect instance.");
             pulse.anchorPoint = angerPulseAnchorPoint;
             pulse.anchoredOffset = angerPulseAnchoredOffset;
             pulse.circleDiameter = angerPulseCircleDiameter;
@@ -304,6 +325,10 @@ public class PortraitManager : DialoguePresenterBase
         if (soundEffectManager != null)
         {
             soundEffectManager.PlaySoundEffect(angerSoundEffectName);
+        }
+        else
+        {
+            Debug.LogWarning("[AngerDebug] soundEffectManager is not assigned on PortraitManager.");
         }
     }
 
@@ -323,6 +348,16 @@ public class PortraitManager : DialoguePresenterBase
             if (activeShakes.ContainsKey(slot.slotName) && activeShakes[slot.slotName] != null)
             {
                 StopCoroutine(activeShakes[slot.slotName]);
+            }
+
+            // A shake takes priority over an in-progress slide-in (e.g.
+            // <<angerreaction>> fired the same instant as <<showportrait>>)
+            // — cancel it so the two don't fight over anchoredPosition
+            // every frame, which would make both look glitchy.
+            if (activeSlides.ContainsKey(slot.slotName) && activeSlides[slot.slotName] != null)
+            {
+                StopCoroutine(activeSlides[slot.slotName]);
+                activeSlides.Remove(slot.slotName);
             }
 
             activeShakes[slot.slotName] = StartCoroutine(ShakeCoroutine(slot, duration, intensity, shakeCount));
@@ -529,7 +564,7 @@ public class PortraitManager : DialoguePresenterBase
             // itself in this case.
             effectParent = slot.effectAnchor != null
                 ? (Transform)slot.effectAnchor
-                : CreateBehindPortraitAnchor(slot.portraitImage).transform;
+                : CreateBehindPortraitAnchor(slot).transform;
         }
 
         GameObject effectObject = new GameObject(typeof(TEffect).Name, typeof(RectTransform));
@@ -551,9 +586,9 @@ public class PortraitManager : DialoguePresenterBase
     // Parenting the effect into this same-sized sibling instead, placed
     // earlier in the draw order, is what actually gets it to render
     // behind the portrait while still lining up with it visually.
-    private GameObject CreateBehindPortraitAnchor(Image portraitImage)
+    private GameObject CreateBehindPortraitAnchor(SlotConfig slot)
     {
-        RectTransform portraitRect = portraitImage.rectTransform;
+        RectTransform portraitRect = slot.portraitImage.rectTransform;
 
         GameObject anchorObject = new GameObject("GlowAnchor (behind portrait)", typeof(RectTransform));
         RectTransform anchorRect = anchorObject.GetComponent<RectTransform>();
@@ -562,7 +597,18 @@ public class PortraitManager : DialoguePresenterBase
         anchorRect.anchorMin = portraitRect.anchorMin;
         anchorRect.anchorMax = portraitRect.anchorMax;
         anchorRect.pivot = portraitRect.pivot;
-        anchorRect.anchoredPosition = portraitRect.anchoredPosition;
+
+        // Use the portrait's AUTHORED resting position rather than its
+        // current anchoredPosition. If an effect fires immediately
+        // after <<showportrait>> (e.g. <<angerreaction>> right after
+        // it), the portrait may still be parked at its slide-in's
+        // offset starting position — mirroring that transient position
+        // would leave this anchor behind at the wrong spot once the
+        // portrait finishes sliding into place.
+        anchorRect.anchoredPosition = slotRestingPositions.TryGetValue(slot.slotName, out Vector2 resting)
+            ? resting
+            : portraitRect.anchoredPosition;
+
         anchorRect.sizeDelta = portraitRect.sizeDelta;
         anchorRect.localScale = portraitRect.localScale;
 

@@ -70,6 +70,19 @@ public class AngerPulseEffect : MonoBehaviour
         SetUpRectTransform();
         SetUpImage();
 
+        // TEMPORARY diagnostics for tracking down why the pulse isn't
+        // appearing — safe to remove once resolved.
+        Debug.Log("[AngerDebug] AngerPulseEffect.Start() on '" + gameObject.name + "', parent='" +
+                  (transform.parent != null ? transform.parent.name : "NONE") +
+                  "', parentActive=" + (transform.parent != null && transform.parent.gameObject.activeInHierarchy) +
+                  ", siblingIndex=" + transform.GetSiblingIndex() +
+                  ", sizeDelta=" + rectTransform.sizeDelta +
+                  ", anchoredPosition=" + rectTransform.anchoredPosition +
+                  ", localScale=" + rectTransform.localScale +
+                  ", image.color=" + pulseImage.color +
+                  ", image.enabled=" + pulseImage.enabled +
+                  ", sprite=" + (pulseImage.sprite != null ? pulseImage.sprite.name : "NULL"));
+
         StartCoroutine(ExpandAndFadeRoutine());
 
         if (pulseCount > 1)

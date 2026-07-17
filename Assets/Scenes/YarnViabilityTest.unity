@@ -286,6 +286,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortraitManager
   dialogueRunner: {fileID: 8309902629198137192}
+  soundEffectManager: {fileID: 1638165528}
   slots:
   - slotName: Left
     portraitImage: {fileID: 71583056}
@@ -439,6 +440,13 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  angerShakeDuration: 0.5
+  angerShakeIntensity: 18
+  angerShakeCount: 6
+  angerPulseAnchorPoint: {x: 0.5, y: 0.5}
+  angerPulseAnchoredOffset: {x: 0, y: 0}
+  angerPulseCircleDiameter: 1700
+  angerSoundEffectName: AngerStinger
 --- !u!4 &76763303
 Transform:
   m_ObjectHideFlags: 0
@@ -1394,6 +1402,8 @@ MonoBehaviour:
   fadeToBlackDuration: 1
   portraitCrossfadeDuration: 1.2
   revealDayDuration: 1.5
+  particleScatterRadius: 400
+  particleSparkleSize: 45
 --- !u!4 &1612384392
 Transform:
   m_ObjectHideFlags: 0
