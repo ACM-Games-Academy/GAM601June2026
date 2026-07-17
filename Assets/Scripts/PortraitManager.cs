@@ -15,6 +15,9 @@ using Yarn.Unity;
 //   <<showportrait Left Pharaoh>>      Puts Pharaoh into the "Left" slot.
 //   <<hideportrait Left>>              Removes whoever is in "Left".
 //   <<hideallportraits>>               Clears every slot at once.
+//   <<angerreaction Pharaoh>>          Shakes Pharaoh's portrait and
+//                                      flashes a red spiky pulse behind
+//                                      it — a scripted "anger" beat.
 //
 // NAME TAB SLIDING:
 //
@@ -158,11 +161,27 @@ public class PortraitManager : DialoguePresenterBase
     // if a portrait is re-shown mid-animation.
     private Dictionary<string, Vector2> slotRestingPositions = new Dictionary<string, Vector2>();
 
+    [Header("Anger Reaction")]
+    // <<angerreaction CharacterName>> combines these two: a positional
+    // shake on the portrait itself, plus a red spiky pulse behind it.
+    public float angerShakeDuration = 0.5f;
+    public float angerShakeIntensity = 18f; // peak horizontal displacement, in UI units
+    public int angerShakeCount = 6;        // how many left-right cycles the shake completes
+
+    public Vector2 angerPulseAnchorPoint = new Vector2(0.5f, 0.5f);
+    public Vector2 angerPulseAnchoredOffset = Vector2.zero;
+    public float angerPulseCircleDiameter = 300f;
+
+    // Tracks the running shake coroutine per slot, so a new shake can
+    // cleanly cancel an old one instead of them fighting each other
+    private Dictionary<string, Coroutine> activeShakes = new Dictionary<string, Coroutine>();
+
     void Awake()
     {
         dialogueRunner.AddCommandHandler<string, string>("showportrait", ShowPortrait);
         dialogueRunner.AddCommandHandler<string>("hideportrait", HidePortrait);
         dialogueRunner.AddCommandHandler("hideallportraits", HideAllPortraits);
+        dialogueRunner.AddCommandHandler<string>("angerreaction", TriggerAngerReaction);
 
         foreach (SlotConfig slot in slots)
         {
@@ -362,11 +381,11 @@ public class PortraitManager : DialoguePresenterBase
     }
 
     // Find which slot (if any) a character currently occupies, and spawn
-    // a TEffect behind their portrait (e.g. PulseGlowEffect for correct
-    // answers, WrongAnswerWaveEffect for incorrect ones). Does nothing
-    // if the character isn't currently assigned to any slot — that's an
+    // a TEffect there (e.g. PulseGlowEffect for correct answers,
+    // WrongAnswerWaveEffect for incorrect ones). Does nothing if the
+    // character isn't currently assigned to any slot — that's an
     // expected case (e.g. they've left the scene), not an error.
-    public void PlayEffectOnCharacter<TEffect>(string characterName, System.Action<TEffect> configureEffect = null)
+    public void PlayEffectOnCharacter<TEffect>(string characterName, System.Action<TEffect> configureEffect = null, bool inFront = false)
         where TEffect : MonoBehaviour
     {
         foreach (SlotConfig slot in slots)
@@ -374,27 +393,58 @@ public class PortraitManager : DialoguePresenterBase
             if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
             if (assigned != characterName) continue;
 
+            SpawnEffectInSlot(slot, configureEffect, inFront);
+            return;
+        }
+    }
+
+    // Same idea, but for callers that already know exactly which slot
+    // they mean (e.g. a cinematic sequence) rather than needing to
+    // resolve one from a character name — useful mid-transformation,
+    // when "who's in this slot" is about to change.
+    public void PlayEffectInSlot<TEffect>(string slotName, System.Action<TEffect> configureEffect = null, bool inFront = false)
+        where TEffect : MonoBehaviour
+    {
+        SlotConfig slot = slots.Find(s => s.slotName == slotName);
+        if (slot == null) return;
+
+        SpawnEffectInSlot(slot, configureEffect, inFront);
+    }
+
+    private void SpawnEffectInSlot<TEffect>(SlotConfig slot, System.Action<TEffect> configureEffect, bool inFront)
+        where TEffect : MonoBehaviour
+    {
+        Transform effectParent;
+
+        if (inFront)
+        {
+            // Parenting directly onto the portrait itself renders in
+            // front of it — the mirror image of the "behind" case
+            // below: uGUI always draws a child after (i.e. on top of)
+            // its own parent.
+            effectParent = slot.portraitImage.transform;
+        }
+        else
+        {
             // Prefer the slot's dedicated effect anchor so the effect
             // sits behind the portrait. If effectAnchor hasn't been
             // wired up, build a throwaway anchor that mirrors the
             // portrait's own rect exactly and sits directly behind it
             // in the hierarchy — see CreateBehindPortraitAnchor for why
             // the effect can't just be parented onto the portrait Image
-            // itself.
-            Transform effectParent = slot.effectAnchor != null
+            // itself in this case.
+            effectParent = slot.effectAnchor != null
                 ? (Transform)slot.effectAnchor
                 : CreateBehindPortraitAnchor(slot.portraitImage).transform;
-
-            GameObject effectObject = new GameObject(typeof(TEffect).Name, typeof(RectTransform));
-            effectObject.transform.SetParent(effectParent, false);
-
-            TEffect effect = effectObject.AddComponent<TEffect>();
-
-            // Let the caller tweak settings before Start() runs
-            configureEffect?.Invoke(effect);
-
-            return;
         }
+
+        GameObject effectObject = new GameObject(typeof(TEffect).Name, typeof(RectTransform));
+        effectObject.transform.SetParent(effectParent, false);
+
+        TEffect effect = effectObject.AddComponent<TEffect>();
+
+        // Let the caller tweak settings before Start() runs
+        configureEffect?.Invoke(effect);
     }
 
     // Builds a throwaway RectTransform that exactly mirrors a portrait

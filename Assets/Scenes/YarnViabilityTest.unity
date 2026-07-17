@@ -303,10 +303,10 @@ MonoBehaviour:
   - characterName: Meritamun
     expressions:
     - expressionName: neutral
-      sprite: {fileID: 7699536810906169753, guid: 916fff0cf0690e64895d4621b597296c, type: 3}
+      sprite: {fileID: -6453553771333712201, guid: 3cac81e20253f7b498eef944dcd942d5, type: 3}
       isDefault: 1
     - expressionName: worried
-      sprite: {fileID: -6803635062738612951, guid: e32799f7db032c749b8d12b11c687039, type: 3}
+      sprite: {fileID: -8773365291611126865, guid: 16a66c8975fbcf844bc2bafb332ca628, type: 3}
       isDefault: 0
   - characterName: Sekhmet
     expressions:

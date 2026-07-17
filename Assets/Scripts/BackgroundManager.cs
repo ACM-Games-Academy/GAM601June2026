@@ -100,12 +100,12 @@ public class BackgroundManager : MonoBehaviour
             gridManager.inputEnabled = false;
         }
 
-        // Music may still be playing (faded in) from the splash screen —
-        // the scene starts at night, so fade it back out rather than
-        // leaving it running.
+        // The scene starts at night — crossfade from whatever's playing
+        // (e.g. the day theme still fading in from the splash screen)
+        // into the night track, rather than just cutting to silence.
         if (MusicManager.Instance != null)
         {
-            MusicManager.Instance.StopMusic();
+            MusicManager.Instance.PlayNightMusic();
         }
     }
 
@@ -135,7 +135,7 @@ public class BackgroundManager : MonoBehaviour
 
         if (MusicManager.Instance != null)
         {
-            MusicManager.Instance.StopMusic();
+            MusicManager.Instance.PlayNightMusic();
         }
 
         yield return StartCoroutine(CrossFade(nightSprite));
@@ -151,7 +151,7 @@ public class BackgroundManager : MonoBehaviour
 
         if (MusicManager.Instance != null)
         {
-            MusicManager.Instance.PlayMusic();
+            MusicManager.Instance.PlayDayMusic();
         }
 
         yield return StartCoroutine(CrossFade(daySprite));
@@ -202,7 +202,7 @@ public class BackgroundManager : MonoBehaviour
 
         if (MusicManager.Instance != null)
         {
-            MusicManager.Instance.PlayMusic();
+            MusicManager.Instance.PlayDayMusic();
         }
 
         float elapsed = 0f;

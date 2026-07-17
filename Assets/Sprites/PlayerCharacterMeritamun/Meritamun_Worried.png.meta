@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e32799f7db032c749b8d12b11c687039
+guid: 16a66c8975fbcf844bc2bafb332ca628
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6803635062738612951
-    second: Meritamun_Default_0
+      213: -8773365291611126865
+    second: Meritamun_Worried(1)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Meritamun_Default_0
+      name: Meritamun_Worried(1)_0
       rect:
         serializedVersion: 2
         x: 16
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 92d821825f1a491a0800000000000000
-      internalID: -6803635062738612951
+      spriteID: fa307c420cebe3680800000000000000
+      internalID: -8773365291611126865
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Meritamun_Default_0: -6803635062738612951
+      Meritamun_Worried(1)_0: -8773365291611126865
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

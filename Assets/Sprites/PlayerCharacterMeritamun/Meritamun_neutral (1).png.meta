@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 916fff0cf0690e64895d4621b597296c
+guid: 3cac81e20253f7b498eef944dcd942d5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7699536810906169753
-    second: ChatGPT Image Jul 14, 2026, 12_17_42 PM (1)_0
+      213: -6453553771333712201
+    second: Meritamun_neutral (1)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,45 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ChatGPT Image Jul 14, 2026, 12_17_42 PM (1)_0
+      name: Meritamun_neutral (1)_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 941
-        height: 1672
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9913b158fef3ada60800000000000000
-      internalID: 7699536810906169753
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Meritamun_neutral_0
-      rect:
-        serializedVersion: 2
-        x: 470
-        y: 1622
-        width: 17
-        height: 39
+        x: 47
+        y: 25
+        width: 848
+        height: 1588
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 664beeff2be0ea141b457ff1114c3c2c
-      internalID: 1440583976
+      spriteID: 7b685c0990f5076a0800000000000000
+      internalID: -6453553771333712201
       vertices: []
       indices: 
       edges: []
@@ -147,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b3000feeecc123b47a83e4459d2d28f9
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -157,8 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ChatGPT Image Jul 14, 2026, 12_17_42 PM (1)_0: 7699536810906169753
-      Meritamun_neutral_0: 1440583976
+      Meritamun_neutral (1)_0: -6453553771333712201
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

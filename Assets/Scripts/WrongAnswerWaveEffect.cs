@@ -27,7 +27,7 @@ using UnityEngine.UI;
 public class WrongAnswerWaveEffect : MonoBehaviour
 {
     [Header("Wave Settings")]
-    public float swishDuration = 0.7f;   // total seconds for the shake-and-fade burst
+    public float swishDuration = 1.2f;   // total seconds for the shake-and-fade burst
     public int shakeCount = 3;          // how many left-right cycles the shake completes
     public float shakeDistance = 40f;    // peak horizontal displacement, in UI units
     [Range(0f, 1f)] public float maxAlpha = 0.8f;    // opacity reached during the hold

@@ -8,8 +8,9 @@ using Yarn.Unity;
 // of the normal straight crossfade (<<fadetoday>>), the screen fades to
 // black BEHIND Meritamun's portrait — she stays visible throughout,
 // since BackgroundManager's fade layer already renders behind the
-// portraits canvas — her portrait then crossfades to Cat_Meritamun in
-// place, and finally the daytime background fades in around her.
+// portraits canvas — a burst of magical sparkle particles plays in
+// front of her, her portrait crossfades to Cat_Meritamun in place, and
+// finally the daytime background fades in around her.
 //
 // Registered as a single Yarn command:
 //
@@ -53,6 +54,13 @@ public class OpeningDayRevealSequence : MonoBehaviour
     public float portraitCrossfadeDuration = 1.2f;
     public float revealDayDuration = 1.5f;
 
+    [Header("Transformation Particles")]
+    // How far sparkles scatter from center, in UI units — deliberately
+    // larger than the portrait itself so the burst reads as bigger than
+    // the character.
+    public float particleScatterRadius = 400f;
+    public float particleSparkleSize = 45f;
+
     [YarnCommand("openingdayreveal")]
     public IEnumerator PlayOpeningDayReveal()
     {
@@ -69,6 +77,15 @@ public class OpeningDayRevealSequence : MonoBehaviour
         {
             soundEffectManager.PlaySoundEffect(crossfadeSoundEffectName);
         }
+
+        // Sparkle particles in front of the portrait, running alongside
+        // (not blocking) the crossfade itself
+        portraitManager.PlayEffectInSlot<MagicalTransformationParticles>(
+            portraitSlotName, particles =>
+            {
+                particles.scatterRadius = particleScatterRadius;
+                particles.sparkleSize = particleSparkleSize;
+            }, inFront: true);
 
         yield return portraitManager.CrossfadeCharacterInSlot(
             portraitSlotName, revealCharacterName, portraitCrossfadeDuration);
