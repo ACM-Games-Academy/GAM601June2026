@@ -45,6 +45,7 @@ public class PortraitManager : DialoguePresenterBase
 {
     [Header("References")]
     public DialogueRunner dialogueRunner;
+    public SoundEffectManager soundEffectManager;
 
     [System.Serializable]
     public class SlotConfig
@@ -162,8 +163,9 @@ public class PortraitManager : DialoguePresenterBase
     private Dictionary<string, Vector2> slotRestingPositions = new Dictionary<string, Vector2>();
 
     [Header("Anger Reaction")]
-    // <<angerreaction CharacterName>> combines these two: a positional
-    // shake on the portrait itself, plus a red spiky pulse behind it.
+    // <<angerreaction CharacterName>> combines these three: a positional
+    // shake on the portrait itself, a red spiky pulse behind it, and a
+    // sound effect.
     public float angerShakeDuration = 0.5f;
     public float angerShakeIntensity = 18f; // peak horizontal displacement, in UI units
     public int angerShakeCount = 6;        // how many left-right cycles the shake completes
@@ -171,6 +173,8 @@ public class PortraitManager : DialoguePresenterBase
     public Vector2 angerPulseAnchorPoint = new Vector2(0.5f, 0.5f);
     public Vector2 angerPulseAnchoredOffset = Vector2.zero;
     public float angerPulseCircleDiameter = 300f;
+
+    public string angerSoundEffectName = "AngerStinger";
 
     // Tracks the running shake coroutine per slot, so a new shake can
     // cleanly cancel an old one instead of them fighting each other
@@ -258,6 +262,17 @@ public class PortraitManager : DialoguePresenterBase
                 slot.portraitImage.rectTransform.anchoredPosition = slotRestingPositions[slotName];
         }
 
+        if (activeShakes.ContainsKey(slotName) && activeShakes[slotName] != null)
+        {
+            StopCoroutine(activeShakes[slotName]);
+            activeShakes.Remove(slotName);
+
+            // Snap back to the resting position so a future occupant of
+            // this slot doesn't inherit a mid-shake offset
+            if (slotRestingPositions.ContainsKey(slotName))
+                slot.portraitImage.rectTransform.anchoredPosition = slotRestingPositions[slotName];
+        }
+
         slot.portraitImage.enabled = false;
     }
 
@@ -267,6 +282,85 @@ public class PortraitManager : DialoguePresenterBase
         {
             HidePortrait(slot.slotName);
         }
+    }
+
+    // ── Anger reaction ──────────────────────────────────────────────────
+
+    // Combines a portrait shake, a red spiky pulse behind it, and a
+    // sound effect — a scripted "anger" beat, callable directly from
+    // dialogue. Does nothing (silently) if the character isn't
+    // currently in any slot.
+    private void TriggerAngerReaction(string characterName)
+    {
+        ShakePortrait(characterName, angerShakeDuration, angerShakeIntensity, angerShakeCount);
+
+        PlayEffectOnCharacter<AngerPulseEffect>(characterName, pulse =>
+        {
+            pulse.anchorPoint = angerPulseAnchorPoint;
+            pulse.anchoredOffset = angerPulseAnchoredOffset;
+            pulse.circleDiameter = angerPulseCircleDiameter;
+        });
+
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(angerSoundEffectName);
+        }
+    }
+
+    // Shakes a character's portrait side to side around its resting
+    // position, with amplitude decaying to 0 over 'duration', then
+    // settles it back exactly on its resting position. Public — usable
+    // on its own (e.g. from gameplay code), not just via
+    // <<angerreaction>>. Does nothing if the character isn't currently
+    // in any slot.
+    public void ShakePortrait(string characterName, float duration, float intensity, int shakeCount)
+    {
+        foreach (SlotConfig slot in slots)
+        {
+            if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
+            if (assigned != characterName) continue;
+
+            if (activeShakes.ContainsKey(slot.slotName) && activeShakes[slot.slotName] != null)
+            {
+                StopCoroutine(activeShakes[slot.slotName]);
+            }
+
+            activeShakes[slot.slotName] = StartCoroutine(ShakeCoroutine(slot, duration, intensity, shakeCount));
+            return;
+        }
+    }
+
+    private IEnumerator ShakeCoroutine(SlotConfig slot, float duration, float intensity, int shakeCount)
+    {
+        RectTransform rect = slot.portraitImage.rectTransform;
+
+        Vector2 restingPosition = slotRestingPositions.TryGetValue(slot.slotName, out Vector2 resting)
+            ? resting
+            : rect.anchoredPosition;
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // Amplitude decays to 0 over the shake's lifetime, like the
+            // trembling settling down rather than stopping dead
+            float dampenedIntensity = intensity * (1f - t);
+
+            float horizontal = Mathf.Sin(t * shakeCount * Mathf.PI * 2f) * dampenedIntensity;
+            // A little Perlin-noise vertical jitter on top of the clean
+            // horizontal swing, for a more "trembling with rage" texture
+            // than a smooth side-to-side wobble alone
+            float vertical = (Mathf.PerlinNoise(elapsed * 25f, 0f) - 0.5f) * 2f * dampenedIntensity * 0.4f;
+
+            rect.anchoredPosition = restingPosition + new Vector2(horizontal, vertical);
+
+            yield return null;
+        }
+
+        rect.anchoredPosition = restingPosition;
     }
 
     // Crossfades whichever character is showing in a slot to a

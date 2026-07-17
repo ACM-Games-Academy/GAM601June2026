@@ -286,4 +286,63 @@ public static class ProceduralAudioClips
         clip.SetData(samples, 0);
         return clip;
     }
+
+    // A short, harsh "anger" stinger — two low tones a minor second
+    // apart (about as dissonant/grating as an interval gets), hard-
+    // clipped for a gritty edge, with a fast amplitude tremolo for a
+    // snarling, growl-like texture. Deliberately harsher than the calm
+    // WrongAnswerChord, which is just a gentle minor third.
+    public static AudioClip GenerateAngerStinger()
+    {
+        float[] frequencies = { 98.00f, 103.83f }; // G2, Ab2 — minor second
+
+        const float clipLength = 0.6f;
+        const float attackTime = 0.015f;
+        const float decayRate = 3.5f;
+        const float growlRate = 18f; // Hz — fast tremolo for a snarling texture
+
+        int totalSamples = Mathf.CeilToInt(clipLength * SampleRate);
+        float[] samples = new float[totalSamples];
+
+        foreach (float frequency in frequencies)
+        {
+            for (int i = 0; i < totalSamples; i++)
+            {
+                float t = i / (float)SampleRate;
+
+                float fundamental = Mathf.Sin(2f * Mathf.PI * frequency * t);
+                float overtone = 0.4f * Mathf.Sin(2f * Mathf.PI * frequency * 2f * t);
+                float raw = fundamental + overtone;
+
+                // Hard-clip for a grittier, more aggressive edge than a
+                // clean sine
+                float clipped = Mathf.Clamp(raw * 1.6f, -1f, 1f);
+
+                float attack = Mathf.Clamp01(t / attackTime);
+                float decay = Mathf.Exp(-t * decayRate);
+                float growl = 0.7f + 0.3f * Mathf.Sin(2f * Mathf.PI * growlRate * t);
+                float envelope = attack * decay * growl;
+
+                samples[i] += clipped * envelope * 0.4f;
+            }
+        }
+
+        // Normalize so the two overlapping tones never clip above 1.0
+        float peak = 0f;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
+        }
+        if (peak > 1f)
+        {
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] /= peak;
+            }
+        }
+
+        AudioClip clip = AudioClip.Create("AngerStinger_Procedural", totalSamples, 1, SampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
 }

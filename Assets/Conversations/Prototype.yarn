@@ -12,6 +12,7 @@ Sekhmet: You carry messages of the divine will to mortals: you are our eyes in t
 Meritamun: I am your vassal, Lady Sekhmet, as well as your vessel – your will is my desire. My whole being is your sacred work, your will and your holy vision.#expression:neutral
 
 <<showportrait CenterLeft Bes>>
+<<angerreaction Bes>>
 Bes: BUT YOU MADE HER INTO A CAT!? I must register my objection here, Sekhmet. Small cats are in the domestic sphere and therefore in MY realm of influence! Felines are for killing snakes around the house! Not for whatever THIS is that you’re trying to do! #expression:neutral
 
 <<showportrait Left Sekhmet>>
@@ -96,6 +97,7 @@ Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him 
 <<showportrait Left Thoth>>
 Thoth: But dearest you know the mortals are very impressionable and if you give them a cat, they will probably end up doing exactly as the cat says, but in exactly the wrong way, so anyway why bother?
 <<showportrait CenterLeft Sekhmet>>
+<<angerreaction Sekhmet>>
 Sekhmet: What is the point of you, Thoth, if you can’t use your imagination? And don’t you ‘dearest’ me it’s patronising. If I wanted that kind of self righteous nonsense I’d tickle Apep’s balls instead. 
 Thoth: ...
 <<showportrait Right Meritamun>>
@@ -135,6 +137,7 @@ Nitiqret: Would you like <br> to be given a little scritch on𓀀 your𓃀 head�
 <<setpuzzle 𓅓𓎟𓁷:Path_A|𓀀𓎟𓈖:Path_B>>
 
 <<showportrait Left Harwa>>
+<<angerreaction Harwa>>
 Harwa: Gods! I am so sick of losing at the dice table. Senemut never seems to lose nearly as much money as I do, I don't know what I'm doing wrong.
 Harwa: Father says I'm a terrible prince and I need to pray for guidance as to how to conduct myself.
 <<showportrait Right Cat_Meritamun>>
@@ -161,21 +164,25 @@ Meritamun: I’m sorry my lady Bast, but I confess I am confused – #expression
 Meritamun: As I recall, I was by the great grace of your blessing, heavy with child when I died but the unborn babe didn’t survive my own death. #expression:worried
 Meritamun: …I agree with you, however – war can be hard on the very young and the very old.
 <<showportrait CenterLeft Sekhmet>>
+<<angerreaction Sekhmet>>
 Sekhmet: Sue for peace? NO! That is not an option, put that out of your mind Meritamun. 
 Sekhmet: Egypt is sovereign and must remain so at all cost. 
 Sekhmet: What say your father Ahmose? What are his plans?
 Meritamun: My Lady – every day I sit in the temple as your eyes and ears …. but nothing as of yet on the mind of my father Ahmose regarding the Eastern threat. #expression:worried
 Sekhmet: You must find out faster, Meritamunn.
 <<showportrait Left Bes>>
+<<angerreaction Bes>>
 Bes: Find out faster? How exactly can you ask a CAT to find out faster, unless by ‘out’ you mean mice? You’ve made her A DOMESTIC CAT!
 Bes: Joy and vermin control, perhaps, but nobody is talking to CATS about platoon movements! 
 <<showportrait CenterRight Thoth>>
 Thoth: I really can’t say I didn’t tell you so Sekhmet my darling, viscous lioness, most hot of all the great feminine divines. 
 Thoth: If you want Egypt winning wars it's really much more about playing the long game of bolstering the grain silos and harnessing the faith of a tamed, well-fed, civilised populace… 
+<<angerreaction Sekhmet>>
 Sekhmet: Again with the patronising advice, Thoth! OUT with all of you! This plan is mine and I am not listening to any more blethering nonsense from anyone! 
 Sekhmet: Meritamun keep at it – my blessings are upon you as you guide your father. 
 Meritamun: Yes of course Lady Sekhmet. 
 Thoth: Yes of course Lady Sekhmet. Anything for Lady Sekhmet. 
+<<angerreaction Sekhmet>>
 Sekhmet: GAH!!!
 
 <<hideallportraits>>
@@ -185,6 +192,7 @@ Sekhmet: GAH!!!
 <<setpuzzle 𓃀𓀀𓎟:Path_A|𓎟𓌱𓅓:Path_B|𓌱𓈖𓅓:Path_C|𓎟𓀀𓈖:Path_D>>
 
 <<showportrait Left Harwa>>
+<<angerreaction Harwa>>
 Harwa: Lost again at the races, rotten luck I suppose.
 Harwa: Father is asking me to spend more time with Nitiqret but honestly I can’t stand that simpering baby.
 Harwa: At least you are good company, Temple Cat. I wonder if you have a name?
@@ -216,6 +224,7 @@ Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓃀 Kitten�
 
 
 <<showportrait Left Ahmose>>
+<<angerreaction Ahmose>>
 Ahmose: The state of the treasury is an absolute disgrace – it is only in private prayer to you, oh Gods, I can fully, honestly admit this. 
 Ahmose: Harvests have been mediocre to awful in the last few years. 
 Ahmose: There’s no chance of winning any kind of prolonged campaign against the Persians, because it would simply cost an amount of money we do not have.
@@ -237,6 +246,7 @@ Ahmose: What I actually need is some sort of distraction to bolster our support 
 <<setpuzzle 𓅓𓎟𓁷:Path_A|𓀀𓎟𓈖:Path_B>>
 
 <<showportrait Left Nitiqret>>
+<<angerreaction Nitiqret>>
 Nitiqret: Harwa is being mean to me and I must seek vengeance.
 <<showportrait Right Cat_Meritamun>>
 Cat_Meritamun: *Purrrrrr.....*
