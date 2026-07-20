@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -68,6 +69,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // Celebratory sound played alongside the ripple glow every time a
     // correct word is found.
     public string correctAnswerSoundEffectName = "CelebratoryChoir";
+
+    // A happy meow that plays a beat after the choir, timed to land
+    // near the end of its swell rather than overlapping the start of it.
+    public string correctAnswerMeowSoundEffectName = "HappyMeow";
+    public float correctAnswerMeowDelay = 2.5f;
 
     [Header("Wrong Answer Wave")]
     // Same anchor/offset/size convention as the glow settings above —
@@ -395,6 +401,7 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         if (soundEffectManager != null)
         {
             soundEffectManager.PlaySoundEffect(correctAnswerSoundEffectName);
+            StartCoroutine(PlayMeowAfterChoir());
         }
 
         if (dialogueRunner != null)
@@ -418,6 +425,19 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         }
 
         Debug.Log("WordsearchDialogueBridge: Answer registered — $selectedPath = " + branchValue);
+    }
+
+    // Waits correctAnswerMeowDelay, then plays the happy meow — timed
+    // to land near the end of the choir's swell rather than the start,
+    // so it reads as a capstone rather than overlapping the chord.
+    private IEnumerator PlayMeowAfterChoir()
+    {
+        yield return new WaitForSeconds(correctAnswerMeowDelay);
+
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(correctAnswerMeowSoundEffectName);
+        }
     }
 
     // ── DialoguePresenterBase ─────────────────────────────────────────────

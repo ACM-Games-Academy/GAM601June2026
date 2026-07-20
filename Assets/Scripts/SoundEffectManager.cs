@@ -31,9 +31,10 @@ using Yarn.Unity;
 // random one (including the main Clip) is chosen each time it plays,
 // for variety on repeated triggers like cell-selection scuffs.
 // A handful of known effect names ("MagicalTinkle", "CelebratoryChoir",
-// "WrongAnswerChord", "CellScuff", "AngerStinger", "CatPurr") get simple
-// procedurally generated placeholder clip(s) auto-filled in if left
-// blank, so the system works immediately with zero audio assets;
+// "WrongAnswerChord", "CellScuff", "AngerStinger", "CatPurr",
+// "HappyMeow") get simple procedurally generated placeholder clip(s)
+// auto-filled in if left blank, so the system works immediately with
+// zero audio assets;
 // assigning real AudioClips in the Inspector always takes priority.
 //
 // SETUP:
@@ -116,6 +117,7 @@ public class SoundEffectManager : MonoBehaviour
         EnsureProceduralPlaceholder("WrongAnswerChord", ProceduralAudioClips.GenerateWrongAnswerChord);
         EnsureProceduralPlaceholder("AngerStinger", ProceduralAudioClips.GenerateAngerStinger);
         EnsureProceduralPlaceholder("CatPurr", ProceduralAudioClips.GenerateCatPurr);
+        EnsureProceduralPlaceholder("HappyMeow", ProceduralAudioClips.GenerateHappyMeow);
 
         EnsureProceduralPlaceholderVariants("CellScuff",
             () => ProceduralAudioClips.GenerateScuffSound(1),

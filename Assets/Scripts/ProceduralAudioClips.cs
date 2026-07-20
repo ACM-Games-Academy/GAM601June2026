@@ -431,4 +431,84 @@ public static class ProceduralAudioClips
         clip.SetData(samples, 0);
         return clip;
     }
+
+    // A short, bright "happy meow" — pitch rises quickly to a peak then
+    // eases back down (the classic up-then-down meow inflection), with
+    // a little vibrato for character. Uses phase accumulation (rather
+    // than sin(2*pi*f*t) directly) so the pitch slide stays continuous
+    // and click-free, same technique as the choir swell's vibrato.
+    public static AudioClip GenerateHappyMeow()
+    {
+        const float clipLength = 0.5f;
+        const float startFreq = 500f;
+        const float peakFreq = 750f;
+        const float endFreq = 550f;
+        const float vibratoRate = 14f;
+        const float vibratoDepth = 0.03f;
+        const float attackTime = 0.06f;
+        const float releaseTime = 0.18f;
+
+        int totalSamples = Mathf.CeilToInt(clipLength * SampleRate);
+        float[] samples = new float[totalSamples];
+
+        float phase = 0f;
+
+        for (int i = 0; i < totalSamples; i++)
+        {
+            float t = i / (float)SampleRate;
+            float t01 = t / clipLength;
+
+            // Pitch contour: quick rise to a peak, then a gentler fall
+            float targetFrequency;
+            if (t01 < 0.35f)
+            {
+                targetFrequency = Mathf.Lerp(startFreq, peakFreq, t01 / 0.35f);
+            }
+            else
+            {
+                targetFrequency = Mathf.Lerp(peakFreq, endFreq, (t01 - 0.35f) / 0.65f);
+            }
+
+            float vibrato = 1f + vibratoDepth * Mathf.Sin(2f * Mathf.PI * vibratoRate * t);
+            phase += targetFrequency * vibrato / SampleRate;
+
+            float fundamental = Mathf.Sin(2f * Mathf.PI * phase);
+            float overtone1 = 0.4f * Mathf.Sin(2f * Mathf.PI * phase * 2f);
+            float overtone2 = 0.2f * Mathf.Sin(2f * Mathf.PI * phase * 3f);
+
+            float envelope;
+            if (t < attackTime)
+            {
+                envelope = t / attackTime;
+            }
+            else if (t > clipLength - releaseTime)
+            {
+                envelope = Mathf.Clamp01((clipLength - t) / releaseTime);
+            }
+            else
+            {
+                envelope = 1f;
+            }
+
+            samples[i] = (fundamental + overtone1 + overtone2) * envelope * 0.35f;
+        }
+
+        // Normalize
+        float peak = 0f;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
+        }
+        if (peak > 1f)
+        {
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] /= peak;
+            }
+        }
+
+        AudioClip clip = AudioClip.Create("HappyMeow_Procedural", totalSamples, 1, SampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
 }

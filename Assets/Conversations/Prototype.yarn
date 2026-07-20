@@ -6,10 +6,11 @@
 <<showportrait Left Sekhmet>>
 <<wait 1>>
 Sekhmet: The fate of Egypt is at a crossroads. #expression:neutral
-Sekhmet: You carry messages of the divine will to mortals: you are our eyes in the mortal realm. You are to help us guide them to glory. Is that understood? #expression:neutral
-
 <<showportrait Right Meritamun>>
-Meritamun: I am your vassal, Lady Sekhmet, as well as your vessel – your will is my desire. My whole being is your sacred work, your will and your holy vision.#expression:neutral
+Meritamun: ...  #expression:worried
+Sekhmet: You will carry messages of the divine will to mortals: you are our eyes in the mortal realm. You are to help us guide them to glory. Is that understood? #expression:neutral
+
+Meritamun: I am your vessel, Lady Sekhmet – your will is my desire. #expression:neutral
 
 <<showportrait CenterLeft Bes>>
 <<angerreaction Bes>>
