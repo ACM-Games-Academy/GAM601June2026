@@ -276,7 +276,7 @@ Amenhotep: Our child has no way to come home to me with Ahmose’s spies everywh
 <<if $selectedPath == "Path_A">>
     Amenhotep: Yes, that's probably the wiser option, his safety should be my main concern.
     <<addgodaffinity Thoth 1>>
-    <<addhumanaffinty Ptahhotep 1>>
+    <<addhumanaffinity Ptahhotep 1>>
 <<elseif $selectedPath == "Path_B">>
     Amenhotep: It would be so good to have a small piece of Meritamun here with me.
     <<addgodaffinity Bast 1>>
