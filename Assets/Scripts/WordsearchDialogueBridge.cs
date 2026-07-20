@@ -77,6 +77,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public Vector2 waveAnchoredOffset = new Vector2(0f, -60f);
     public float waveCircleDiameter = 260f;
 
+    public int waveQuestionMarkCount = 3;
+    public float waveQuestionMarkFontSize = 42f;
+    public Color waveQuestionMarkColor = Color.white;
+    [Range(0f, 1f)] public float waveQuestionMarkOrbitRadius = 0.8f;
+
     // Negative-feedback sound played alongside the wave every time a
     // wrong answer is selected.
     public string wrongAnswerSoundEffectName = "WrongAnswerChord";
@@ -295,9 +300,9 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
 
     private void HandleWrongAnswer()
     {
-        // Swish a blue-grey wave behind the puzzle's asking character's
-        // portrait — same targeting rule as the success glow, just a
-        // different effect and settings.
+        // Swish a dark grey, question-mark-flecked wave behind the
+        // puzzle's asking character's portrait — same targeting rule as
+        // the success glow, just a different effect and settings.
         string effectTarget = ResolveEffectTarget();
 
         if (portraitManager != null && !string.IsNullOrEmpty(effectTarget))
@@ -307,6 +312,10 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
                 wave.anchorPoint = waveAnchorPoint;
                 wave.anchoredOffset = waveAnchoredOffset;
                 wave.circleDiameter = waveCircleDiameter;
+                wave.questionMarkCount = waveQuestionMarkCount;
+                wave.questionMarkFontSize = waveQuestionMarkFontSize;
+                wave.questionMarkColor = waveQuestionMarkColor;
+                wave.questionMarkOrbitRadius = waveQuestionMarkOrbitRadius;
             });
         }
 

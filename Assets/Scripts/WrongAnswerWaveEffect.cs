@@ -1,15 +1,20 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 // WrongAnswerWaveEffect
 //
-// A fully self-contained "wrong answer" VFX for UI — a soft blue-grey
-// blob that shakes side to side behind a character's portrait, like a
-// wave of water sloshing, then dissipates. It needs no sprite or
-// prefab asset — it draws its own soft radial-gradient blob into a
+// A fully self-contained "wrong answer" / "confusion" VFX for UI — a
+// soft dark grey blob that shakes side to side behind a character's
+// portrait, like a wave of sloshing confusion, with a few "?" marks
+// scattered near its outer edge, then dissipates. It needs no sprite
+// or prefab asset — it draws its own soft radial-gradient blob into a
 // Texture2D at runtime (once, then shares it across every instance),
-// wraps that in a Sprite, and displays it through an Image.
+// wraps that in a Sprite, and displays it through an Image. The
+// question marks are plain TextMeshProUGUI labels, parented under the
+// same RectTransform that shakes, so they move with the blob for free.
 //
 // Unlike PulseGlowEffect (which chains multiple expanding rings for a
 // calm, repeating success cue), this is a single one-shot burst: over
@@ -31,8 +36,18 @@ public class WrongAnswerWaveEffect : MonoBehaviour
     public int shakeCount = 3;          // how many left-right cycles the shake completes
     public float shakeDistance = 40f;    // peak horizontal displacement, in UI units
     [Range(0f, 1f)] public float maxAlpha = 0.8f;    // opacity reached during the hold
-    public Color waveColor = new Color(0.42f, 0.55f, 0.62f, 1f); // blue-grey
+    public Color waveColor = new Color(0.25f, 0.25f, 0.25f, 1f); // dark grey
     public float circleDiameter = 260f;  // on-screen size in UI units
+
+    [Header("Question Marks")]
+    public int questionMarkCount = 3;
+    public float questionMarkFontSize = 42f;
+    public Color questionMarkColor = Color.white;
+    // How far out the marks sit, as a fraction of the blob's radius —
+    // 1.0 would put them exactly on the blob's edge, so a little under
+    // that keeps them clearly inside the soft falloff while still
+    // reading as "toward the outer edge".
+    [Range(0f, 1f)] public float questionMarkOrbitRadius = 0.8f;
 
     [Header("Placement")]
     // Where on the parent's rect this effect anchors to, in normalized
@@ -44,6 +59,7 @@ public class WrongAnswerWaveEffect : MonoBehaviour
     private Image waveImage;
     private RectTransform rectTransform;
     private Vector2 restingPosition;
+    private List<TextMeshProUGUI> questionMarks = new List<TextMeshProUGUI>();
 
     // The blob texture is identical for every instance, so it's
     // generated once and shared rather than rebuilt per-instance.
@@ -57,6 +73,7 @@ public class WrongAnswerWaveEffect : MonoBehaviour
     {
         SetUpRectTransform();
         SetUpImage();
+        SetUpQuestionMarks();
 
         StartCoroutine(ShakeAndFadeRoutine());
     }
@@ -101,6 +118,43 @@ public class WrongAnswerWaveEffect : MonoBehaviour
         Color startColor = waveColor;
         startColor.a = 0f; // begin invisible; the shake coroutine fades it in
         waveImage.color = startColor;
+    }
+
+    // Spawns questionMarkCount "?" labels evenly spaced in a ring
+    // toward the blob's outer edge. Parented under this same
+    // RectTransform, so they shake and fade along with the blob
+    // automatically rather than needing their own animation.
+    private void SetUpQuestionMarks()
+    {
+        float radius = (circleDiameter / 2f) * questionMarkOrbitRadius;
+
+        for (int i = 0; i < questionMarkCount; i++)
+        {
+            float angle = (Mathf.PI * 2f / questionMarkCount) * i + Mathf.PI / 2f; // first mark points straight up
+            Vector2 markPosition = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+            GameObject markObject = new GameObject("QuestionMark", typeof(RectTransform));
+            RectTransform markRect = markObject.GetComponent<RectTransform>();
+            markRect.SetParent(transform, false);
+            markRect.anchorMin = new Vector2(0.5f, 0.5f);
+            markRect.anchorMax = new Vector2(0.5f, 0.5f);
+            markRect.pivot = new Vector2(0.5f, 0.5f);
+            markRect.sizeDelta = new Vector2(questionMarkFontSize * 1.5f, questionMarkFontSize * 1.5f);
+            markRect.anchoredPosition = markPosition;
+
+            TextMeshProUGUI mark = markObject.AddComponent<TextMeshProUGUI>();
+            mark.text = "?";
+            mark.fontSize = questionMarkFontSize;
+            mark.alignment = TextAlignmentOptions.Center;
+            mark.fontStyle = FontStyles.Bold;
+            mark.raycastTarget = false;
+
+            Color startColor = questionMarkColor;
+            startColor.a = 0f; // begin invisible; the shake coroutine fades it in with the blob
+            mark.color = startColor;
+
+            questionMarks.Add(mark);
+        }
     }
 
     // Builds a soft blob: fully opaque at the center, smoothly fading to
@@ -189,5 +243,12 @@ public class WrongAnswerWaveEffect : MonoBehaviour
         Color c = waveColor;
         c.a = alpha;
         waveImage.color = c;
+
+        foreach (TextMeshProUGUI mark in questionMarks)
+        {
+            Color markColor = questionMarkColor;
+            markColor.a = alpha;
+            mark.color = markColor;
+        }
     }
 }

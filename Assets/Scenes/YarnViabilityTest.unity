@@ -161,7 +161,7 @@ MonoBehaviour:
   correctAnswerSoundEffectName: CelebratoryChoir
   waveAnchorPoint: {x: 0.5, y: 1}
   waveAnchoredOffset: {x: 0, y: -60}
-  waveCircleDiameter: 260
+  waveCircleDiameter: 400
   wrongAnswerSoundEffectName: WrongAnswerChord
   cellScuffSoundEffectName: CellScuff
   puzzleBackdropColor: {r: 0.1, g: 0.1, b: 0.1, a: 0.8156863}
