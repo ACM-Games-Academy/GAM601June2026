@@ -91,6 +91,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // selected OR deselected during puzzle solving.
     public string cellScuffSoundEffectName = "CellScuff";
 
+    // A translucent paw print flashes over a cell the instant it's
+    // selected (not on deselect).
+    public float pawPrintSize = 100f;
+    public Color pawPrintColor = new Color(0.4f, 0.26f, 0.13f, 1f); // translucent brown
+
     [Header("Puzzle Backdrop")]
     // Semi-transparent panel shown behind the grid while it's unlocked,
     // to draw the player's eye to the puzzle. A plain generated Image —
@@ -125,6 +130,7 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             gridManager.OnWordFound += HandleWordFound;
             gridManager.OnWrongAnswer += HandleWrongAnswer;
             gridManager.OnCellSelectionChanged += HandleCellSelectionChanged;
+            gridManager.OnCellMarkedSelected += HandleCellMarkedSelected;
         }
     }
 
@@ -135,6 +141,7 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             gridManager.OnWordFound -= HandleWordFound;
             gridManager.OnWrongAnswer -= HandleWrongAnswer;
             gridManager.OnCellSelectionChanged -= HandleCellSelectionChanged;
+            gridManager.OnCellMarkedSelected -= HandleCellMarkedSelected;
         }
     }
 
@@ -333,6 +340,23 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         {
             soundEffectManager.PlaySoundEffect(cellScuffSoundEffectName);
         }
+    }
+
+    // Flashes a paw print directly over a cell the instant it's
+    // selected (not on deselect) — parented onto the cell itself and
+    // pushed to the front so it renders on top of the cell's
+    // background and glyph text.
+    private void HandleCellMarkedSelected(Cell cell)
+    {
+        if (cell == null) return;
+
+        GameObject pawObject = new GameObject("PawPrintEffect", typeof(RectTransform));
+        pawObject.transform.SetParent(cell.transform, false);
+        pawObject.transform.SetAsLastSibling();
+
+        PawPrintEffect paw = pawObject.AddComponent<PawPrintEffect>();
+        paw.pawSize = pawPrintSize;
+        paw.pawColor = pawPrintColor;
     }
 
     // Which character's portrait an effect should target: the manual

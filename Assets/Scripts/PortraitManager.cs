@@ -658,6 +658,16 @@ public class PortraitManager : DialoguePresenterBase
 
     public override YarnTask RunLineAsync(LocalizedLine line, LineCancellationToken token)
     {
+        // A new line starting is the reliable signal that the player
+        // has advanced past whatever line triggered a sustained sound
+        // (e.g. <<playsustainedsound CatPurr>>) — cut it off here
+        // rather than letting it run to completion regardless of
+        // dialogue pacing.
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.StopSustainedSound();
+        }
+
         string speaker = line.CharacterName;
 
         foreach (SlotConfig slot in slots)

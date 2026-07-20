@@ -65,6 +65,11 @@ public class GridManager : MonoBehaviour
     // random scuff sound.
     public event System.Action OnCellSelectionChanged;
 
+    // Fired specifically when a cell becomes selected (turns yellow) —
+    // not on deselection. WordsearchDialogueBridge listens to flash a
+    // paw print over the cell.
+    public event System.Action<Cell> OnCellMarkedSelected;
+
     // ── InlineWord: passed in from WordsearchDialogueBridge ──────────────
 
     // Defines one answer word parsed from a <<setpuzzle>> argument.
@@ -254,6 +259,7 @@ public class GridManager : MonoBehaviour
         }
 
         selectedCells.Add(cell);
+        OnCellMarkedSelected?.Invoke(cell);
         cell.SetHighlight(selectedColor);
         OnCellSelectionChanged?.Invoke();
 

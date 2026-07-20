@@ -9,9 +9,20 @@ using Yarn.Unity;
 // C# (gameplay code — puzzle feedback, portrait effects, etc.) or
 // directly from .yarn dialogue via a Yarn command.
 //
-// YARN COMMAND:
+// YARN COMMANDS:
 //
 //   <<playsound EffectName>>
+//   <<playsustainedsound EffectName>>
+//
+// playsound fires a normal one-shot (via PlayOneShot, which layers
+// freely with other sounds but can't be individually stopped once
+// started). playsustainedsound is for effects that might need to be
+// cut short — e.g. a purr that should stop the instant the player
+// advances dialogue rather than always playing to completion — it
+// plays on its own dedicated AudioSource so StopSustainedSound() can
+// stop just that one sound without touching anything else. Only one
+// sustained sound can play at a time; starting a new one stops
+// whatever sustained sound was already playing.
 //
 // Named effects are configured in the Inspector. An effect with no
 // AudioClip assigned yet is silently skipped (no error) — that's an
@@ -20,7 +31,7 @@ using Yarn.Unity;
 // random one (including the main Clip) is chosen each time it plays,
 // for variety on repeated triggers like cell-selection scuffs.
 // A handful of known effect names ("MagicalTinkle", "CelebratoryChoir",
-// "WrongAnswerChord", "CellScuff", "AngerStinger") get simple
+// "WrongAnswerChord", "CellScuff", "AngerStinger", "CatPurr") get simple
 // procedurally generated placeholder clip(s) auto-filled in if left
 // blank, so the system works immediately with zero audio assets;
 // assigning real AudioClips in the Inspector always takes priority.
@@ -38,6 +49,12 @@ public class SoundEffectManager : MonoBehaviour
     [Header("References")]
     public DialogueRunner dialogueRunner;
     public AudioSource audioSource;
+
+    // Dedicated source for "sustained" effects (see playsustainedsound
+    // above) — kept separate from the main PlayOneShot source so a
+    // sustained sound can be stopped individually without silencing
+    // any other one-shot effects currently overlapping it.
+    private AudioSource sustainedAudioSource;
 
     [System.Serializable]
     public class SoundEffectEntry
@@ -84,15 +101,21 @@ public class SoundEffectManager : MonoBehaviour
         }
         audioSource.playOnAwake = false;
 
+        sustainedAudioSource = gameObject.AddComponent<AudioSource>();
+        sustainedAudioSource.playOnAwake = false;
+        sustainedAudioSource.spatialBlend = 0f;
+
         if (dialogueRunner != null)
         {
             dialogueRunner.AddCommandHandler<string>("playsound", PlaySoundEffect);
+            dialogueRunner.AddCommandHandler<string>("playsustainedsound", PlaySustainedSound);
         }
 
         EnsureProceduralPlaceholder("MagicalTinkle", ProceduralAudioClips.GenerateMagicalTinkle);
         EnsureProceduralPlaceholder("CelebratoryChoir", ProceduralAudioClips.GenerateAngelicChordSwell);
         EnsureProceduralPlaceholder("WrongAnswerChord", ProceduralAudioClips.GenerateWrongAnswerChord);
         EnsureProceduralPlaceholder("AngerStinger", ProceduralAudioClips.GenerateAngerStinger);
+        EnsureProceduralPlaceholder("CatPurr", ProceduralAudioClips.GenerateCatPurr);
 
         EnsureProceduralPlaceholderVariants("CellScuff",
             () => ProceduralAudioClips.GenerateScuffSound(1),
@@ -118,6 +141,53 @@ public class SoundEffectManager : MonoBehaviour
         if (clipToPlay == null) return;
 
         audioSource.PlayOneShot(clipToPlay, entry.volume);
+    }
+
+    // Tracks which frame the current sustained sound started on. A
+    // command like <<playsustainedsound CatPurr>> and the line display
+    // it's attached to both trigger within the very same frame — so
+    // PortraitManager's "stop on new line" hook (see StopSustainedSound)
+    // would otherwise kill a sound the instant it starts, before the
+    // player ever hears it. Ignoring stop requests on that same frame
+    // is what lets it play until a LATER line (i.e. an actual player
+    // advance) stops it instead.
+    private int sustainedSoundStartFrame = -1;
+
+    // Plays a named sound effect on the dedicated sustained-sound
+    // source, replacing whatever sustained sound (if any) was already
+    // playing. Use this instead of PlaySoundEffect for anything that
+    // might need to be cut short via StopSustainedSound() — e.g. a
+    // purr that should stop the instant the player advances dialogue.
+    public void PlaySustainedSound(string effectName)
+    {
+        SoundEffectEntry entry = soundEffects.Find(e => e.effectName == effectName);
+        if (entry == null)
+        {
+            Debug.LogWarning("SoundEffectManager: No sound effect named '" + effectName + "'.");
+            return;
+        }
+
+        AudioClip clipToPlay = entry.PickClip();
+        if (clipToPlay == null) return;
+
+        sustainedAudioSource.Stop();
+        sustainedAudioSource.clip = clipToPlay;
+        sustainedAudioSource.volume = entry.volume;
+        sustainedAudioSource.Play();
+        sustainedSoundStartFrame = Time.frameCount;
+    }
+
+    // Immediately stops whatever sustained sound is currently playing
+    // (does nothing if none is, or if it only just started this same
+    // frame — see sustainedSoundStartFrame). Called by PortraitManager
+    // whenever a new dialogue line begins, since that's the reliable
+    // signal that the player has advanced past whatever line started
+    // the sound.
+    public void StopSustainedSound()
+    {
+        if (Time.frameCount == sustainedSoundStartFrame) return;
+
+        sustainedAudioSource.Stop();
     }
 
     // Makes sure a recognized placeholder-backed effect name exists in

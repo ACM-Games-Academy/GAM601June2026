@@ -30,6 +30,7 @@ Meritamun: My joy is the will of the Gods, absolutely. No snakes or rats will be
 Amenhotep: I ask forgiveness for this small blasphemy, but I feel the holy City of Thebes is not the same without Meritamun here. My trust in your divine plan wavered on this score, and I came here to this sanctum to unburden myself.  #expression:neutral
 Amenhotep: The arrival of a new Temple Cat has however eased my sorrow somewhat – I have to admit that the local snakes have been feeling the thunder of her paws. 
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *purrrrrr* #expression:neutral
 Amenhotep: Meritamun’s younger sister Nitiqret is now appointed God’s Wife of Amun. I think she needs your guidance, but is a bit too proud to ask. 
 Amenhotep: And of course there is the little child, my son. Knots of worry gnaw at me day and night, and so I come to ask your guidance on this – should I :
@@ -54,6 +55,7 @@ Amenhotep: Write𓀀 to𓁐 our𓃀 child's grandmother and ask her for news of 
 Ahmose: I’ve placed my second daughter here as God’s Wife of Amun and my eldest son Harwa to ease her way politically. Both of them here in Thebes, here in your divine care, oh Gods. #expression:neutral
 Ahmose: That business with Meritamun needed to be buried, and quickly. Honestly I can’t wait to get rid of that rat bastard of a high priest Amenhotep but he’s a bit too secure here in Thebes – he has too many connections with the local elite families.
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *purrrrrr* #expression:neutral
 Ahmose:  But here’s my question to the great divinities that may be in this holy place, would it be wiser to :
 
@@ -78,6 +80,7 @@ Ahmose: Make𓀀 a𓃀 move𓁐 against Amenhotep? Or <br> Let𓅓 him𓎟 be�
 Harwa: Chariot race with the boys tomorrow – Lady Sekhmet hear my prayers!
 Harwa: I heard from Amenhotep that a desert cat has blessed this holy temple with her grace and fury – and I just know that this is sign that I’ll win tomorrow. 
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrrr......*
 Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him I'd pray to ask the Gods, so here I am. Should I <br> join𓌱 the race𓈖 tomorrow𓅓? OR <br> Not𓀀 race𓈖 tomorrow𓅓? #wordsearch
 <<if $selectedPath == "Path_A">>  
@@ -116,9 +119,11 @@ Meritamun: Indeed – my Lady and my Lord, I wasn’t here and I heard nothing a
 Nitiqret: I don’t know why my mother has abandoned me.
 Nitiqret: One minute we were grieving Meritamun’s passing into the Duat, together as a family, the next minute it’s like she never even existed?
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrrr* 
 Nitiqret: I’m so lost. The nobles here hate me and I have literally no clue why. Harwa’s doing fine of course, making new friends at court left right and center. 
 Nitiqret: .... but actually I came here because I heard a cat has come to live here! And here you are!
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *PurrrrrrrRRRRRrrrr* 
 Nitiqret: Would you like <br> to be given a little scritch on𓀀 your𓃀 head𓁐? OR <br> would you like to be given a little ride on this𓅓 chariot𓎟 toy𓁷? #wordsearch
 
@@ -141,6 +146,7 @@ Nitiqret: Would you like <br> to be given a little scritch on𓀀 your𓃀 head�
 Harwa: Gods! I am so sick of losing at the dice table. Senemut never seems to lose nearly as much money as I do, I don't know what I'm doing wrong.
 Harwa: Father says I'm a terrible prince and I need to pray for guidance as to how to conduct myself.
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrrrr...*
 Harwa: So here I am, asking the gods...Should I <br> step𓅓 away𓎟 from𓁷 the dice table? or <br> go back and try to win back my𓀀 previous𓎟 losses𓈖? #wordsearch
 
@@ -197,6 +203,7 @@ Harwa: Lost again at the races, rotten luck I suppose.
 Harwa: Father is asking me to spend more time with Nitiqret but honestly I can’t stand that simpering baby.
 Harwa: At least you are good company, Temple Cat. I wonder if you have a name?
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
 Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓃀 Kitten𓀀 Beans𓎟 <br> Lioness𓎟 of the Ferocious𓌱 Desert Sands𓅓 <br> Mighty𓌱 Scourge𓈖 of Snakes𓅓 , or <br> ... Holy𓎟 Lady𓀀 of Thebes𓈖? #wordsearch
 
@@ -229,6 +236,7 @@ Ahmose: The state of the treasury is an absolute disgrace – it is only in priv
 Ahmose: Harvests have been mediocre to awful in the last few years. 
 Ahmose: There’s no chance of winning any kind of prolonged campaign against the Persians, because it would simply cost an amount of money we do not have.
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
 Ahmose: What I actually need is some sort of distraction to bolster our support here in Thebes. Here are the choices I see before me, either of which are expensive but probably less expensive than a war. Should I <br> Marry𓁷 Nitiqret𓎟 to Harwa𓅓 in a lavish ceremony or <br> Start building𓌱 a new𓈖 temple𓅓 here in Thebes? #wordsearch 
 <<if $selectedPath == "Path_A">>
@@ -249,6 +257,7 @@ Ahmose: What I actually need is some sort of distraction to bolster our support 
 <<angerreaction Nitiqret>>
 Nitiqret: Harwa is being mean to me and I must seek vengeance.
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
 Nitiqret: What do you think? should I <br> Put𓅓 a𓎟 snake𓁷 in his bed or <br> Tell him he has to stop𓀀 throwing𓎟 dirt𓈖 at me in front of his friends to impress them? #wordsearch  
 
@@ -271,6 +280,7 @@ Nitiqret: What do you think? should I <br> Put𓅓 a𓎟 snake𓁷 in his bed or
 Amenhotep: It’s not that I didn’t want to have a child with Meritamun – but the time wasn’t right and I was only trying to do right by her, for both of us.
 Amenhotep: Now Meritamun is dead and I’m here, alone, without her.
 <<showportrait Right Cat_Meritamun>>
+<<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
 Amenhotep: Our child has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust Neferura to keep my son safe far𓁐 away𓅓 from Thebes𓎟, or <br>Or send my own agents to seek out Neferura and bring her and the child𓅓 back𓀀 to Thebes𓈖? #wordsearch
 <<if $selectedPath == "Path_A">>

@@ -345,4 +345,90 @@ public static class ProceduralAudioClips
         clip.SetData(samples, 0);
         return clip;
     }
+
+    // A cat purr — a low rumbling tone modulated at roughly 25-30Hz,
+    // which is genuinely how real purrs work physically (a cat's
+    // laryngeal muscles twitch at that rate), plus a little filtered
+    // noise underneath for breathy texture. Short enough to read as a
+    // brief purr rather than dragging on — callers needing a longer
+    // sustained sound should use SoundEffectManager.PlaySustainedSound
+    // so it can be cut short on player input instead of relying on
+    // clip length alone.
+    public static AudioClip GenerateCatPurr()
+    {
+        const float clipLength = 1.1f;
+        const float rumbleFrequency = 70f;      // low "engine" tone
+        const float purrModulationRate = 26f;   // Hz — the buzzing vibration that makes it read as a purr
+
+        // Overall volume "swell": soft-ish at the start, peaking at the
+        // midpoint, soft-ish again at the end — minEnvelope keeps it
+        // from ever going all the way to silent, so it reads as a
+        // natural swell rather than a fade in/out.
+        const float minEnvelope = 0.45f;
+        const float clickGuardTime = 0.02f; // brief true fade right at the very edges, to avoid a sample-0 pop
+
+        int totalSamples = Mathf.CeilToInt(clipLength * SampleRate);
+        float[] samples = new float[totalSamples];
+
+        System.Random rng = new System.Random(7);
+        float filteredNoisePrev = 0f;
+
+        for (int i = 0; i < totalSamples; i++)
+        {
+            float t = i / (float)SampleRate;
+
+            // Low rumbling tone plus a soft overtone for body
+            float rumble = Mathf.Sin(2f * Mathf.PI * rumbleFrequency * t);
+            rumble += 0.3f * Mathf.Sin(2f * Mathf.PI * rumbleFrequency * 1.5f * t);
+
+            // The fast amplitude modulation is what makes this sound
+            // like a purr rather than a plain hum
+            float purrModulation = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * purrModulationRate * t);
+
+            // Soft filtered noise underneath for breathy texture
+            float rawNoise = (float)(rng.NextDouble() * 2.0 - 1.0);
+            float filteredNoise = filteredNoisePrev * 0.85f + rawNoise * 0.15f;
+            filteredNoisePrev = filteredNoise;
+
+            float raw = rumble * 0.7f + filteredNoise * 0.25f;
+            float voiced = raw * purrModulation;
+
+            // Smooth arc across the whole clip: 0 at the very start/end,
+            // 1 at the midpoint, then lifted so it never dips below
+            // minEnvelope instead of fading all the way to silence.
+            float swell = Mathf.Sin(Mathf.PI * (t / clipLength));
+            float envelope = Mathf.Lerp(minEnvelope, 1f, swell);
+
+            // True fade only in the last few milliseconds at each edge,
+            // purely to avoid an audible click at the first/last sample.
+            if (t < clickGuardTime)
+            {
+                envelope *= t / clickGuardTime;
+            }
+            else if (t > clipLength - clickGuardTime)
+            {
+                envelope *= Mathf.Clamp01((clipLength - t) / clickGuardTime);
+            }
+
+            samples[i] = voiced * envelope * 0.5f;
+        }
+
+        // Normalize
+        float peak = 0f;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
+        }
+        if (peak > 1f)
+        {
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] /= peak;
+            }
+        }
+
+        AudioClip clip = AudioClip.Create("CatPurr_Procedural", totalSamples, 1, SampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
 }
