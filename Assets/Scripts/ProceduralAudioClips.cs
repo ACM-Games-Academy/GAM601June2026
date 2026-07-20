@@ -437,16 +437,33 @@ public static class ProceduralAudioClips
     // a little vibrato for character. Uses phase accumulation (rather
     // than sin(2*pi*f*t) directly) so the pitch slide stays continuous
     // and click-free, same technique as the choir swell's vibrato.
-    public static AudioClip GenerateHappyMeow()
+    //
+    // variantSeed varies the pitch range, where the peak lands, vibrato
+    // and duration, so a batch of these (see SoundEffectManager's
+    // "HappyMeow" registration) don't all sound identical — same idea
+    // as GenerateScuffSound's variants. Uses its own seeded
+    // System.Random rather than UnityEngine.Random, so generating
+    // clips never disturbs the game's own random state.
+    public static AudioClip GenerateHappyMeow(int variantSeed)
     {
-        const float clipLength = 0.5f;
-        const float startFreq = 500f;
-        const float peakFreq = 750f;
-        const float endFreq = 550f;
-        const float vibratoRate = 14f;
-        const float vibratoDepth = 0.03f;
-        const float attackTime = 0.06f;
-        const float releaseTime = 0.18f;
+        System.Random rng = new System.Random(variantSeed);
+
+        float clipLength = 0.35f + (float)rng.NextDouble() * 0.2f;    // 0.35s-0.55s — snappier, more exclamatory
+        float startFreq = 450f + (float)rng.NextDouble() * 140f;      // 450-590Hz
+        float peakFreq = startFreq + 180f + (float)rng.NextDouble() * 160f; // strong, confident upward chirp
+        // Ends only partway back down from the peak, staying well above
+        // where it started — a bright, elevated finish rather than
+        // settling back near the start, which read as a hesitant
+        // "up-then-down" question instead of a celebratory exclamation.
+        float endFreq = Mathf.Lerp(peakFreq, startFreq, 0.25f + (float)rng.NextDouble() * 0.15f);
+        float peakPosition = 0.2f + (float)rng.NextDouble() * 0.15f;  // quick rise to the peak
+        // Much subtler vibrato than before — a light shimmer rather
+        // than an audible quaver, which was reading as worried/nervous
+        // instead of happy.
+        float vibratoRate = 9f + (float)rng.NextDouble() * 4f;        // 9-13Hz
+        float vibratoDepth = 0.006f + (float)rng.NextDouble() * 0.008f; // 0.006-0.014
+        float attackTime = 0.03f + (float)rng.NextDouble() * 0.03f;
+        float releaseTime = 0.10f + (float)rng.NextDouble() * 0.08f;
 
         int totalSamples = Mathf.CeilToInt(clipLength * SampleRate);
         float[] samples = new float[totalSamples];
@@ -460,21 +477,21 @@ public static class ProceduralAudioClips
 
             // Pitch contour: quick rise to a peak, then a gentler fall
             float targetFrequency;
-            if (t01 < 0.35f)
+            if (t01 < peakPosition)
             {
-                targetFrequency = Mathf.Lerp(startFreq, peakFreq, t01 / 0.35f);
+                targetFrequency = Mathf.Lerp(startFreq, peakFreq, t01 / peakPosition);
             }
             else
             {
-                targetFrequency = Mathf.Lerp(peakFreq, endFreq, (t01 - 0.35f) / 0.65f);
+                targetFrequency = Mathf.Lerp(peakFreq, endFreq, (t01 - peakPosition) / (1f - peakPosition));
             }
 
             float vibrato = 1f + vibratoDepth * Mathf.Sin(2f * Mathf.PI * vibratoRate * t);
             phase += targetFrequency * vibrato / SampleRate;
 
             float fundamental = Mathf.Sin(2f * Mathf.PI * phase);
-            float overtone1 = 0.4f * Mathf.Sin(2f * Mathf.PI * phase * 2f);
-            float overtone2 = 0.2f * Mathf.Sin(2f * Mathf.PI * phase * 3f);
+            float overtone1 = 0.45f * Mathf.Sin(2f * Mathf.PI * phase * 2f);
+            float overtone2 = 0.28f * Mathf.Sin(2f * Mathf.PI * phase * 3f); // a bit brighter/chirpier
 
             float envelope;
             if (t < attackTime)
@@ -507,7 +524,7 @@ public static class ProceduralAudioClips
             }
         }
 
-        AudioClip clip = AudioClip.Create("HappyMeow_Procedural", totalSamples, 1, SampleRate, false);
+        AudioClip clip = AudioClip.Create("HappyMeow_Procedural_" + variantSeed, totalSamples, 1, SampleRate, false);
         clip.SetData(samples, 0);
         return clip;
     }

@@ -159,6 +159,8 @@ MonoBehaviour:
   glowAnchoredOffset: {x: -30, y: -60}
   glowCircleDiameter: 350
   correctAnswerSoundEffectName: CelebratoryChoir
+  correctAnswerMeowSoundEffectName: HappyMeow
+  correctAnswerMeowDelay: 2.5
   waveAnchorPoint: {x: 0.5, y: 1}
   waveAnchoredOffset: {x: 0, y: -60}
   waveCircleDiameter: 400
@@ -370,6 +372,9 @@ MonoBehaviour:
       isDefault: 1
     - expressionName: pawraised
       sprite: {fileID: 1750887369478447619, guid: e4504c4c057338142a2cdbb0838611a1, type: 3}
+      isDefault: 0
+    - expressionName: standing
+      sprite: {fileID: -4991648941865065359, guid: 31e32a689f802cf4492c0aebc7a9ef87, type: 3}
       isDefault: 0
   activeAlpha: 1
   inactiveAlpha: 0.4
@@ -2264,18 +2269,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2958262987057254168}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7264592245148067005}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 40, y: 20}
-  m_Pivot: {x: 0, y: 1}
+  m_SizeDelta: {x: 80, y: 40}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2958262987057254173
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2713,9 +2718,9 @@ RectTransform:
   - {fileID: 2958262987057254169}
   m_Father: {fileID: 2958262987189859129}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -20, y: 5}
+  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: 50, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!4 &7985477254634012011

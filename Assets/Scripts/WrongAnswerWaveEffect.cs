@@ -153,6 +153,15 @@ public class WrongAnswerWaveEffect : MonoBehaviour
             startColor.a = 0f; // begin invisible; the shake coroutine fades it in with the blob
             mark.color = startColor;
 
+            // TMP's vertex color (.color, above) is only half the story —
+            // the font material's own Face Color property can dominate
+            // the visible result. Cloning the material per-mark (via
+            // .fontMaterial, not .fontSharedMaterial) and setting its
+            // face color directly guarantees the requested color actually
+            // shows, without repainting every other piece of text that
+            // happens to share the same font asset.
+            mark.fontMaterial.SetColor(ShaderUtilities.ID_FaceColor, startColor);
+
             questionMarks.Add(mark);
         }
     }
@@ -249,6 +258,7 @@ public class WrongAnswerWaveEffect : MonoBehaviour
             Color markColor = questionMarkColor;
             markColor.a = alpha;
             mark.color = markColor;
+            mark.fontMaterial.SetColor(ShaderUtilities.ID_FaceColor, markColor);
         }
     }
 }

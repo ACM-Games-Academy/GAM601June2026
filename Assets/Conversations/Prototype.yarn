@@ -7,14 +7,13 @@
 <<wait 1>>
 Sekhmet: The fate of Egypt is at a crossroads. #expression:neutral
 <<showportrait Right Meritamun>>
-Meritamun: ...  #expression:worried
+Meritamun: But what does that mean for me?  #expression:worried
 Sekhmet: You will carry messages of the divine will to mortals: you are our eyes in the mortal realm. You are to help us guide them to glory. Is that understood? #expression:neutral
-
 Meritamun: I am your vessel, Lady Sekhmet – your will is my desire. #expression:neutral
-
 <<showportrait CenterLeft Bes>>
 <<angerreaction Bes>>
-Bes: BUT YOU MADE HER INTO A CAT!? I must register my objection here, Sekhmet. Small cats are in the domestic sphere and therefore in MY realm of influence! Felines are for killing snakes around the house! Not for whatever THIS is that you’re trying to do! #expression:neutral
+Bes: BUT YOU MADE HER INTO A CAT!? 
+Bes:I must register my objection here, Sekhmet. Small cats are in the domestic sphere and therefore in MY realm of influence! Felines are for killing snakes around the house! Not for whatever THIS is that you’re trying to do! #expression:neutral
 
 <<showportrait Left Sekhmet>>
 Sekhmet: I never try, I only execute. Look here Meritamun – Lord Bes orders you to be bound by holy decree to kill snakes and rats around the Temple. That is also part of our divine will. #expression:neutral

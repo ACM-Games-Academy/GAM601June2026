@@ -117,7 +117,6 @@ public class SoundEffectManager : MonoBehaviour
         EnsureProceduralPlaceholder("WrongAnswerChord", ProceduralAudioClips.GenerateWrongAnswerChord);
         EnsureProceduralPlaceholder("AngerStinger", ProceduralAudioClips.GenerateAngerStinger);
         EnsureProceduralPlaceholder("CatPurr", ProceduralAudioClips.GenerateCatPurr);
-        EnsureProceduralPlaceholder("HappyMeow", ProceduralAudioClips.GenerateHappyMeow);
 
         EnsureProceduralPlaceholderVariants("CellScuff",
             () => ProceduralAudioClips.GenerateScuffSound(1),
@@ -125,6 +124,18 @@ public class SoundEffectManager : MonoBehaviour
             () => ProceduralAudioClips.GenerateScuffSound(3),
             () => ProceduralAudioClips.GenerateScuffSound(4),
             () => ProceduralAudioClips.GenerateScuffSound(5));
+
+        EnsureProceduralPlaceholderVariants("HappyMeow",
+            () => ProceduralAudioClips.GenerateHappyMeow(1),
+            () => ProceduralAudioClips.GenerateHappyMeow(2),
+            () => ProceduralAudioClips.GenerateHappyMeow(3),
+            () => ProceduralAudioClips.GenerateHappyMeow(4),
+            () => ProceduralAudioClips.GenerateHappyMeow(5),
+            () => ProceduralAudioClips.GenerateHappyMeow(6),
+            () => ProceduralAudioClips.GenerateHappyMeow(7),
+            () => ProceduralAudioClips.GenerateHappyMeow(8),
+            () => ProceduralAudioClips.GenerateHappyMeow(9),
+            () => ProceduralAudioClips.GenerateHappyMeow(10));
     }
 
     // Plays a named sound effect (a random variant, if the entry has
