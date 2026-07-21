@@ -87,8 +87,7 @@ public class GridManager : MonoBehaviour
         "𓋹",
         "𓁷",
         "𓎟",
-        "𓈍",
-        "𓇾"
+        "𓈍"
     };
 
     void Awake()

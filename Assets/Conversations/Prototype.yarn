@@ -281,7 +281,7 @@ Amenhotep: Now Meritamun is dead and I’m here, alone, without her.
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
-Amenhotep: Our child has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust Neferura to keep my son safe far𓁐 away𓅓 from Thebes𓎟, or <br>Or send my own agents to seek out Neferura and bring her and the child𓅱 back𓍯 to Thebes𓋔? #wordsearch
+Amenhotep: Our child has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust Neferura to keep my son safe far𓅨 away𓉻 from Thebes𓋔, or <br>Or send my own agents to seek out Neferura and bring her and the child𓅱 back𓍯 to Thebes𓋔? #wordsearch
 <<if $selectedPath == "Path_A">>
     Amenhotep: Yes, that's probably the wiser option, his safety should be my main concern.
     <<addgodaffinity Thoth 1>>
