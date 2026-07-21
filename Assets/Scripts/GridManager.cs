@@ -22,10 +22,79 @@ public class GridManager : MonoBehaviour
 
     [Header("Fill Hieroglyphs")]
     // Random hieroglyphs used to fill empty cells around the answers.
-    public string[] fillHieroglyphs = new string[]
+    // Reset from CanonicalFillHieroglyphs every Awake() (see below) —
+    // this field is still shown in the Inspector for visibility, but
+    // isn't left to whatever value Unity happened to serialize into the
+    // scene, since a scene saved before this list was last expanded
+    // would otherwise keep loading with the old, smaller set even
+    // though the code's default has since moved on. That mismatch is
+    // exactly what caused fill tiles to draw from a stale 8-glyph pool
+    // while everything reading the field fresh (e.g. in code, or a
+    // freshly added component) already saw the full 51.
+    public string[] fillHieroglyphs;
+
+    // The actual source of truth for the fill pool — see fillHieroglyphs
+    // above for why this isn't just assigned directly as that field's
+    // default.
+    private static readonly string[] CanonicalFillHieroglyphs = new string[]
     {
-        "𓁷", "𓎟", "𓀀", "𓁐", "𓃀", "𓈖", "𓌱", "𓅓"
+        "𓀀",
+        "𓁐",
+        "𓆓",
+        "𓅓",
+        "𓇳",
+        "𓏏",
+        "𓎡",
+        "𓂝",
+        "𓂋",
+        "𓄿",
+        "𓊹",
+        "𓉐",
+        "𓏍",
+        "𓆑",
+        "𓃭",
+        "𓃠",
+        "𓅱",
+        "𓄤",
+        "𓄣",
+        "𓁶",
+        "𓁹",
+        "𓉻",
+        "𓌅",
+        "𓋾",
+        "𓏛",
+        "𓐍",
+        "𓈗",
+        "𓊪",
+        "𓋴",
+        "𓈎",
+        "𓅨",
+        "𓆙",
+        "𓃀",
+        "𓐫",
+        "𓆣",
+        "𓆈",
+        "𓌢",
+        "𓋀",
+        "𓋔",
+        "𓇼",
+        "𓇓",
+        "𓆏",
+        "𓊽",
+        "𓍯",
+        "𓌱",
+        "𓎛",
+        "𓋹",
+        "𓁷",
+        "𓎟",
+        "𓈍",
+        "𓇾"
     };
+
+    void Awake()
+    {
+        fillHieroglyphs = CanonicalFillHieroglyphs;
+    }
 
     // ── Runtime state ─────────────────────────────────────────────────────
 
