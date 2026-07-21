@@ -75,6 +75,18 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public string correctAnswerMeowSoundEffectName = "HappyMeow";
     public float correctAnswerMeowDelay = 2.5f;
 
+    // At the exact moment the meow plays, Cat_Meritamun's portrait swaps
+    // to this expression (e.g. a "standing" pose), so it reads as her
+    // meowing and standing up in celebration.
+    public string catMeritamunCharacterName = "Cat_Meritamun";
+    public string catMeritamunMeowExpression = "standing";
+
+    // How long she holds the standing pose before settling back to
+    // neutral on her own, rather than staying there until the player
+    // next advances dialogue.
+    public string catMeritamunNeutralExpression = "neutral";
+    public float catMeritamunStandingHoldDuration = 1f;
+
     [Header("Wrong Answer Wave")]
     // Same anchor/offset/size convention as the glow settings above —
     // tune in the Inspector until the wave sits where you want it
@@ -434,9 +446,25 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     {
         yield return new WaitForSeconds(correctAnswerMeowDelay);
 
+        if (portraitManager != null && !string.IsNullOrEmpty(catMeritamunMeowExpression))
+        {
+            portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunMeowExpression);
+
+            // She isn't necessarily the active speaker right now, so her
+            // portrait may currently be dimmed to inactiveAlpha — force
+            // it fully solid for this celebratory beat regardless.
+            portraitManager.SetBrightness(catMeritamunCharacterName, true);
+        }
+
         if (soundEffectManager != null)
         {
             soundEffectManager.PlaySoundEffect(correctAnswerMeowSoundEffectName);
+        }
+
+        if (portraitManager != null && !string.IsNullOrEmpty(catMeritamunMeowExpression))
+        {
+            yield return new WaitForSeconds(catMeritamunStandingHoldDuration);
+            portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunNeutralExpression);
         }
     }
 
