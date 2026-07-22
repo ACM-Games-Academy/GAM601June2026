@@ -374,8 +374,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
 
             if (portraitManager != null && !string.IsNullOrEmpty(catMeritamunPuzzledExpression) && !hovering)
             {
-                portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunPuzzledExpression);
+                // SetBrightness before SetExpression — see the matching
+                // comment in PlayMeowAfterChoir for why the order here
+                // isn't arbitrary.
                 portraitManager.SetBrightness(catMeritamunCharacterName, true);
+                portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunPuzzledExpression);
 
                 yield return new WaitForSeconds(catMeritamunPuzzledHoldDuration);
 
@@ -520,12 +523,20 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
 
         if (portraitManager != null && !string.IsNullOrEmpty(catMeritamunMeowExpression))
         {
-            portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunMeowExpression);
-
             // She isn't necessarily the active speaker right now, so her
             // portrait may currently be dimmed to inactiveAlpha — force
             // it fully solid for this celebratory beat regardless.
+            //
+            // Order matters here: SetBrightness and SetExpression both
+            // drive the same per-slot "appearance pop" coroutine, and
+            // each one cancels whatever's already running there before
+            // starting its own. SetBrightness must go first so its pop
+            // gets pre-empted by SetExpression's — not the other way
+            // round — otherwise SetExpression's sprite swap gets
+            // cancelled before it ever applies, and her portrait never
+            // actually changes to the standing pose.
             portraitManager.SetBrightness(catMeritamunCharacterName, true);
+            portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunMeowExpression);
         }
 
         if (soundEffectManager != null)

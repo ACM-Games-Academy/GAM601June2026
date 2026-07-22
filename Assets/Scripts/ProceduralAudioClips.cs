@@ -161,44 +161,42 @@ public static class ProceduralAudioClips
         return clip;
     }
 
-    // A short, somber two-note minor chord — a simple negative-feedback
-    // cue for a wrong puzzle answer. Root + minor third (A3/C4), quick
-    // attack, moderate exponential decay.
+    // A somber two-chord DESCENDING progression — a negative-feedback
+    // cue for a wrong puzzle answer. An A-minor-ish dyad (A3+C4) falls
+    // to a darker F-ish dyad (F3+Ab3) a major third lower: the classic
+    // melancholic "deceptive cadence" motion (i - VI in A minor) used in
+    // a lot of game losing/wrong-answer stingers — more resigned/sad
+    // than the single static dyad this replaces, since the ear reads
+    // downward motion as more negative than a held chord.
     public static AudioClip GenerateWrongAnswerChord()
     {
-        float[] noteFrequencies = { 220.00f, 261.63f }; // A3, C4 — minor third
-
-        const float clipLength = 0.8f;
+        const float clipLength = 1.0f;
         const float attackTime = 0.02f;
         const float decayRate = 4f;
 
         int totalSamples = Mathf.CeilToInt(clipLength * SampleRate);
         float[] samples = new float[totalSamples];
 
-        foreach (float frequency in noteFrequencies)
-        {
-            for (int i = 0; i < totalSamples; i++)
-            {
-                float t = i / (float)SampleRate;
+        // First chord: A3 + C4, starting immediately.
+        AddChordVoice(samples, 220.00f, 0f, 0.45f, attackTime, decayRate);
+        AddChordVoice(samples, 261.63f, 0f, 0.45f, attackTime, decayRate);
 
-                float fundamental = Mathf.Sin(2f * Mathf.PI * frequency * t);
-                float overtone = 0.35f * Mathf.Sin(2f * Mathf.PI * frequency * 2f * t);
+        // Second chord: F3 + Ab3 — lower, the "landing" chord. Starts
+        // slightly before the first one's tail has fully decayed away,
+        // so the two overlap a little rather than leaving a gap — reads
+        // as one continuous falling gesture instead of two separate hits.
+        AddChordVoice(samples, 174.61f, 0.42f, 0.58f, attackTime, decayRate);
+        AddChordVoice(samples, 207.65f, 0.42f, 0.58f, attackTime, decayRate);
 
-                float attack = Mathf.Clamp01(t / attackTime);
-                float decay = Mathf.Exp(-t * decayRate);
-                float envelope = attack * decay;
-
-                samples[i] += (fundamental + overtone) * envelope * 0.45f;
-            }
-        }
-
-        // Normalize so the two overlapping notes never clip above 1.0
+        // Normalize to full scale so this stays consistent with the
+        // other procedural effects' loudness (see AngerStinger for why
+        // clamping-down-only isn't enough).
         float peak = 0f;
         for (int i = 0; i < samples.Length; i++)
         {
             peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
         }
-        if (peak > 1f)
+        if (peak > 0f)
         {
             for (int i = 0; i < samples.Length; i++)
             {
@@ -209,6 +207,36 @@ public static class ProceduralAudioClips
         AudioClip clip = AudioClip.Create("WrongAnswerChord_Procedural", totalSamples, 1, SampleRate, false);
         clip.SetData(samples, 0);
         return clip;
+    }
+
+    // Adds one sine voice (fundamental + a soft overtone) with its own
+    // attack/decay envelope into 'samples', starting at 'startTime' and
+    // lasting 'duration' seconds. The oscillator's phase always tracks
+    // absolute time (not time-since-onset) so it stays continuous with
+    // whatever else is already in the buffer — only the envelope resets
+    // at the voice's own start.
+    private static void AddChordVoice(float[] samples, float frequency, float startTime, float duration, float attackTime, float decayRate)
+    {
+        int startSample = Mathf.FloorToInt(startTime * SampleRate);
+        int voiceSamples = Mathf.CeilToInt(duration * SampleRate);
+
+        for (int i = 0; i < voiceSamples; i++)
+        {
+            int sampleIndex = startSample + i;
+            if (sampleIndex < 0 || sampleIndex >= samples.Length) continue;
+
+            float absoluteT = sampleIndex / (float)SampleRate;
+            float localT = i / (float)SampleRate;
+
+            float fundamental = Mathf.Sin(2f * Mathf.PI * frequency * absoluteT);
+            float overtone = 0.35f * Mathf.Sin(2f * Mathf.PI * frequency * 2f * absoluteT);
+
+            float attack = Mathf.Clamp01(localT / attackTime);
+            float decay = Mathf.Exp(-localT * decayRate);
+            float envelope = attack * decay;
+
+            samples[sampleIndex] += (fundamental + overtone) * envelope * 0.45f;
+        }
     }
 
     // A short "dirt scuffing" texture — filtered noise with a bumpy,
