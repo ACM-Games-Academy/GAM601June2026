@@ -39,6 +39,12 @@ public class GridHoverExpression : MonoBehaviour, IPointerEnterHandler, IPointer
     // fire the brightness fix only once, rather than every frame.
     private bool wasInputEnabled = false;
 
+    // True for as long as the pointer is currently over the grid.
+    // Read by other systems (e.g. WordsearchDialogueBridge's puzzled-hint
+    // flash) that also want to control this same character's expression,
+    // so they know to back off rather than fight the hover state.
+    public bool isHovering { get; private set; }
+
     void Update()
     {
         if (gridManager == null || portraitManager == null) return;
@@ -60,6 +66,7 @@ public class GridHoverExpression : MonoBehaviour, IPointerEnterHandler, IPointer
     {
         if (gridManager != null && !gridManager.inputEnabled) return;
 
+        isHovering = true;
         portraitManager.SetExpression(characterName, hoverExpression);
 
         if (hoverCursorTexture != null)
@@ -70,6 +77,7 @@ public class GridHoverExpression : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        isHovering = false;
         portraitManager.SetExpression(characterName, normalExpression);
 
         // Passing null reverts to the system's default cursor

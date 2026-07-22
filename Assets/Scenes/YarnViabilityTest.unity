@@ -154,6 +154,7 @@ MonoBehaviour:
   continueButton: {fileID: 2958262987057254173}
   portraitManager: {fileID: 76763302}
   soundEffectManager: {fileID: 1638165528}
+  gridHoverExpression: {fileID: 1505255847}
   glowCharacterName: 
   glowAnchorPoint: {x: 0.5, y: 1}
   glowAnchoredOffset: {x: -30, y: -60}
@@ -165,6 +166,9 @@ MonoBehaviour:
   catMeritamunMeowExpression: standing
   catMeritamunNeutralExpression: neutral
   catMeritamunStandingHoldDuration: 1
+  catMeritamunPuzzledExpression: puzzled
+  puzzledHintInterval: 6
+  catMeritamunPuzzledHoldDuration: 1.5
   waveAnchorPoint: {x: 0.5, y: 1}
   waveAnchoredOffset: {x: 0, y: -60}
   waveCircleDiameter: 400
@@ -379,6 +383,9 @@ MonoBehaviour:
       isDefault: 0
     - expressionName: standing
       sprite: {fileID: -4991648941865065359, guid: 31e32a689f802cf4492c0aebc7a9ef87, type: 3}
+      isDefault: 0
+    - expressionName: puzzled
+      sprite: {fileID: -720758889363181054, guid: 65c241fb97def0b40b57efc3236240f8, type: 3}
       isDefault: 0
   activeAlpha: 1
   inactiveAlpha: 0.4
@@ -1293,7 +1300,7 @@ MonoBehaviour:
   buttonLabel: Exit to Main Menu
   buttonColor: {r: 0.72, g: 0.53, b: 0.15, a: 1}
   buttonTextColor: {r: 1, g: 1, b: 1, a: 1}
-  buttonFont: {fileID: 0}
+  buttonFont: {fileID: 11400000, guid: b87044a48c70ced41ac41db4c27894a4, type: 2}
   buttonSize: {x: 420, y: 100}
   buttonFontSize: 36
 --- !u!4 &1463571559
@@ -2311,6 +2318,7 @@ GameObject:
   - component: {fileID: 2958262987057254163}
   - component: {fileID: 2958262987057254162}
   - component: {fileID: 2958262987057254173}
+  - component: {fileID: 2958262987057254180}
   m_Layer: 5
   m_Name: Continue Button
   m_TagString: Untagged
@@ -2393,6 +2401,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &2958262987057254180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2958262987057254168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 4, y: -4}
+  m_UseGraphicAlpha: 1
 --- !u!114 &2958262987189859126
 MonoBehaviour:
   m_ObjectHideFlags: 0

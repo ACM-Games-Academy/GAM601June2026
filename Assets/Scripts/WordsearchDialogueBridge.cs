@@ -48,6 +48,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     public PortraitManager portraitManager;
     public SoundEffectManager soundEffectManager;
 
+    // So the puzzled-hint flash below can check whether the pointer is
+    // currently over the grid and back off — the hover paw-raise effect
+    // should always win over this timed flash, never the other way round.
+    public GridHoverExpression gridHoverExpression;
+
     [Header("Word Found Glow")]
     // Manual override: if set, the glow always targets this character
     // regardless of who asked the puzzle's question. Leave blank (the
@@ -86,6 +91,16 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // next advances dialogue.
     public string catMeritamunNeutralExpression = "neutral";
     public float catMeritamunStandingHoldDuration = 1f;
+
+    [Header("Puzzled Hint")]
+    // While a puzzle is active and unsolved, Cat_Meritamun's portrait
+    // briefly switches to this expression as a "still thinking?" hint —
+    // first after puzzledHintInterval seconds with no correct answer,
+    // then again every puzzledHintInterval seconds after that for as
+    // long as the puzzle remains unsolved.
+    public string catMeritamunPuzzledExpression = "puzzled";
+    public float puzzledHintInterval = 4f;
+    public float catMeritamunPuzzledHoldDuration = 1.5f;
 
     [Header("Wrong Answer Wave")]
     // Same anchor/offset/size convention as the glow settings above —
@@ -128,6 +143,10 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
 
     // The currently displayed puzzle backdrop, if any.
     private GameObject puzzleBackdropObject;
+
+    // The running "puzzled hint" loop (see ShowPuzzleBackdrop /
+    // HidePuzzleBackdrop), if the puzzle is currently active.
+    private Coroutine puzzledHintCoroutine;
 
     private const string WordsearchTag = "wordsearch";
     private const char WordSeparator = '|';
@@ -309,6 +328,8 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         backdropImage.raycastTarget = false; // purely decorative, must not intercept grid cell clicks
 
         puzzleBackdropObject = backdropObject;
+
+        puzzledHintCoroutine = StartCoroutine(PuzzledHintRoutine());
     }
 
     // Removes the puzzle backdrop, if one is currently showing.
@@ -318,6 +339,57 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         {
             Destroy(puzzleBackdropObject);
             puzzleBackdropObject = null;
+        }
+
+        if (puzzledHintCoroutine != null)
+        {
+            StopCoroutine(puzzledHintCoroutine);
+            puzzledHintCoroutine = null;
+
+            // In case the puzzle was solved (or the puzzle otherwise
+            // ended) while the puzzled expression was mid-flash, snap
+            // her straight back to neutral rather than leaving her
+            // stuck looking puzzled through the correct/wrong-answer
+            // reaction that's about to play.
+            if (portraitManager != null)
+            {
+                portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunNeutralExpression);
+            }
+        }
+    }
+
+    // While the puzzle stays unsolved, repeatedly flashes Cat_Meritamun's
+    // portrait to catMeritamunPuzzledExpression for
+    // catMeritamunPuzzledHoldDuration seconds, first after
+    // puzzledHintInterval seconds and then every puzzledHintInterval
+    // seconds after that. Runs for as long as ShowPuzzleBackdrop /
+    // HidePuzzleBackdrop keep it alive — see those two for start/stop.
+    private IEnumerator PuzzledHintRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(puzzledHintInterval);
+
+            bool hovering = gridHoverExpression != null && gridHoverExpression.isHovering;
+
+            if (portraitManager != null && !string.IsNullOrEmpty(catMeritamunPuzzledExpression) && !hovering)
+            {
+                portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunPuzzledExpression);
+                portraitManager.SetBrightness(catMeritamunCharacterName, true);
+
+                yield return new WaitForSeconds(catMeritamunPuzzledHoldDuration);
+
+                // Re-check rather than trusting the value from before the
+                // wait — the pointer may have entered the grid at any
+                // point during the hold, in which case the hover effect
+                // is already showing pawraised and must not be stomped
+                // back to neutral by this timer firing.
+                hovering = gridHoverExpression != null && gridHoverExpression.isHovering;
+                if (!hovering)
+                {
+                    portraitManager.SetExpression(catMeritamunCharacterName, catMeritamunNeutralExpression);
+                }
+            }
         }
     }
 
