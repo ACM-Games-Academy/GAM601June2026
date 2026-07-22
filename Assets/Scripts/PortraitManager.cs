@@ -93,6 +93,18 @@ public class PortraitManager : DialoguePresenterBase
     public float slideOffsetX = 60f;
     public float slideInDuration = 0.3f;
 
+    [Header("Expression Swap Pop")]
+    // SetExpression() swaps the portrait's sprite instantly — there's no
+    // way to crossfade a plain Image without a second overlay Image, so
+    // instead this masks the hard cut with a quick scale dip: the
+    // portrait shrinks slightly, the sprite swaps at the bottom of the
+    // dip (while it's smallest and the cut is least noticeable), then it
+    // eases back to full size. Applies to every SetExpression() call —
+    // hover, puzzled-hint flash, standing pose, meow, all of it.
+    [Range(0.5f, 1f)] public float expressionPopScale = 0.92f;
+    public float expressionPopDuration = 0.12f;
+    public AnimationCurve expressionPopEaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
     [Header("Name Tab Sliding")]
     // The NameTab panel's RectTransform. Its vertical position should
     // already be pinned to the dialogue panel's top edge via its own
@@ -156,6 +168,10 @@ public class PortraitManager : DialoguePresenterBase
     // Tracks the running slide-in coroutine per slot, same reasoning as
     // activeFades above
     private Dictionary<string, Coroutine> activeSlides = new Dictionary<string, Coroutine>();
+
+    // Tracks the running expression-swap pop coroutine per slot, same
+    // reasoning as activeFades above
+    private Dictionary<string, Coroutine> activeExpressionPops = new Dictionary<string, Coroutine>();
 
     // Each slot's authored resting position, captured once at startup so
     // repeated slide-ins always animate from/to the correct place even
@@ -232,6 +248,7 @@ public class PortraitManager : DialoguePresenterBase
         SetAlphaInstant(slot.portraitImage, inactiveAlpha);
 
         SlideIn(slot);
+        PlayAppearancePop(slot);
     }
 
     private void HidePortrait(string slotName)
@@ -468,12 +485,16 @@ public class PortraitManager : DialoguePresenterBase
         slot.portraitImage.sprite = defaultExpression.sprite;
         slot.portraitImage.enabled = true;
         SetAlphaInstant(slot.portraitImage, activeAlpha);
+        PlayAppearancePop(slot);
 
         Destroy(crossfadeObject);
     }
 
     // Find which slot (if any) a character currently occupies, and swap
-    // their displayed expression directly — used by hover effects etc.
+    // their displayed expression — used by hover effects etc. Rather
+    // than cutting the sprite instantly, this eases into a quick scale
+    // pop (see ExpressionPopCoroutine) so the swap reads as a soft
+    // transition instead of a hard flicker.
     public void SetExpression(string characterName, string expressionName)
     {
         foreach (SlotConfig slot in slots)
@@ -489,10 +510,91 @@ public class PortraitManager : DialoguePresenterBase
                 chosen = character.expressions.Find(e => e.isDefault);
 
             if (chosen != null)
-                slot.portraitImage.sprite = chosen.sprite;
+            {
+                if (activeExpressionPops.TryGetValue(slot.slotName, out Coroutine running) && running != null)
+                {
+                    StopCoroutine(running);
+                }
+
+                activeExpressionPops[slot.slotName] = StartCoroutine(ExpressionPopCoroutine(slot, chosen.sprite));
+            }
 
             return;
         }
+    }
+
+    // Starts (or restarts) a scale pop on this slot with no sprite swap
+    // — used for any other "character appearance" moment (becoming
+    // fully solid from dimmed/transparent, sliding in for the first
+    // time, finishing a transformation crossfade) so the same soft
+    // treatment applies everywhere a portrait becomes visible, not just
+    // on expression swaps.
+    private void PlayAppearancePop(SlotConfig slot)
+    {
+        if (activeExpressionPops.TryGetValue(slot.slotName, out Coroutine running) && running != null)
+        {
+            StopCoroutine(running);
+        }
+
+        activeExpressionPops[slot.slotName] = StartCoroutine(ExpressionPopCoroutine(slot, null));
+    }
+
+    // Shrinks the portrait to expressionPopScale, swaps in newSprite (if
+    // given — pass null for an appearance pop with no sprite change) at
+    // the bottom of the dip, when it's smallest and any cut is least
+    // noticeable, then eases back to full size. A cancelled/interrupted
+    // pop always resets scale back to 1 first, so rapid successive pops
+    // (e.g. quickly re-hovering) never compound into a smaller-and-
+    // smaller portrait.
+    private IEnumerator ExpressionPopCoroutine(SlotConfig slot, Sprite newSprite)
+    {
+        RectTransform rect = slot.portraitImage.rectTransform;
+        rect.localScale = Vector3.one;
+
+        if (expressionPopDuration <= 0f)
+        {
+            if (newSprite != null) slot.portraitImage.sprite = newSprite;
+            activeExpressionPops[slot.slotName] = null;
+            yield break;
+        }
+
+        float halfDuration = expressionPopDuration / 2f;
+        bool swapped = false;
+        float elapsed = 0f;
+
+        while (elapsed < expressionPopDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            if (newSprite != null && !swapped && elapsed >= halfDuration)
+            {
+                slot.portraitImage.sprite = newSprite;
+                swapped = true;
+            }
+
+            float scale;
+            if (elapsed < halfDuration)
+            {
+                float t = expressionPopEaseCurve.Evaluate(Mathf.Clamp01(elapsed / halfDuration));
+                scale = Mathf.Lerp(1f, expressionPopScale, t);
+            }
+            else
+            {
+                float t = expressionPopEaseCurve.Evaluate(Mathf.Clamp01((elapsed - halfDuration) / halfDuration));
+                scale = Mathf.Lerp(expressionPopScale, 1f, t);
+            }
+
+            rect.localScale = new Vector3(scale, scale, 1f);
+            yield return null;
+        }
+
+        if (newSprite != null && !swapped)
+        {
+            slot.portraitImage.sprite = newSprite;
+        }
+
+        rect.localScale = Vector3.one;
+        activeExpressionPops[slot.slotName] = null;
     }
 
     // Force a character's portrait to full (or dimmed) brightness,
@@ -843,6 +945,16 @@ public class PortraitManager : DialoguePresenterBase
 
     private void FadeTo(SlotConfig slot, float targetAlpha)
     {
+        // Genuinely becoming more visible (dimmed/transparent -> solid)
+        // — e.g. this slot's character just became the active speaker,
+        // or SetBrightness(true) was called — gets the same soft pop as
+        // an expression swap. Fading the other way (going dim) doesn't;
+        // only "appearing" warrants it.
+        if (targetAlpha > slot.portraitImage.color.a)
+        {
+            PlayAppearancePop(slot);
+        }
+
         if (activeFades.ContainsKey(slot.slotName) && activeFades[slot.slotName] != null)
         {
             StopCoroutine(activeFades[slot.slotName]);
