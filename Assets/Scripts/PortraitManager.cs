@@ -86,6 +86,12 @@ public class PortraitManager : DialoguePresenterBase
     [Range(0f, 1f)] public float inactiveAlpha = 0.4f;
     public float dimFadeDuration = 0.3f;
 
+    // Multiplied into an inactive portrait's own colors (on top of
+    // inactiveAlpha's transparency) so a non-speaking character reads as
+    // visually greyed-out, not just faded — alpha on this swatch is
+    // ignored, inactiveAlpha above already controls that.
+    [ColorUsage(false)] public Color inactiveTintColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+
     [Header("Portrait Slide-In")]
     // When a portrait is shown, it starts offset this far to the right
     // (in anchored-position UI units) and slides into its authored
@@ -245,7 +251,7 @@ public class PortraitManager : DialoguePresenterBase
 
         slot.portraitImage.sprite = defaultExpression.sprite;
         slot.portraitImage.enabled = true;
-        SetAlphaInstant(slot.portraitImage, inactiveAlpha);
+        slot.portraitImage.color = InactiveColor(inactiveAlpha);
 
         SlideIn(slot);
         PlayAppearancePop(slot);
@@ -484,7 +490,7 @@ public class PortraitManager : DialoguePresenterBase
         slotAssignments[slotName] = newCharacterName;
         slot.portraitImage.sprite = defaultExpression.sprite;
         slot.portraitImage.enabled = true;
-        SetAlphaInstant(slot.portraitImage, activeAlpha);
+        slot.portraitImage.color = ActiveColor(activeAlpha);
         PlayAppearancePop(slot);
 
         Destroy(crossfadeObject);
@@ -606,7 +612,7 @@ public class PortraitManager : DialoguePresenterBase
             if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
             if (assigned != characterName) continue;
 
-            FadeTo(slot, bright ? activeAlpha : inactiveAlpha);
+            FadeTo(slot, bright);
             return;
         }
     }
@@ -803,7 +809,7 @@ public class PortraitManager : DialoguePresenterBase
                         slot.portraitImage.sprite = chosen.sprite;
                 }
 
-                FadeTo(slot, activeAlpha);
+                FadeTo(slot, true);
 
                 // Push this slot's portrait to the front of the draw order
                 // so it renders on top of every other portrait sharing the
@@ -818,7 +824,7 @@ public class PortraitManager : DialoguePresenterBase
             }
             else
             {
-                FadeTo(slot, inactiveAlpha);
+                FadeTo(slot, false);
             }
         }
 
@@ -943,12 +949,28 @@ public class PortraitManager : DialoguePresenterBase
 
     // ── Fading ────────────────────────────────────────────────────────────
 
-    private void FadeTo(SlotConfig slot, float targetAlpha)
+    // Full-color target for a slot's portrait when active (speaking /
+    // solid): its own natural colors at activeAlpha.
+    private Color ActiveColor(float alpha)
     {
-        // Genuinely becoming more visible (dimmed/transparent -> solid)
-        // — e.g. this slot's character just became the active speaker,
-        // or SetBrightness(true) was called — gets the same soft pop as
-        // an expression swap. Fading the other way (going dim) doesn't;
+        return new Color(1f, 1f, 1f, alpha);
+    }
+
+    // Full-color target for a slot's portrait when inactive: greyed out
+    // via inactiveTintColor, on top of the usual reduced alpha.
+    private Color InactiveColor(float alpha)
+    {
+        return new Color(inactiveTintColor.r, inactiveTintColor.g, inactiveTintColor.b, alpha);
+    }
+
+    private void FadeTo(SlotConfig slot, bool active)
+    {
+        float targetAlpha = active ? activeAlpha : inactiveAlpha;
+
+        // Genuinely becoming more visible (dimmed/greyed -> solid) — e.g.
+        // this slot's character just became the active speaker, or
+        // SetBrightness(true) was called — gets the same soft pop as an
+        // expression swap. Fading the other way (going dim/grey) doesn't;
         // only "appearing" warrants it.
         if (targetAlpha > slot.portraitImage.color.a)
         {
@@ -960,23 +982,24 @@ public class PortraitManager : DialoguePresenterBase
             StopCoroutine(activeFades[slot.slotName]);
         }
 
-        activeFades[slot.slotName] = StartCoroutine(FadeAlphaCoroutine(slot, targetAlpha));
+        activeFades[slot.slotName] = StartCoroutine(FadeColorCoroutine(slot, active));
     }
 
-    private IEnumerator FadeAlphaCoroutine(SlotConfig slot, float targetAlpha)
+    private IEnumerator FadeColorCoroutine(SlotConfig slot, bool active)
     {
-        float startAlpha = slot.portraitImage.color.a;
+        Color startColor = slot.portraitImage.color;
+        Color targetColor = active ? ActiveColor(activeAlpha) : InactiveColor(inactiveAlpha);
         float elapsed = 0f;
 
         while (elapsed < dimFadeDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / dimFadeDuration);
-            SetAlphaInstant(slot.portraitImage, Mathf.Lerp(startAlpha, targetAlpha, t));
+            slot.portraitImage.color = Color.Lerp(startColor, targetColor, t);
             yield return null;
         }
 
-        SetAlphaInstant(slot.portraitImage, targetAlpha);
+        slot.portraitImage.color = targetColor;
         activeFades[slot.slotName] = null;
     }
 
