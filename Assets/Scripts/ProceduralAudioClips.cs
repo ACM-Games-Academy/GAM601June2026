@@ -327,13 +327,16 @@ public static class ProceduralAudioClips
             }
         }
 
-        // Normalize so the two overlapping tones never clip above 1.0
+        // Normalize to full scale (not just clamped down if it happened
+        // to exceed 1.0) — the growl tremolo and hard-clip shaping above
+        // otherwise leave this well under other effects' peak loudness,
+        // even with its own Volume slider maxed out in the Inspector.
         float peak = 0f;
         for (int i = 0; i < samples.Length; i++)
         {
             peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
         }
-        if (peak > 1f)
+        if (peak > 0f)
         {
             for (int i = 0; i < samples.Length; i++)
             {

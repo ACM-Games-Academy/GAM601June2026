@@ -46,11 +46,32 @@ public class MusicManager : MonoBehaviour
     [Range(0f, 1f)] public float musicVolume = 0.5f;
     public float fadeDuration = 1.5f;
 
+    [Header("Ducking")]
+    // How far the music dips while a sound effect is playing — 1 means
+    // no dip at all, 0 means fully silent.
+    [Range(0f, 1f)] public float duckVolumeMultiplier = 0.35f;
+    // How quickly it dips down when an effect starts, and how quickly
+    // it recovers once nothing's playing — kept separate since a snappy
+    // dip but a slower, smoother recovery reads more natural than
+    // symmetric timing.
+    public float duckFadeTime = 0.15f;
+    public float unduckFadeTime = 0.5f;
+
     private AudioSource sourceA;
     private AudioSource sourceB;
     private AudioSource activeSource;
     private AudioClip activeClip;
     private Coroutine fadeCoroutine;
+
+    // The crossfade/stop coroutines below drive these "base" (unducked)
+    // volumes rather than AudioSource.volume directly; Update() then
+    // multiplies each by duckMultiplier every frame. That split is what
+    // lets ducking layer on top of an in-progress day/night crossfade
+    // without the two fighting over the same field.
+    private float sourceABaseVolume = 0f;
+    private float sourceBBaseVolume = 0f;
+    private float duckMultiplier = 1f;
+    private Coroutine duckCoroutine;
 
     void Awake()
     {
@@ -80,6 +101,53 @@ public class MusicManager : MonoBehaviour
         }
 
         activeSource = sourceA;
+    }
+
+    void Update()
+    {
+        sourceA.volume = sourceABaseVolume * duckMultiplier;
+        sourceB.volume = sourceBBaseVolume * duckMultiplier;
+    }
+
+    // Dips the music down to duckVolumeMultiplier — call when a sound
+    // effect starts playing. Safe to call repeatedly while effects keep
+    // overlapping; each call just restarts the (short) dip-down fade
+    // from wherever the multiplier currently sits.
+    public void Duck()
+    {
+        if (duckCoroutine != null) StopCoroutine(duckCoroutine);
+        duckCoroutine = StartCoroutine(AnimateDuck(duckVolumeMultiplier, duckFadeTime));
+    }
+
+    // Restores the music to full volume — call once nothing's playing
+    // any sound effects anymore.
+    public void Unduck()
+    {
+        if (duckCoroutine != null) StopCoroutine(duckCoroutine);
+        duckCoroutine = StartCoroutine(AnimateDuck(1f, unduckFadeTime));
+    }
+
+    private IEnumerator AnimateDuck(float target, float duration)
+    {
+        float start = duckMultiplier;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+            duckMultiplier = Mathf.Lerp(start, target, t);
+            yield return null;
+        }
+
+        duckMultiplier = target;
+        duckCoroutine = null;
+    }
+
+    private void SetBaseVolume(AudioSource source, float value)
+    {
+        if (source == sourceA) sourceABaseVolume = value;
+        else if (source == sourceB) sourceBBaseVolume = value;
     }
 
     public void PlayDayMusic()
@@ -117,7 +185,7 @@ public class MusicManager : MonoBehaviour
         AudioSource oldSource = activeSource;
 
         newSource.clip = clip;
-        newSource.volume = 0f;
+        SetBaseVolume(newSource, 0f);
         newSource.Play();
 
         if (fadeCoroutine != null)
@@ -132,39 +200,39 @@ public class MusicManager : MonoBehaviour
 
     private IEnumerator CrossfadeCoroutine(AudioSource fadeOutSource, AudioSource fadeInSource)
     {
-        float startOutVolume = fadeOutSource.volume;
+        float startOutVolume = (fadeOutSource == sourceA) ? sourceABaseVolume : sourceBBaseVolume;
         float elapsed = 0f;
 
         while (elapsed < fadeDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / fadeDuration);
-            fadeOutSource.volume = Mathf.Lerp(startOutVolume, 0f, t);
-            fadeInSource.volume = Mathf.Lerp(0f, musicVolume, t);
+            SetBaseVolume(fadeOutSource, Mathf.Lerp(startOutVolume, 0f, t));
+            SetBaseVolume(fadeInSource, Mathf.Lerp(0f, musicVolume, t));
             yield return null;
         }
 
-        fadeOutSource.volume = 0f;
+        SetBaseVolume(fadeOutSource, 0f);
         fadeOutSource.Stop();
-        fadeInSource.volume = musicVolume;
+        SetBaseVolume(fadeInSource, musicVolume);
 
         fadeCoroutine = null;
     }
 
     private IEnumerator FadeOutAndStop(AudioSource source)
     {
-        float startVolume = source.volume;
+        float startVolume = (source == sourceA) ? sourceABaseVolume : sourceBBaseVolume;
         float elapsed = 0f;
 
         while (elapsed < fadeDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / fadeDuration);
-            source.volume = Mathf.Lerp(startVolume, 0f, t);
+            SetBaseVolume(source, Mathf.Lerp(startVolume, 0f, t));
             yield return null;
         }
 
-        source.volume = 0f;
+        SetBaseVolume(source, 0f);
         source.Stop();
         fadeCoroutine = null;
     }

@@ -68,7 +68,10 @@ public class SoundEffectManager : MonoBehaviour
         // plays, instead of always playing the same clip.
         public List<AudioClip> alternateClips = new List<AudioClip>();
 
-        [Range(0f, 1f)] public float volume = 1f;
+        // Capped above 1 (not just 0-1) so an effect can be boosted
+        // louder than its own native peak — e.g. to compete with
+        // background music — not just attenuated below it.
+        [Range(0f, 2f)] public float volume = 1f;
 
         // Picks clip if there are no alternates, or a random choice
         // among clip + alternateClips when more than one variant exists.
@@ -93,6 +96,16 @@ public class SoundEffectManager : MonoBehaviour
 
     [Header("Sound Effects")]
     public List<SoundEffectEntry> soundEffects = new List<SoundEffectEntry>();
+
+    // Rather than tuning every effect's Volume against the music by
+    // hand, the music itself dips (via MusicManager.Duck/Unduck) for as
+    // long as any effect here is playing. duckUntilTime is pushed
+    // forward by each clip's own length every time one starts, so
+    // overlapping effects naturally keep the music ducked until the
+    // last of them finishes, rather than un-ducking the instant the
+    // first one ends.
+    private float duckUntilTime = -1f;
+    private bool isDucking = false;
 
     void Awake()
     {
@@ -138,6 +151,26 @@ public class SoundEffectManager : MonoBehaviour
             () => ProceduralAudioClips.GenerateHappyMeow(10));
     }
 
+    void Update()
+    {
+        bool shouldDuck = Time.time < duckUntilTime;
+        if (shouldDuck == isDucking) return;
+
+        isDucking = shouldDuck;
+        if (MusicManager.Instance == null) return;
+
+        if (isDucking) MusicManager.Instance.Duck();
+        else MusicManager.Instance.Unduck();
+    }
+
+    // Pushes duckUntilTime forward so the music stays ducked for at
+    // least the rest of this clip's length, extending rather than
+    // resetting the window when effects overlap.
+    private void ExtendDuck(float clipLength)
+    {
+        duckUntilTime = Mathf.Max(duckUntilTime, Time.time + clipLength);
+    }
+
     // Plays a named sound effect (a random variant, if the entry has
     // alternates configured). Does nothing if the name isn't configured,
     // or if it's configured but has no clip assigned yet.
@@ -154,6 +187,7 @@ public class SoundEffectManager : MonoBehaviour
         if (clipToPlay == null) return;
 
         audioSource.PlayOneShot(clipToPlay, entry.volume);
+        ExtendDuck(clipToPlay.length);
     }
 
     // Tracks which frame the current sustained sound started on. A
@@ -188,6 +222,13 @@ public class SoundEffectManager : MonoBehaviour
         sustainedAudioSource.volume = entry.volume;
         sustainedAudioSource.Play();
         sustainedSoundStartFrame = Time.frameCount;
+
+        // Sustained sounds can be cut short (see StopSustainedSound), so
+        // this is a fallback ceiling rather than a guarantee — if it
+        // plays to completion the duck window matches it exactly, and
+        // if it's stopped early the music just un-ducks a little later
+        // than strictly necessary rather than too early.
+        ExtendDuck(clipToPlay.length);
     }
 
     // Immediately stops whatever sustained sound is currently playing
