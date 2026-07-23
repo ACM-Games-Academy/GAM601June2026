@@ -208,7 +208,12 @@ public class GridManager : MonoBehaviour
 
         PlaceWordsInGrid(gridSymbols, width, height);
 
-        // Fill remaining cells with random hieroglyphs
+        List<string> puzzleGlyphPool = BuildPuzzleGlyphPool();
+
+        // Fill remaining cells with random hieroglyphs drawn from this
+        // puzzle's own restricted pool (see BuildPuzzleGlyphPool) rather
+        // than the full canonical set — cells can and will repeat the
+        // same glyph, which is the point (see that method's comment).
         for (int row = 0; row < height; row++)
         {
             for (int col = 0; col < width; col++)
@@ -216,7 +221,7 @@ public class GridManager : MonoBehaviour
                 if (gridSymbols[row, col] == null)
                 {
                     gridSymbols[row, col] =
-                        fillHieroglyphs[Random.Range(0, fillHieroglyphs.Length)];
+                        puzzleGlyphPool[Random.Range(0, puzzleGlyphPool.Count)];
                 }
             }
         }
@@ -240,6 +245,77 @@ public class GridManager : MonoBehaviour
 
         Debug.Log("GridManager: Built " + width + "x" + height +
                   " grid with " + (activeWords != null ? activeWords.Length : 0) + " words.");
+    }
+
+    // Builds the restricted set of glyphs used to fill this puzzle's
+    // non-answer cells: every distinct glyph the answer word(s)
+    // themselves use, plus a limited number of random extras drawn from
+    // fillHieroglyphs' remainder — capped so the puzzle's total distinct
+    // glyph count never exceeds 150% of the answer's own distinct glyph
+    // count.
+    //
+    // The old behaviour filled every empty cell from the full ~50-glyph
+    // canonical set, which made the puzzle too easy: with that many
+    // glyphs to draw from, the specific glyphs making up the answer
+    // rarely turned up anywhere else in the grid, so a player could spot
+    // them by uniqueness alone rather than actually tracing the word.
+    // Keeping the overall pool small and rooted in the answer's own
+    // glyphs forces heavy repetition — including the answer's own
+    // glyphs showing up as decoys elsewhere — so the only way to solve
+    // it is to actually trace the correct sequence.
+    private List<string> BuildPuzzleGlyphPool()
+    {
+        HashSet<string> answerGlyphs = new HashSet<string>();
+        if (activeWords != null)
+        {
+            foreach (ActiveWord word in activeWords)
+            {
+                foreach (string symbol in word.symbols)
+                {
+                    answerGlyphs.Add(symbol);
+                }
+            }
+        }
+
+        int maxPoolSize = Mathf.CeilToInt(answerGlyphs.Count * 1.5f);
+        int extraNeeded = Mathf.Max(0, maxPoolSize - answerGlyphs.Count);
+
+        List<string> pool = new List<string>(answerGlyphs);
+
+        // Candidates for the extra slots: whatever's in fillHieroglyphs
+        // that isn't already one of the answer's own glyphs.
+        List<string> remainder = new List<string>();
+        foreach (string glyph in fillHieroglyphs)
+        {
+            if (!answerGlyphs.Contains(glyph)) remainder.Add(glyph);
+        }
+
+        // Fisher-Yates shuffle so the extras taken from the front are a
+        // random sample with no repeats among themselves.
+        for (int i = remainder.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            string temp = remainder[i];
+            remainder[i] = remainder[j];
+            remainder[j] = temp;
+        }
+
+        int actualExtra = Mathf.Min(extraNeeded, remainder.Count);
+        for (int i = 0; i < actualExtra; i++)
+        {
+            pool.Add(remainder[i]);
+        }
+
+        // Safety net for the degenerate case (no active words, so
+        // nothing to build a pool from) — fall back to the full
+        // canonical set rather than leaving cells with nothing to draw
+        // from.
+        if (pool.Count == 0)
+        {
+            pool.AddRange(fillHieroglyphs);
+        }
+
+        return pool;
     }
 
     private void PlaceWordsInGrid(string[,] gridSymbols, int width, int height)
