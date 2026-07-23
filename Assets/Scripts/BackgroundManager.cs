@@ -143,12 +143,26 @@ public class BackgroundManager : MonoBehaviour
     // torch glows above.
     public bool enableGodRays = true;
     public List<GodRayConfig> godRays = new List<GodRayConfig>();
+    // Gentle breathing while a ray is in its visible phase — see the
+    // appear/disappear cycle below for the actual on/off timing.
     public float godRaySwaySpeed = 0.4f;
     [Range(0f, 1f)] public float godRaySwayAmount = 0.2f;
+
+    [Header("Day Ambience — God Ray Appear/Disappear Cycle")]
+    // Each ray independently cycles: fade in, stay visible (breathing)
+    // for a while, fade out, then vanish completely for an extended
+    // pause before repeating. Starts are spread evenly across one full
+    // cycle length (based on each ray's position in the list), so with
+    // three rays they're staggered a third of a cycle apart — never all
+    // visible, or all hidden, at the same time.
+    public float godRayVisibleDuration = 6f;
+    public float godRayHiddenDuration = 12f;
+    public float godRayFadeTransitionDuration = 2.5f;
 
     private GameObject dayAmbienceContainer;
     private List<Image> godRayImages;
     private List<float> godRaySwaySeeds;
+    private List<Coroutine> godRayCycleCoroutines;
 
     private static Sprite cachedGodRaySprite;
     private const int GodRayTextureWidth = 128;
@@ -382,10 +396,11 @@ public class BackgroundManager : MonoBehaviour
             AnimateCloudDrift();
         }
 
-        if (dayAmbienceContainer != null && dayAmbienceContainer.activeSelf)
-        {
-            AnimateGodRaySway();
-        }
+        // God rays are driven by GodRayCycleRoutine (one coroutine per
+        // ray, started in BuildGodRays) rather than a per-frame Update
+        // call — their appear/pause/reappear timing needs real staged
+        // waits, which a coroutine expresses far more directly than a
+        // state machine bolted onto Update().
     }
 
     // Lets you build (and re-sync) the night ambience objects without
@@ -770,12 +785,22 @@ public class BackgroundManager : MonoBehaviour
         }
         else
         {
+            // Stop any running cycle coroutines before destroying the
+            // ray objects they reference — otherwise they'd keep trying
+            // to set color on now-destroyed Images.
+            StopGodRayCycles();
             RemoveExtraChildren(containerRect, "GodRay ", 0);
         }
     }
 
     private void BuildGodRays(RectTransform container)
     {
+        // Stop any previously running cycle coroutines before rebuilding
+        // — each one closes over a list index into godRayImages/godRays,
+        // which would otherwise go stale (or out of range) against the
+        // fresh lists built below.
+        StopGodRayCycles();
+
         godRayImages = new List<Image>();
         godRaySwaySeeds = new List<float>();
 
@@ -805,33 +830,100 @@ public class BackgroundManager : MonoBehaviour
             if (rayImage == null) rayImage = rayObject.AddComponent<Image>();
             rayImage.sprite = GetGodRaySprite();
             rayImage.raycastTarget = false;
-            rayImage.color = new Color(config.color.r, config.color.g, config.color.b, config.baseAlpha);
+            // Starts fully hidden — GodRayCycleRoutine fades it in once
+            // its staggered start delay elapses, rather than popping
+            // straight to baseAlpha here.
+            rayImage.color = new Color(config.color.r, config.color.g, config.color.b, 0f);
 
             godRayImages.Add(rayImage);
 
             // Distinct random phase per ray so they breathe out of sync
-            // with each other, same reasoning as the torch flicker.
+            // with each other during their visible phase, same reasoning
+            // as the torch flicker.
             godRaySwaySeeds.Add(Random.Range(0f, 1000f));
         }
 
         RemoveExtraChildren(container, "GodRay ", godRays.Count);
+
+        godRayCycleCoroutines = new List<Coroutine>();
+        for (int i = 0; i < godRays.Count; i++)
+        {
+            godRayCycleCoroutines.Add(StartCoroutine(GodRayCycleRoutine(i)));
+        }
     }
 
-    private void AnimateGodRaySway()
+    private void StopGodRayCycles()
     {
-        if (godRayImages == null) return;
+        if (godRayCycleCoroutines == null) return;
 
-        for (int i = 0; i < godRayImages.Count; i++)
+        foreach (Coroutine coroutine in godRayCycleCoroutines)
         {
-            GodRayConfig config = godRays[i];
-            float noise = Mathf.PerlinNoise(godRaySwaySeeds[i], Time.time * godRaySwaySpeed);
-            float alpha = config.baseAlpha + (noise - 0.5f) * 2f * godRaySwayAmount;
-
-            Image image = godRayImages[i];
-            Color c = image.color;
-            c.a = Mathf.Clamp01(alpha);
-            image.color = c;
+            if (coroutine != null) StopCoroutine(coroutine);
         }
+
+        godRayCycleCoroutines = null;
+    }
+
+    // Repeats forever: fade in, stay visible (breathing gently) for
+    // godRayVisibleDuration, fade out, then disappear completely for
+    // godRayHiddenDuration before fading back in. 'index' is fixed for
+    // this coroutine's entire lifetime, matched against the
+    // godRays/godRayImages lists as they stood when it was started (see
+    // StopGodRayCycles — a rebuild always stops these first).
+    private IEnumerator GodRayCycleRoutine(int index)
+    {
+        // Spread starts evenly across one full cycle length, based on
+        // this ray's position in the list, so rays are never all
+        // visible or all hidden at the same time.
+        float cycleLength = godRayFadeTransitionDuration * 2f + godRayVisibleDuration + godRayHiddenDuration;
+        float startDelay = index * (cycleLength / Mathf.Max(godRays.Count, 1));
+        yield return new WaitForSeconds(startDelay);
+
+        Image image = godRayImages[index];
+
+        while (true)
+        {
+            yield return FadeGodRayAlpha(image, image.color.a, godRays[index].baseAlpha, godRayFadeTransitionDuration);
+
+            float elapsed = 0f;
+            while (elapsed < godRayVisibleDuration)
+            {
+                elapsed += Time.deltaTime;
+
+                GodRayConfig config = godRays[index];
+                float noise = Mathf.PerlinNoise(godRaySwaySeeds[index], Time.time * godRaySwaySpeed);
+                float sway = (noise - 0.5f) * 2f * godRaySwayAmount;
+                SetGodRayAlpha(image, Mathf.Clamp01(config.baseAlpha + sway));
+
+                yield return null;
+            }
+
+            yield return FadeGodRayAlpha(image, image.color.a, 0f, godRayFadeTransitionDuration);
+
+            yield return new WaitForSeconds(godRayHiddenDuration);
+        }
+    }
+
+    private IEnumerator FadeGodRayAlpha(Image image, float from, float to, float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+            SetGodRayAlpha(image, Mathf.Lerp(from, to, t));
+            yield return null;
+        }
+
+        SetGodRayAlpha(image, to);
+    }
+
+    private void SetGodRayAlpha(Image image, float alpha)
+    {
+        Color c = image.color;
+        c.a = alpha;
+        image.color = c;
     }
 
     // A soft, tapered light-shaft gradient: narrow and fading in near

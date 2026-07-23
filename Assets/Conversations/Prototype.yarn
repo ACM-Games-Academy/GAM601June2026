@@ -24,6 +24,7 @@ Meritamun: My joy is the will of the Gods, absolutely. No snakes or rats will be
 <<hideportrait Left>>
 <<hideportrait CenterLeft>>
 <<openingdayreveal OpeningDayReveal>>
+<<setgridsize 9 9>>
 <<setpuzzle 𓀀𓅱𓄤:Path_A|𓇳𓅓𓁶:Path_B>>
 
 <<showportrait Left Amenhotep>>
@@ -193,7 +194,7 @@ Sekhmet: GAH!!!
 <<hideallportraits>>
 
 <<fadetoday BackgroundManager>>
-<<setgridsize 9 9>>
+
 <<setpuzzle 𓐍𓆏𓏏:Path_A|𓃭𓆑𓈎:Path_B|𓂧𓁹𓆙:Path_C|𓋹𓁐𓋔:Path_D>>
 
 <<showportrait Left Harwa>>
