@@ -158,6 +158,20 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         // It returns void so Yarn fires it and immediately continues
         // to the next line — no dialogue pause while the grid rebuilds.
         dialogueRunner.AddCommandHandler<string>("setpuzzle", SetPuzzleCommand);
+
+        // <<setgridsize width height>> — e.g. <<setgridsize 9 9>> before
+        // the final daytime segment's puzzles, for a harder late-game
+        // grid. Applies to every puzzle loaded from then on until
+        // changed again; doesn't touch whatever puzzle is up right now.
+        dialogueRunner.AddCommandHandler<int, int>("setgridsize", SetGridSizeCommand);
+    }
+
+    private void SetGridSizeCommand(int width, int height)
+    {
+        if (gridManager != null)
+        {
+            gridManager.SetGridSize(width, height);
+        }
     }
 
     void OnEnable()

@@ -93,7 +93,23 @@ public class GridManager : MonoBehaviour
     void Awake()
     {
         fillHieroglyphs = CanonicalFillHieroglyphs;
+
+        // Captured once, before any puzzle ever touches the layout, so
+        // SetGridSize() always has the artist-authored on-screen
+        // footprint to fit any future grid size into (see
+        // ConfigureGridLayout) rather than compounding resizes on top
+        // of whatever the previous puzzle left behind.
+        if (gridPanel != null)
+        {
+            RectTransform panelRect = gridPanel as RectTransform;
+            if (panelRect != null)
+            {
+                gridPanelFootprint = panelRect.sizeDelta;
+            }
+        }
     }
+
+    private Vector2 gridPanelFootprint;
 
     // ── Runtime state ─────────────────────────────────────────────────────
 
@@ -181,6 +197,17 @@ public class GridManager : MonoBehaviour
         BuildGrid(defaultGridWidth, defaultGridHeight);
     }
 
+    // Changes the puzzle grid's dimensions for every puzzle loaded from
+    // here on, until changed again — e.g. a one-off <<setgridsize 9 9>>
+    // before the final daytime segment's puzzles, for a harder late-game
+    // grid. Takes effect the next time a puzzle is built; doesn't rebuild
+    // whatever grid is currently showing.
+    public void SetGridSize(int width, int height)
+    {
+        defaultGridWidth = width;
+        defaultGridHeight = height;
+    }
+
     // ── Grid building ─────────────────────────────────────────────────────
 
     private void ClearGrid()
@@ -200,8 +227,33 @@ public class GridManager : MonoBehaviour
         activeWords = null;
     }
 
+    // Shrinks or grows the GridLayoutGroup's cell size so exactly
+    // 'width' x 'height' cells (plus its existing spacing) fill
+    // gridPanelFootprint — the panel's original, artist-authored size —
+    // rather than overflowing it or leaving it looking sparse. Also
+    // forces exactly 'width' columns per row via FixedColumnCount,
+    // rather than relying on Flexible wrapping to happen to fit that
+    // many per row at the computed cell size.
+    private void ConfigureGridLayout(int width, int height)
+    {
+        if (gridPanel == null) return;
+
+        GridLayoutGroup layoutGroup = gridPanel.GetComponent<GridLayoutGroup>();
+        if (layoutGroup == null) return;
+
+        float cellWidth = (gridPanelFootprint.x - layoutGroup.spacing.x * (width - 1)) / width;
+        float cellHeight = (gridPanelFootprint.y - layoutGroup.spacing.y * (height - 1)) / height;
+        float cellSize = Mathf.Min(cellWidth, cellHeight);
+
+        layoutGroup.cellSize = new Vector2(cellSize, cellSize);
+        layoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layoutGroup.constraintCount = width;
+    }
+
     private void BuildGrid(int width, int height)
     {
+        ConfigureGridLayout(width, height);
+
         grid = new Cell[height, width];
 
         string[,] gridSymbols = new string[height, width];

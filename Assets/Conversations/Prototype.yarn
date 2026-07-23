@@ -193,7 +193,7 @@ Sekhmet: GAH!!!
 <<hideallportraits>>
 
 <<fadetoday BackgroundManager>>
-
+<<setgridsize 9 9>>
 <<setpuzzle 𓐍𓆏𓏏:Path_A|𓃭𓆑𓈎:Path_B|𓂧𓁹𓆙:Path_C|𓋹𓁐𓋔:Path_D>>
 
 <<showportrait Left Harwa>>
