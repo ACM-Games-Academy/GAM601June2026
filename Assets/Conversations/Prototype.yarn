@@ -76,14 +76,14 @@ Ahmose: Make𓎡 a move𓃀 against𓂋 Amenhotep? Or <br> Let𓄿 him𓊹 be�
 <<setpuzzle 𓏍𓌅𓆣:Path_A|𓇳𓌅𓆣:Path_B>>
 
 <<showportrait Left Harwa>>
-Harwa: Chariot race with the boys tomorrow – Lady Sekhmet hear my prayers!
-Harwa: I heard from Amenhotep that a desert cat has blessed this holy temple with her grace and fury – and I just know that this is sign that I’ll win tomorrow. 
+Harwa: Chariot race with the boys tomorrow – Lady Sekhmet hear my prayers! #expression:laughing
+Harwa: I heard from Amenhotep that a desert cat has blessed this holy temple with her grace and fury – and I just know that this is sign that I’ll win tomorrow. #expression:laughing
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrrr......*
 Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him I'd pray to ask the Gods, so here I am. Should I <br> join𓏍 the race𓌅 tomorrow𓆣? OR <br> Not𓇳 race𓌅 tomorrow𓆣? #wordsearch
 <<if $selectedPath == "Path_A">>  
-    Harwa: The Gods have spoken! Haha! On to victory!
+    Harwa: The Gods have spoken! Haha! On to victory! #expression:laughing
         <<addgodaffinity Sekhmet 1>> 
         <<addhumanaffinity Chaos 1>>
 
@@ -154,7 +154,7 @@ Harwa: So here I am, asking the gods...Should I <br> step𓆓 away𓉻 from𓋾 
     <<addgodaffinity Thoth 1>>
     <<addhumanaffinity Ptahhotep 1>>
 <<elseif $selectedPath == "Path_B">>
-    Harwa: Yes! I knew the Gods were on my side all along! Ha! 
+    Harwa: Yes! I knew the Gods were on my side all along! Ha! #expression:laughing
     <<addgodaffinity Bes 1>>
     <<addhumanaffinity Harwa 1>>
 <<endif>>
@@ -200,26 +200,26 @@ Sekhmet: GAH!!!
 <<angerreaction Harwa>>
 Harwa: Lost again at the races, rotten luck I suppose.
 Harwa: Father is asking me to spend more time with Nitiqret but honestly I can’t stand that simpering baby.
-Harwa: At least you are good company, Temple Cat. I wonder if you have a name?
+Harwa: At least you are good company, Temple Cat. I wonder if you have a name? #expression:laughing
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
 Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓐍 Kitten𓆏 Beans𓏏 <br> Lioness𓃭 of the Ferocious𓆑 Desert𓈎 Sands <br> Mighty𓂧 Scourge𓁹 of Snakes𓆙 , or <br> ... Holy𓋹 Lady𓁐 of Thebes𓋔? #wordsearch
 
 <<if $selectedPath == "Path_A">>
-    Harwa: Sweet Kitten Beans it is! 
+    Harwa: Sweet Kitten Beans it is! #expression:laughing
     <<addgodaffinity Bes 1>>
     <<addhumanaffinity Chaos 1>>
 <<elseif $selectedPath == "Path_B">>
-    Harwa: Lioness of the Ferocious Desert Sands it is! 
+    Harwa: Lioness of the Ferocious Desert Sands it is! #expression:laughing
     <<addgodaffinity Sekhmet 1>>
     <<addhumanaffinity Harwa 1>>
 <<elseif $selectedPath == "Path_C">>
-    Harwa: Might Scourge of Snakes it is! 
+    Harwa: Might Scourge of Snakes it is! #expression:laughing
     <<addgodaffinity Bast 1>>
     <<addhumanaffinity Ptahhotep 1>>
 <<elseif $selectedPath == "Path_D">>
-    Harwa: Holy Lady of Thebes it is!
+    Harwa: Holy Lady of Thebes it is!#expression:laughing
     <<addhumanaffinity Nitiqret 1>>
     <<addgodaffinity Thoth 1>>
 <<endif>>

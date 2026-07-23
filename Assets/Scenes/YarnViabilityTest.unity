@@ -588,6 +588,9 @@ MonoBehaviour:
     - expressionName: neutral
       sprite: {fileID: 5724168595349758334, guid: b891db1e04443f8429a4e65afe1b71e4, type: 3}
       isDefault: 1
+    - expressionName: laughing
+      sprite: {fileID: 2165043705081866506, guid: cbe067ba14794e54281f36ee61d98f1f, type: 3}
+      isDefault: 0
   - characterName: Bast
     expressions:
     - expressionName: neutral
@@ -3640,7 +3643,7 @@ MonoBehaviour:
     rotationDegrees: 12
     color: {r: 1, g: 0.95, b: 0.7, a: 1}
     baseAlpha: 0.65
-  godRaySwaySpeed: 1
+  godRaySwaySpeed: 0.2
   godRaySwayAmount: 1
 --- !u!4 &1952591782
 Transform:

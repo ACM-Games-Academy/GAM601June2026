@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 // MusicManager
@@ -26,11 +27,19 @@ using UnityEngine;
 //   - BackgroundManager.FadeToDay()    → PlayDayMusic()
 //   - BackgroundManager.FadeToNight()  → PlayNightMusic()
 //   - BackgroundManager.RevealDayFromBlackOverlay() → PlayDayMusic()
+//   - WordsearchDialogueBridge (puzzle locks dialogue advancement)
+//       → PlayNextPuzzleMusic()
+//   - WordsearchDialogueBridge (puzzle solved)
+//       → StopPuzzleMusic()  (crossfades back to whatever day/night
+//                              track was playing beforehand)
 //
 // SETUP:
 // 1. Attach to an empty GameObject named "MusicManager", placed in
 //    whichever scene loads FIRST (the splash screen).
 // 2. Assign Day Music Clip and Night Music Clip in the Inspector.
+//    Optionally assign one or more Puzzle Music Clips too — each
+//    wordsearch puzzle plays the next one in list order, wrapping back
+//    to the start after the last.
 // 3. Don't place a second MusicManager in the gameplay scene — this
 //    one already survives into it automatically. If a duplicate does
 //    turn up, this script destroys the newcomer and keeps the
@@ -45,6 +54,19 @@ public class MusicManager : MonoBehaviour
     public AudioClip nightMusicClip;
     [Range(0f, 1f)] public float musicVolume = 0.5f;
     public float fadeDuration = 1.5f;
+
+    [Header("Puzzle Music")]
+    // Played (a random pick each time) whenever a wordsearch puzzle
+    // locks dialogue advancement, replacing the day/night track for the
+    // duration — see WordsearchDialogueBridge, which calls
+    // PlayNextPuzzleMusic() when the puzzle locks and StopPuzzleMusic()
+    // when it's solved. Cycles through in list order (0, 1, 2, 3, 0, ...)
+    // rather than randomly.
+    public List<AudioClip> puzzleMusicClips = new List<AudioClip>();
+
+    private AudioClip trackBeforePuzzle;
+    private bool isPuzzleMusicPlaying = false;
+    private int nextPuzzleClipIndex = 0;
 
     [Header("Ducking")]
     // How far the music dips while a sound effect is playing — 1 means
@@ -158,6 +180,45 @@ public class MusicManager : MonoBehaviour
     public void PlayNightMusic()
     {
         PlayTrack(nightMusicClip);
+    }
+
+    // Crossfades to the next clip in puzzleMusicClips (wrapping back to
+    // the start after the last one), remembering whatever was playing
+    // before (day or night music) so StopPuzzleMusic() can crossfade
+    // back to it. Safe to call repeatedly while a puzzle stays active —
+    // a second call while puzzle music is already playing does nothing,
+    // so re-triggering this doesn't skip ahead mid-puzzle.
+    public void PlayNextPuzzleMusic()
+    {
+        if (puzzleMusicClips == null || puzzleMusicClips.Count == 0) return;
+        if (isPuzzleMusicPlaying) return;
+
+        trackBeforePuzzle = activeClip;
+        isPuzzleMusicPlaying = true;
+
+        AudioClip chosen = puzzleMusicClips[nextPuzzleClipIndex];
+        nextPuzzleClipIndex = (nextPuzzleClipIndex + 1) % puzzleMusicClips.Count;
+        PlayTrack(chosen);
+    }
+
+    // Crossfades back to whatever was playing before the puzzle started,
+    // or stops music entirely if nothing was. Does nothing if puzzle
+    // music isn't currently playing.
+    public void StopPuzzleMusic()
+    {
+        if (!isPuzzleMusicPlaying) return;
+        isPuzzleMusicPlaying = false;
+
+        if (trackBeforePuzzle != null)
+        {
+            PlayTrack(trackBeforePuzzle);
+        }
+        else
+        {
+            StopMusic();
+        }
+
+        trackBeforePuzzle = null;
     }
 
     // Fades the currently playing track (if any) down to silence and

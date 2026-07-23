@@ -341,6 +341,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             puzzleBackdropObject = null;
         }
 
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.StopPuzzleMusic();
+        }
+
         if (puzzledHintCoroutine != null)
         {
             StopCoroutine(puzzledHintCoroutine);
@@ -576,6 +581,11 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             if (gridManager != null) gridManager.inputEnabled = true;
 
             ShowPuzzleBackdrop();
+
+            if (MusicManager.Instance != null)
+            {
+                MusicManager.Instance.PlayNextPuzzleMusic();
+            }
 
             // Remember who's asking this puzzle's question so the glow
             // can target the right NPC when the answer is found — the

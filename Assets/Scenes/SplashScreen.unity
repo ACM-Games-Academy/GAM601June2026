@@ -1150,6 +1150,11 @@ MonoBehaviour:
   nightMusicClip: {fileID: 8300000, guid: 3af2eca9067886c4e99d8625fcea61db, type: 3}
   musicVolume: 0.5
   fadeDuration: 1.5
+  puzzleMusicClips:
+  - {fileID: 8300000, guid: 3e6839652041e7a47ad2948948d1acb6, type: 3}
+  - {fileID: 8300000, guid: 173510eed3198e14d89082b42f47be33, type: 3}
+  - {fileID: 8300000, guid: fb2fdd6816a977a4592a37c205ccd622, type: 3}
+  - {fileID: 8300000, guid: 0322bb13b970868429fad556e7db84d0, type: 3}
 --- !u!82 &1927488458
 AudioSource:
   m_ObjectHideFlags: 0

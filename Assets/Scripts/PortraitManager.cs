@@ -253,8 +253,13 @@ public class PortraitManager : DialoguePresenterBase
         slot.portraitImage.enabled = true;
         slot.portraitImage.color = InactiveColor(inactiveAlpha);
 
+        // No appearance pop here — the portrait is being set to its
+        // dimmed/inactive color, not lit up, so popping now would show
+        // it happening while still faded out. If this character becomes
+        // the active speaker (immediately or later), FadeTo(slot, true)
+        // — called from RunLineAsync/SetBrightness — is what triggers
+        // the pop, correctly timed to when it's actually becoming solid.
         SlideIn(slot);
-        PlayAppearancePop(slot);
     }
 
     private void HidePortrait(string slotName)

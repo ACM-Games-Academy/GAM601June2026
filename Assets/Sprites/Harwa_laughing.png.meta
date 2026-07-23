@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 65c241fb97def0b40b57efc3236240f8
+guid: cbe067ba14794e54281f36ee61d98f1f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -720758889363181054
-    second: Cat_Meritamun_puzzled_0
+      213: 2165043705081866506
+    second: Harwa_laughing_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Cat_Meritamun_puzzled_0
+      name: Harwa_laughing_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 1
-        width: 940
-        height: 1671
+        y: 0
+        width: 1024
+        height: 1515
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2027dcedb995ff5f0800000000000000
-      internalID: -720758889363181054
+      spriteID: a09a99467c7cb0e10800000000000000
+      internalID: 2165043705081866506
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 3b61336b94f622441a0b00cf4b0a71d7
+    spriteID: c159fd9efd5c3f548a6d8365ce6e0db4
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Cat_Meritamun_puzzled_0: -720758889363181054
+      Harwa_laughing_0: 2165043705081866506
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
