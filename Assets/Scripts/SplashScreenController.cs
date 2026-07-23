@@ -61,6 +61,14 @@ public class SplashScreenController : MonoBehaviour
     public Color playButtonColor = new Color(0.72f, 0.53f, 0.15f);
     public string gameplaySceneName = "YarnViabilityTest";
 
+    // Shared PREFAB with BackgroundManager's daytime god rays — assign
+    // the SAME DayAtmosphereEffect prefab asset to both, and editing the
+    // prefab (positions, rotations, adding more effects to it later)
+    // applies everywhere that instantiates it. The splash screen uses a
+    // daytime background too, so it gets the same treatment.
+    [Header("Sky Ambience — God Rays")]
+    public GameObject dayAtmosphereEffectPrefab;
+
     void Start()
     {
         EnsureEventSystem();
@@ -101,6 +109,8 @@ public class SplashScreenController : MonoBehaviour
         RectTransform canvasRect = FindOrCreateCanvas();
 
         CreateBackground(canvasRect);
+        BuildDayAtmosphere(canvasRect);
+
         CreateCharacterImage(canvasRect, meritamunWorriedSprite, "MeritamunWorried",
             anchor: new Vector2(0f, 0f), size: new Vector2(450f, 700f), offset: new Vector2(60f, 0f));
         CreateCharacterImage(canvasRect, catMeritamunPawRaisedSprite, "CatMeritamunPawRaised",
@@ -280,5 +290,27 @@ public class SplashScreenController : MonoBehaviour
     private void OnPlayButtonClicked()
     {
         SceneManager.LoadScene(gameplaySceneName);
+    }
+
+    // ── Sky ambience: god rays (via DayAtmosphereEffect prefab) ──────────
+
+    // Finds (or instantiates) the DayAtmosphereEffect prefab as a child
+    // of the splash canvas. This component no longer builds or animates
+    // any rays itself — the prefab instance manages its own entirely
+    // (see DayAtmosphereEffect.cs), so editing the prefab asset (or the
+    // GodRaySettings it references) updates every scene that uses it,
+    // including BackgroundManager's gameplay day background.
+    private void BuildDayAtmosphere(RectTransform parent)
+    {
+        if (dayAtmosphereEffectPrefab == null) return;
+
+        Transform existing = parent.Find("DayAtmosphereEffect");
+        if (existing != null) return;
+
+        // Called right after CreateBackground in BuildSplashScreen, so
+        // appending here naturally lands it as Background's very next
+        // sibling — above the art, below the title/portraits/button.
+        GameObject instance = Instantiate(dayAtmosphereEffectPrefab, parent);
+        instance.name = "DayAtmosphereEffect"; // strip the "(Clone)" suffix so Find() above matches on future calls
     }
 }

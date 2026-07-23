@@ -1358,12 +1358,12 @@ GameObject:
   m_Component:
   - component: {fileID: 420391676}
   m_Layer: 0
-  m_Name: DayAmbience
+  m_Name: DayAmbience (OLD - superseded by DayAtmosphereEffect prefab, safe to delete)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &420391676
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3623,28 +3623,7 @@ MonoBehaviour:
   cloudDriftSpeed: 100
   cloudBandCenterY: 300
   cloudBandHeight: 120
-  enableGodRays: 1
-  godRays:
-  - anchoredPosition: {x: -500, y: 0}
-    width: 300
-    height: 1000
-    rotationDegrees: -12
-    color: {r: 1, g: 0.95, b: 0.7, a: 1}
-    baseAlpha: 0.65
-  - anchoredPosition: {x: 0, y: 0}
-    width: 300
-    height: 1000
-    rotationDegrees: 0
-    color: {r: 1, g: 0.95, b: 0.7, a: 1}
-    baseAlpha: 0.65
-  - anchoredPosition: {x: 500, y: 0}
-    width: 300
-    height: 1000
-    rotationDegrees: 12
-    color: {r: 1, g: 0.95, b: 0.7, a: 1}
-    baseAlpha: 0.65
-  godRaySwaySpeed: 0.2
-  godRaySwayAmount: 1
+  dayAtmosphereEffectPrefab: {fileID: 100000001, guid: 65f4298b28f24578bb58dfaf930d9217, type: 3}
 --- !u!4 &1952591782
 Transform:
   m_ObjectHideFlags: 0

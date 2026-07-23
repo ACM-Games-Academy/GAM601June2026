@@ -118,55 +118,15 @@ public class BackgroundManager : MonoBehaviour
     private static Sprite cachedSoftGlowSprite;
     private const int GlowTextureSize = 128;
 
-    [System.Serializable]
-    public class GodRayConfig
-    {
-        // Anchored to the top-center of the background rect (anchorY=1)
-        // — this is a horizontal offset plus a slight vertical nudge
-        // from the top edge, not a free-floating anchor like the torch
-        // glows, since a god ray only makes sense hanging from the sky.
-        public Vector2 anchoredPosition;
-        public float width = 260f;
-        public float height = 1000f;
-        // A little tilt reads as raking sunlight rather than a perfectly
-        // vertical, mechanical-looking shaft.
-        public float rotationDegrees = 0f;
-        public Color color = new Color(1f, 0.95f, 0.75f, 1f); // warm sunlight
-        [Range(0f, 1f)] public float baseAlpha = 0.35f;
-    }
-
     [Header("Day Ambience — God Rays")]
-    // Empty by default — add one entry per shaft of light you want
-    // (e.g. one per skylight opening visible in the day sprite) and
-    // position/rotate it in the Inspector or by dragging in the Scene
-    // view. Each one breathes independently, same reasoning as the
-    // torch glows above.
-    public bool enableGodRays = true;
-    public List<GodRayConfig> godRays = new List<GodRayConfig>();
-    // Gentle breathing while a ray is in its visible phase — see the
-    // appear/disappear cycle below for the actual on/off timing.
-    public float godRaySwaySpeed = 0.4f;
-    [Range(0f, 1f)] public float godRaySwayAmount = 0.2f;
-
-    [Header("Day Ambience — God Ray Appear/Disappear Cycle")]
-    // Each ray independently cycles: fade in, stay visible (breathing)
-    // for a while, fade out, then vanish completely for an extended
-    // pause before repeating. Starts are spread evenly across one full
-    // cycle length (based on each ray's position in the list), so with
-    // three rays they're staggered a third of a cycle apart — never all
-    // visible, or all hidden, at the same time.
-    public float godRayVisibleDuration = 6f;
-    public float godRayHiddenDuration = 12f;
-    public float godRayFadeTransitionDuration = 2.5f;
+    // Shared PREFAB (not just shared data) — assign the SAME
+    // DayAtmosphereEffect prefab asset here and on SplashScreenController.
+    // Editing the prefab (positions, rotations, adding more effects to it
+    // later) updates every scene that instantiates it. The prefab itself
+    // references a GodRaySettings asset for its tunable values.
+    public GameObject dayAtmosphereEffectPrefab;
 
     private GameObject dayAmbienceContainer;
-    private List<Image> godRayImages;
-    private List<float> godRaySwaySeeds;
-    private List<Coroutine> godRayCycleCoroutines;
-
-    private static Sprite cachedGodRaySprite;
-    private const int GodRayTextureWidth = 128;
-    private const int GodRayTextureHeight = 256;
 
     private bool isFading = false;
 
@@ -396,11 +356,8 @@ public class BackgroundManager : MonoBehaviour
             AnimateCloudDrift();
         }
 
-        // God rays are driven by GodRayCycleRoutine (one coroutine per
-        // ray, started in BuildGodRays) rather than a per-frame Update
-        // call — their appear/pause/reappear timing needs real staged
-        // waits, which a coroutine expresses far more directly than a
-        // state machine bolted onto Update().
+        // God rays are entirely self-driven by the DayAtmosphereEffect
+        // prefab instance (see BuildDayAmbience) — nothing to do here.
     }
 
     // Lets you build (and re-sync) the night ambience objects without
@@ -704,13 +661,14 @@ public class BackgroundManager : MonoBehaviour
         return cachedSoftGlowSprite;
     }
 
-    // ── Day ambience: god rays ───────────────────────────────────────────────
+    // ── Day ambience: god rays (via DayAtmosphereEffect prefab) ──────────────
 
-    // Lets you build (and re-sync) the god ray objects without pressing
-    // Play — same reasoning and same find-or-create-by-name persistence
-    // as "Build Night Ambience In Editor" above. Also switches the
-    // background layers to the day sprite so the temple art is actually
-    // visible in the Scene view while you position the rays.
+    // Lets you instantiate the day atmosphere prefab without pressing
+    // Play, and switches the background layers to the day sprite so the
+    // temple art is actually visible in the Scene view while you work.
+    // Positioning/tuning the rays themselves now happens by editing the
+    // DayAtmosphereEffect prefab directly (or the GodRaySettings asset it
+    // references) — not here.
     [ContextMenu("Build Day Ambience In Editor")]
     private void BuildDayAmbienceInEditor()
     {
@@ -725,268 +683,43 @@ public class BackgroundManager : MonoBehaviour
             SetAlpha(topLayer, 0f);
         }
 
-        SeedExampleGodRaysIfEmpty();
         BuildDayAmbience();
 
         if (dayAmbienceContainer != null) dayAmbienceContainer.SetActive(true);
     }
 
-    // First-time convenience only: if you haven't configured any god
-    // rays yet, seeds three large, brightly-lit placeholders spread
-    // across the top of the screen with a bit of varied tilt, so
-    // there's something obvious to find and drag under an actual
-    // skylight/window in the art, then dial down afterward.
-    private void SeedExampleGodRaysIfEmpty()
-    {
-        if (godRays != null && godRays.Count > 0) return;
-
-        Color obviousSunlight = new Color(1f, 0.95f, 0.7f, 1f);
-        godRays = new List<GodRayConfig>
-        {
-            new GodRayConfig { anchoredPosition = new Vector2(-500f, 0f), width = 300f, height = 1000f, rotationDegrees = -12f, baseAlpha = 0.65f, color = obviousSunlight },
-            new GodRayConfig { anchoredPosition = new Vector2(0f, 0f),    width = 300f, height = 1000f, rotationDegrees = 0f,   baseAlpha = 0.65f, color = obviousSunlight },
-            new GodRayConfig { anchoredPosition = new Vector2(500f, 0f),  width = 300f, height = 1000f, rotationDegrees = 12f,  baseAlpha = 0.65f, color = obviousSunlight },
-        };
-    }
-
-    // Finds (or creates) a container sitting just above the background
-    // layers, then re-syncs its god ray children against the current
-    // configuration — same persistence behavior as BuildNightAmbience:
-    // existing children are matched by name and never have their
-    // position/rotation reset, so anything dragged/rotated in the Scene
-    // view stays put across rebuilds and Play/Stop cycles.
+    // Finds (or instantiates) the DayAtmosphereEffect prefab as a child
+    // sitting just above the background layers. Unlike the old inline
+    // system, this component no longer builds or animates anything
+    // itself — the prefab instance manages its own rays entirely (see
+    // DayAtmosphereEffect.cs), so editing the prefab asset (or the
+    // GodRaySettings it references) updates every scene that uses it.
     private void BuildDayAmbience()
     {
+        if (dayAtmosphereEffectPrefab == null)
+        {
+            Debug.LogWarning("BackgroundManager: Day Atmosphere Effect Prefab isn't assigned — nothing to build.");
+            return;
+        }
+
         Transform backgroundParent = topLayer.transform.parent;
-        Transform existingContainer = backgroundParent.Find("DayAmbience");
+        Transform existing = backgroundParent.Find("DayAtmosphereEffect");
 
-        if (existingContainer != null)
+        if (existing != null)
         {
-            dayAmbienceContainer = existingContainer.gameObject;
-        }
-        else
-        {
-            dayAmbienceContainer = new GameObject("DayAmbience", typeof(RectTransform));
-            RectTransform newContainerRect = dayAmbienceContainer.GetComponent<RectTransform>();
-            newContainerRect.SetParent(backgroundParent, false);
-            newContainerRect.anchorMin = Vector2.zero;
-            newContainerRect.anchorMax = Vector2.one;
-            newContainerRect.offsetMin = Vector2.zero;
-            newContainerRect.offsetMax = Vector2.zero;
-
-            newContainerRect.SetSiblingIndex(topLayer.transform.GetSiblingIndex() + 1);
+            dayAmbienceContainer = existing.gameObject;
+            return;
         }
 
-        RectTransform containerRect = dayAmbienceContainer.GetComponent<RectTransform>();
+        GameObject instance = Instantiate(dayAtmosphereEffectPrefab, backgroundParent);
+        instance.name = "DayAtmosphereEffect"; // strip the "(Clone)" suffix so Find() above matches on future calls
 
-        if (enableGodRays)
+        RectTransform instanceRect = instance.transform as RectTransform;
+        if (instanceRect != null)
         {
-            BuildGodRays(containerRect);
-        }
-        else
-        {
-            // Stop any running cycle coroutines before destroying the
-            // ray objects they reference — otherwise they'd keep trying
-            // to set color on now-destroyed Images.
-            StopGodRayCycles();
-            RemoveExtraChildren(containerRect, "GodRay ", 0);
-        }
-    }
-
-    private void BuildGodRays(RectTransform container)
-    {
-        // Stop any previously running cycle coroutines before rebuilding
-        // — each one closes over a list index into godRayImages/godRays,
-        // which would otherwise go stale (or out of range) against the
-        // fresh lists built below.
-        StopGodRayCycles();
-
-        godRayImages = new List<Image>();
-        godRaySwaySeeds = new List<float>();
-
-        for (int i = 0; i < godRays.Count; i++)
-        {
-            GodRayConfig config = godRays[i];
-
-            GameObject rayObject = FindOrCreateAmbienceChild(container, "GodRay " + i, out bool wasCreated);
-            RectTransform rayRect = rayObject.GetComponent<RectTransform>();
-
-            if (wasCreated)
-            {
-                // Hangs from the top edge — pivot and anchor both sit at
-                // top-center, so the ray extends downward from there.
-                rayRect.anchorMin = new Vector2(0.5f, 1f);
-                rayRect.anchorMax = new Vector2(0.5f, 1f);
-                rayRect.pivot = new Vector2(0.5f, 1f);
-                // Starting point only — drag/rotate it into place
-                // afterward; later rebuilds won't reset it.
-                rayRect.anchoredPosition = config.anchoredPosition;
-                rayRect.localRotation = Quaternion.Euler(0f, 0f, config.rotationDegrees);
-            }
-
-            rayRect.sizeDelta = new Vector2(config.width, config.height);
-
-            Image rayImage = rayObject.GetComponent<Image>();
-            if (rayImage == null) rayImage = rayObject.AddComponent<Image>();
-            rayImage.sprite = GetGodRaySprite();
-            rayImage.raycastTarget = false;
-            // Starts fully hidden — GodRayCycleRoutine fades it in once
-            // its staggered start delay elapses, rather than popping
-            // straight to baseAlpha here.
-            rayImage.color = new Color(config.color.r, config.color.g, config.color.b, 0f);
-
-            godRayImages.Add(rayImage);
-
-            // Distinct random phase per ray so they breathe out of sync
-            // with each other during their visible phase, same reasoning
-            // as the torch flicker.
-            godRaySwaySeeds.Add(Random.Range(0f, 1000f));
+            instanceRect.SetSiblingIndex(topLayer.transform.GetSiblingIndex() + 1);
         }
 
-        RemoveExtraChildren(container, "GodRay ", godRays.Count);
-
-        godRayCycleCoroutines = new List<Coroutine>();
-        for (int i = 0; i < godRays.Count; i++)
-        {
-            godRayCycleCoroutines.Add(StartCoroutine(GodRayCycleRoutine(i)));
-        }
-    }
-
-    private void StopGodRayCycles()
-    {
-        if (godRayCycleCoroutines == null) return;
-
-        foreach (Coroutine coroutine in godRayCycleCoroutines)
-        {
-            if (coroutine != null) StopCoroutine(coroutine);
-        }
-
-        godRayCycleCoroutines = null;
-    }
-
-    // Repeats forever: fade in, stay visible (breathing gently) for
-    // godRayVisibleDuration, fade out, then disappear completely for
-    // godRayHiddenDuration before fading back in. 'index' is fixed for
-    // this coroutine's entire lifetime, matched against the
-    // godRays/godRayImages lists as they stood when it was started (see
-    // StopGodRayCycles — a rebuild always stops these first).
-    private IEnumerator GodRayCycleRoutine(int index)
-    {
-        // Spread starts evenly across one full cycle length, based on
-        // this ray's position in the list, so rays are never all
-        // visible or all hidden at the same time.
-        float cycleLength = godRayFadeTransitionDuration * 2f + godRayVisibleDuration + godRayHiddenDuration;
-        float startDelay = index * (cycleLength / Mathf.Max(godRays.Count, 1));
-        yield return new WaitForSeconds(startDelay);
-
-        Image image = godRayImages[index];
-
-        while (true)
-        {
-            yield return FadeGodRayAlpha(image, image.color.a, godRays[index].baseAlpha, godRayFadeTransitionDuration);
-
-            float elapsed = 0f;
-            while (elapsed < godRayVisibleDuration)
-            {
-                elapsed += Time.deltaTime;
-
-                GodRayConfig config = godRays[index];
-                float noise = Mathf.PerlinNoise(godRaySwaySeeds[index], Time.time * godRaySwaySpeed);
-                float sway = (noise - 0.5f) * 2f * godRaySwayAmount;
-                SetGodRayAlpha(image, Mathf.Clamp01(config.baseAlpha + sway));
-
-                yield return null;
-            }
-
-            yield return FadeGodRayAlpha(image, image.color.a, 0f, godRayFadeTransitionDuration);
-
-            yield return new WaitForSeconds(godRayHiddenDuration);
-        }
-    }
-
-    private IEnumerator FadeGodRayAlpha(Image image, float from, float to, float duration)
-    {
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
-            SetGodRayAlpha(image, Mathf.Lerp(from, to, t));
-            yield return null;
-        }
-
-        SetGodRayAlpha(image, to);
-    }
-
-    private void SetGodRayAlpha(Image image, float alpha)
-    {
-        Color c = image.color;
-        c.a = alpha;
-        image.color = c;
-    }
-
-    // A soft, tapered light-shaft gradient: narrow and fading in near
-    // the top (the "source"), widening further down, with soft left/
-    // right edges throughout and a gentle fade-out toward the bottom so
-    // it dissolves rather than cutting off hard. Shared by every god ray
-    // (color/size/alpha applied via the Image), generated once and
-    // cached like this project's other procedural VFX.
-    private Sprite GetGodRaySprite()
-    {
-        if (cachedGodRaySprite != null) return cachedGodRaySprite;
-
-        Texture2D texture = new Texture2D(GodRayTextureWidth, GodRayTextureHeight, TextureFormat.RGBA32, false);
-        texture.wrapMode = TextureWrapMode.Clamp;
-
-        Color32[] pixels = new Color32[GodRayTextureWidth * GodRayTextureHeight];
-        float centerX = GodRayTextureWidth / 2f;
-
-        for (int y = 0; y < GodRayTextureHeight; y++)
-        {
-            // 0 at the top (the light source), 1 at the bottom.
-            float normalizedY = y / (float)GodRayTextureHeight;
-
-            // The beam's half-width grows from narrow near the source to
-            // nearly the full texture width by the bottom, like light
-            // spreading out from a point.
-            float halfWidthFraction = Mathf.Lerp(0.08f, 0.9f, normalizedY);
-
-            // Fades in quickly right at the top, and dissolves gradually
-            // over the bottom ~40% instead of ending in a hard edge.
-            float verticalAlpha = 1f;
-            if (normalizedY < 0.05f)
-            {
-                verticalAlpha = normalizedY / 0.05f;
-            }
-            else if (normalizedY > 0.6f)
-            {
-                verticalAlpha = 1f - Mathf.Clamp01((normalizedY - 0.6f) / 0.4f);
-            }
-
-            for (int x = 0; x < GodRayTextureWidth; x++)
-            {
-                float normalizedX = Mathf.Abs(x - centerX) / centerX; // 0 at center, 1 at edge
-                float distanceRatio = halfWidthFraction > 0f ? normalizedX / halfWidthFraction : 1f;
-
-                const float edgeSoftness = 0.35f;
-                float horizontalAlpha = 1f - Mathf.SmoothStep(1f - edgeSoftness, 1f, distanceRatio);
-
-                float alpha = Mathf.Clamp01(horizontalAlpha) * verticalAlpha;
-                pixels[y * GodRayTextureWidth + x] = new Color(1f, 1f, 1f, alpha);
-            }
-        }
-
-        texture.SetPixels32(pixels);
-        texture.Apply();
-
-        // Pivot at top-center, matching how each ray's RectTransform is
-        // anchored/pivoted in BuildGodRays.
-        cachedGodRaySprite = Sprite.Create(
-            texture,
-            new Rect(0f, 0f, GodRayTextureWidth, GodRayTextureHeight),
-            new Vector2(0.5f, 1f));
-
-        return cachedGodRaySprite;
+        dayAmbienceContainer = instance;
     }
 }
