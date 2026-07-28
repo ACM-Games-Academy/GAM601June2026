@@ -26,9 +26,11 @@ Meritamun: My joy is the will of the Gods, absolutely. No snakes or rats will be
 <<hideportrait Left>>
 <<hideportrait CenterLeft>>
 <<openingdayreveal OpeningDayReveal>>
-<<setgridsize 9 9>>
-<<setpuzzle 𓀀𓅱𓄤:Path_A|𓇳𓅓𓁶:Path_B>>
 
+<<setpuzzle 𓀀𓅱𓄤:Path_A|𓇳𓅓𓁶:Path_B>>
+<<showportrait Right Cat_Meritamun>>
+Cat_Meritamun: \[Oh! Someone is coming!\] #expression:neutral
+Cat_Meritamun: \[I must remember to <color=red>use the heiroglyphs on the walls</color> to communicate the will of the Gods!\]  #expression:pawraised
 <<showportrait Left Amenhotep>>
 Amenhotep: I ask forgiveness for this small blasphemy...
 <<sadreaction Amenhotep>>
@@ -49,7 +51,7 @@ Amenhotep: And of course there is the little child, <color=red>my son.</color>  
     <<addgodaffinity Thoth 1>> 
     <<addhumanaffinity Ptahhotep 1>>
 <<endif>>
-
+Cat_Meritamun: \[Amenhotep has a son? How long has it been since I died?\]  #expression:puzzled
 <<hideallportraits>>
 
 <<setpuzzle 𓎡𓃀𓂋:Path_A|𓄿𓊹𓉐:Path_B>>
@@ -74,7 +76,9 @@ Ahmose: Make𓎡 a move𓃀 against𓂋 Amenhotep? Or <br> Let𓄿 him𓊹 be�
         <<addgodaffinity Bast 1>> 
         <<addhumanaffinity Nitiqret 1>>
 <<endif>>
-
+Cat_Meritamun: \[ Oh father! What are you doing\]  #expression:puzzled
+<<sadreaction Cat_Meritamun>>
+Cat_Meritamun: \[I suppose this is the mess I left behind when I died, and now I have to clean it up. \]  #expression:puzzled 
 <<hideallportraits>>
 
 <<setpuzzle 𓏍𓌅𓆣:Path_A|𓇳𓌅𓆣:Path_B>>
@@ -92,12 +96,12 @@ Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him 
         <<addhumanaffinity Chaos 1>>
 
     <<elseif $selectedPath == "Path_B">>
-    <<sadreaction Harwa>>
+
     Harwa:  Oh well, I suppose wisdom must prevail ... I'll sit this one out, but I WILL still place bets on the other racers...
         <<addgodaffinity Thoth 1>> 
         <<addhumanaffinity Chaos 1>>
 <<endif>>
-
+Cat_Meritamun: \[Harwa is a bit taller than I remember, so maybe... a year has passed since I left my life here?\]  #expression:puzzled
 <<hideallportraits>>
 <<fadetonight BackgroundManager>>
 
@@ -142,7 +146,7 @@ Nitiqret: Would you like <br> to be given a little𓐫 scritch𓃠 on your head�
     <<addgodaffinity Sekhmet 1>>
     <<addhumanaffinity Harwa 1>>
 <<endif>>
-
+Cat_Meritamun: \[Dear Sweet Nitiqret! I wish you wouldn't let those bitchy nobles get you down!\] #expression:puzzled
 <<hideallportraits>>
 
 <<setpuzzle 𓆓𓉻𓋾:Path_A|𓄣𓏛𓈗:Path_B>>
@@ -166,6 +170,7 @@ Harwa: So here I am, asking the gods...Should I <br> step𓆓 away𓉻 from𓋾 
     <<addgodaffinity Bes 1>>
     <<addhumanaffinity Harwa 1>>
 <<endif>>
+Cat_Meritamun: \[You know, <color=red>Harwa</color> -- you'd be so much more confident if you just applied yourself to something more difficult than gambling!\] #expression:neutral
 
 <<hideallportraits>>
 <<fadetonight BackgroundManager>>
@@ -204,7 +209,7 @@ Sekhmet: GAH!!!
 <<hideallportraits>>
 
 <<fadetoday BackgroundManager>>
-
+<<setgridsize 9 9>>
 <<setpuzzle 𓐍𓆏𓏏:Path_A|𓃭𓆑𓈎:Path_B|𓂧𓁹𓆙:Path_C|𓋹𓁐𓋔:Path_D>>
 
 <<showportrait Left Harwa>>
@@ -234,6 +239,7 @@ Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓐍 Kitten�
     <<addhumanaffinity Nitiqret 1>>
     <<addgodaffinity Thoth 1>>
 <<endif>>
+Cat_Meritamun: \[... it's times like these that make me question my purpose here.\] #expression:puzzled
 
 <<hideallportraits>>
 
@@ -259,6 +265,7 @@ Ahmose: What I actually need is some sort of <color=red>distraction</color> to b
     <<addgodaffinity Thoth 1>>
     <<addhumanaffinity Nitiqret 1>>
 <<endif>>
+Cat_Meritamun: \[oh! Got to remember this and report back to Lady Sekhmet.\] #expression:standing
 
 <<hideallportraits>>
 
@@ -281,6 +288,8 @@ Nitiqret: What do you think? should I <br> Put 𓌱 a snake 𓆙 in his bed 𓎟
     <<addgodaffinity Bast 1>>
     <<addhumanaffinity Nitiqret 1>>
 <<endif>>
+<<angerreaction Cat_Meritamun>>
+Cat_Meritamun: \[That idiot <color=red>Harwa</color>! Ugh! If we throw dirt at each other it only shows everyone else they can do the same to us!\] #expression:neutral
 
 <<hideallportraits>>
 
@@ -305,7 +314,7 @@ Amenhotep: Our <color=red>child</color> has no way to come home to me with Ahmos
     <<addgodaffinity Bast 1>>
     <<addhumanaffinity Chaos 1>>
 <<endif>>
-
+Cat_Meritamun: \[ I have a son... and he lives?!?!\] #expression:puzzled
 <<hideallportraits>>
 <<fadetonight BackgroundManager>>
 Narrator: END OF CHAPTER 1

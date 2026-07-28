@@ -1,0 +1,37 @@
+html, body { padding: 0; margin: 0; width: 100%; height: 100% }
+#unity-container { position: absolute }
+#unity-container.unity-desktop {
+  position: relative;
+  left: 0;
+  top: 0;
+  transform: none;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#unity-container.unity-mobile { position: fixed; width: 100%; height: 100% }
+#unity-canvas { background: {{{ BACKGROUND_COLOR }}} }
+/* Canvas keeps its native aspect ratio (from its width/height attributes
+   in index.html) and shrinks to fit inside whatever space unity-container
+   has — width OR height, whichever is tighter — instead of a fixed pixel
+   size or a ratio derived from width alone. This is what actually fits
+   an itch.io embed frame regardless of its exact proportions, rather
+   than overflowing past whichever dimension the frame is shortest on.
+   min-width/min-height: 0 override the flex-item default of shrinking
+   no smaller than the canvas's own intrinsic (native) size, which would
+   otherwise silently defeat max-width/max-height entirely. */
+.unity-desktop #unity-canvas { max-width: 100%; max-height: 100%; width: auto; height: auto; min-width: 0; min-height: 0 }
+.unity-mobile #unity-canvas { width: 100%; height: 100% }
+#unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none }
+#unity-logo { width: 154px; height: 130px; background: url('unity-logo-dark.png') no-repeat center }
+#unity-progress-bar-empty { width: 141px; height: 18px; margin-top: 10px; margin-left: 6.5px; background: url('progress-bar-empty-dark.png') no-repeat center }
+#unity-progress-bar-full { width: 0%; height: 18px; margin-top: 10px; background: url('progress-bar-full-dark.png') no-repeat center }
+#unity-footer { position: relative }
+.unity-mobile #unity-footer { display: none }
+#unity-logo-title-footer { float:left; width: 102px; height: 38px; background: url('unity-logo-title-footer.png') no-repeat center }
+#unity-build-title { float: right; margin-right: 10px; line-height: 38px; font-family: arial; font-size: 18px }
+#unity-fullscreen-button { cursor:pointer; float: right; width: 38px; height: 38px; background: url('fullscreen-button.png') no-repeat center }
+#unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }

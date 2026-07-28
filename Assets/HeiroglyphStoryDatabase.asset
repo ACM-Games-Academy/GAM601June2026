@@ -324,11 +324,9 @@ MonoBehaviour:
       cancelSubtitle:
         key: 27
         buttonName: 
-        inputAction: {fileID: 0}
       cancelConversation:
         key: 27
         buttonName: 
-        inputAction: {fileID: 0}
       actorSubtitlePanelOverrides: []
     nodeColor: 
     dialogueEntries:

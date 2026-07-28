@@ -131,6 +131,8 @@ GameObject:
   - component: {fileID: 147105376}
   - component: {fileID: 147105375}
   - component: {fileID: 147105374}
+  - component: {fileID: 147105377}
+  - component: {fileID: 147105378}
   m_Layer: 0
   m_Name: PlayButton
   m_TagString: Untagged
@@ -240,6 +242,36 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 147105372}
   m_CullTransparentMesh: 1
+--- !u!114 &147105377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147105372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Shadow
+  m_EffectColor: {r: 1, g: 1, b: 1, a: 0.55}
+  m_EffectDistance: {x: -4, y: 4}
+  m_UseGraphicAlpha: 0
+--- !u!114 &147105378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147105372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Shadow
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.55}
+  m_EffectDistance: {x: 4, y: -4}
+  m_UseGraphicAlpha: 0
 --- !u!1 &420627557
 GameObject:
   m_ObjectHideFlags: 0
@@ -1169,10 +1201,13 @@ MonoBehaviour:
   musicVolume: 0.5
   fadeDuration: 1.5
   puzzleMusicClips:
-  - {fileID: 8300000, guid: 3e6839652041e7a47ad2948948d1acb6, type: 3}
+  - {fileID: 8300000, guid: d64f13e8e6f37724d8b5f16b119af85e, type: 3}
   - {fileID: 8300000, guid: 173510eed3198e14d89082b42f47be33, type: 3}
   - {fileID: 8300000, guid: fb2fdd6816a977a4592a37c205ccd622, type: 3}
   - {fileID: 8300000, guid: 0322bb13b970868429fad556e7db84d0, type: 3}
+  duckVolumeMultiplier: 0.35
+  duckFadeTime: 0.15
+  unduckFadeTime: 0.5
 --- !u!82 &1927488458
 AudioSource:
   m_ObjectHideFlags: 0

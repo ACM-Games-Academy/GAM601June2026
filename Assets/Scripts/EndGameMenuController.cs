@@ -114,6 +114,22 @@ public class EndGameMenuController : MonoBehaviour
         if (buttonImage == null) buttonImage = buttonObject.AddComponent<Image>();
         buttonImage.color = buttonColor;
 
+        // Bevelled edge: a light offset copy peeking out top-left plus a
+        // dark offset copy peeking out bottom-right, on a plain flat-color
+        // Image, reads as a subtle embossed/bevelled border — same trick
+        // used on the splash screen's own Play button.
+        Shadow bevelHighlight = buttonObject.GetComponent<Shadow>();
+        if (bevelHighlight == null) bevelHighlight = buttonObject.AddComponent<Shadow>();
+        bevelHighlight.effectColor = new Color(1f, 1f, 1f, 0.55f);
+        bevelHighlight.effectDistance = new Vector2(-2f, 2f);
+        bevelHighlight.useGraphicAlpha = false;
+
+        Shadow[] existingShadows = buttonObject.GetComponents<Shadow>();
+        Shadow bevelShadow = existingShadows.Length > 1 ? existingShadows[1] : buttonObject.AddComponent<Shadow>();
+        bevelShadow.effectColor = new Color(0f, 0f, 0f, 0.55f);
+        bevelShadow.effectDistance = new Vector2(2f, -2f);
+        bevelShadow.useGraphicAlpha = false;
+
         Button button = buttonObject.GetComponent<Button>();
         if (button == null) button = buttonObject.AddComponent<Button>();
         button.onClick.RemoveListener(OnExitButtonClicked);
