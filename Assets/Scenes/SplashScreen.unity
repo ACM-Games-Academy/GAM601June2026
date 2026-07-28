@@ -424,8 +424,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SplashScreenController
   backgroundSprite: {fileID: 7980238798014242262, guid: a2949a1ba2ee9ef48b4c817e712f8156, type: 3}
-  meritamunWorriedSprite: {fileID: -8773365291611126865, guid: 16a66c8975fbcf844bc2bafb332ca628, type: 3}
-  catMeritamunPawRaisedSprite: {fileID: 1750887369478447619, guid: e4504c4c057338142a2cdbb0838611a1, type: 3}
+  rightPortraitSprites:
+  - {fileID: -6453553771333712201, guid: 3cac81e20253f7b498eef944dcd942d5, type: 3}
+  - {fileID: -8773365291611126865, guid: 16a66c8975fbcf844bc2bafb332ca628, type: 3}
+  - {fileID: -2894877667557902327, guid: 00f8f17874179d14e8370ec17b971d79, type: 3}
+  - {fileID: 1750887369478447619, guid: e4504c4c057338142a2cdbb0838611a1, type: 3}
+  - {fileID: -4991648941865065359, guid: 31e32a689f802cf4492c0aebc7a9ef87, type: 3}
+  - {fileID: -720758889363181054, guid: 65c241fb97def0b40b57efc3236240f8, type: 3}
+  leftPortraitSprites:
+  - {fileID: 3027608493817868074, guid: cf2fd7a72223ddd42a764997e1100113, type: 3}
+  - {fileID: -7174769146454565493, guid: 4c581772c416a2d4eb53dceb87c59adf, type: 3}
+  - {fileID: -9054836810116371543, guid: 3a3adf46d4a0e064a910317161ab4d44, type: 3}
+  - {fileID: -1695199138293954906, guid: cb0b3266ef1a94348b2c3f79282134a3, type: 3}
+  - {fileID: -2957247089684709745, guid: 09cd70073b558fa4e91059d5c44efb9c, type: 3}
+  - {fileID: 5724168595349758334, guid: b891db1e04443f8429a4e65afe1b71e4, type: 3}
+  - {fileID: 4685268456472416524, guid: 08d0b1c4956ef7149a13dd3c20827cfe, type: 3}
+  - {fileID: -6602605326545006164, guid: 06b2b865c727ee340b1b85bcd3e39efe, type: 3}
+  portraitCycleInterval: 4
+  portraitPopScale: 0.92
+  portraitPopDuration: 0.3
   gameFont: {fileID: 11400000, guid: b87044a48c70ced41ac41db4c27894a4, type: 2}
   gameTitle: BAST
   titleFontSize: 240

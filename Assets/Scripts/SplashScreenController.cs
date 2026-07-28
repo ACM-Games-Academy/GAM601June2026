@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -30,9 +32,11 @@ using TMPro;
 //    in Build Settings, since the Play button loads it by name.
 // 3. In the new scene, attach this script to an empty GameObject.
 // 4. In the Inspector assign:
-//      - Background Sprite               → Assets/Sprites/Background/TempleDayBackground.png
-//      - Meritamun Worried Sprite         → Assets/Sprites/PlayerCharacterMeritamun/Meritamun_Worried.png
-//      - Cat Meritamun Paw Raised Sprite  → Assets/Sprites/PlayerCharacterMeritamun/Cat_Meritamun_pawraised.png
+//      - Background Sprite       → Assets/Sprites/Background/TempleDayBackground.png
+//      - Left Portrait Cycle     → one sprite per other character (Bes, Sekhmet, Harwa, ...)
+//      - Right Portrait Cycle    → every Meritamun/Cat_Meritamun expression sprite
+//    Both lists cycle forever with a pop transition between entries —
+//    see "Portrait Cycle Timing" for pacing.
 // 5. Adjust Gameplay Scene Name if your main scene isn't named
 //    "YarnViabilityTest".
 // 6. Optional: right-click this component's header (⋮ menu) and choose
@@ -43,8 +47,28 @@ public class SplashScreenController : MonoBehaviour
 {
     [Header("Sprites")]
     public Sprite backgroundSprite;
-    public Sprite meritamunWorriedSprite;
-    public Sprite catMeritamunPawRaisedSprite;
+
+    // Cycles through every listed sprite in order, looping forever, with
+    // the same "ease pop" transition PortraitManager uses in-game for
+    // expression swaps (shrink slightly, swap the sprite at the bottom
+    // of the dip, ease back up) — rather than a hard cut. Meant to hold
+    // every expression of Meritamun and Cat_Meritamun; add/reorder
+    // freely in the Inspector.
+    [Header("Right Portrait Cycle — Meritamun / Cat_Meritamun")]
+    public List<Sprite> rightPortraitSprites = new List<Sprite>();
+
+    // Same idea, meant for one portrait per OTHER character (not
+    // Meritamun/Cat_Meritamun) so the splash screen shows some variety
+    // of who's in the story.
+    [Header("Left Portrait Cycle — Other Characters")]
+    public List<Sprite> leftPortraitSprites = new List<Sprite>();
+
+    [Header("Portrait Cycle Timing")]
+    public float portraitCycleInterval = 4f;
+    [Range(0.5f, 1f)] public float portraitPopScale = 0.92f;
+    public float portraitPopDuration = 0.3f;
+
+    private Dictionary<GameObject, Coroutine> portraitCycleCoroutines = new Dictionary<GameObject, Coroutine>();
 
     [Header("Font")]
     // Applied to both the title and the Play button label. Leave blank
@@ -111,9 +135,12 @@ public class SplashScreenController : MonoBehaviour
         CreateBackground(canvasRect);
         BuildDayAtmosphere(canvasRect);
 
-        CreateCharacterImage(canvasRect, meritamunWorriedSprite, "MeritamunWorried",
+        // Same GameObject names as the old single-sprite versions, so an
+        // already-saved scene reuses (rather than orphans) the existing
+        // objects — only the content behind them changed.
+        CreateCyclingCharacterImage(canvasRect, leftPortraitSprites, "MeritamunWorried",
             anchor: new Vector2(0f, 0f), size: new Vector2(450f, 700f), offset: new Vector2(60f, 0f));
-        CreateCharacterImage(canvasRect, catMeritamunPawRaisedSprite, "CatMeritamunPawRaised",
+        CreateCyclingCharacterImage(canvasRect, rightPortraitSprites, "CatMeritamunPawRaised",
             anchor: new Vector2(1f, 0f), size: new Vector2(450f, 700f), offset: new Vector2(-60f, 0f));
         CreateTitle(canvasRect);
         CreatePlayButton(canvasRect);
@@ -189,11 +216,12 @@ public class SplashScreenController : MonoBehaviour
     }
 
     // Anchors, sizes and positions a character portrait at a screen
-    // corner the first time it's created. Skips gracefully if no
-    // sprite has been assigned yet.
-    private void CreateCharacterImage(RectTransform parent, Sprite sprite, string name, Vector2 anchor, Vector2 size, Vector2 offset)
+    // corner the first time it's created, then starts (or restarts) it
+    // cycling through 'sprites' forever with a pop transition between
+    // each one. Skips gracefully if the list is empty.
+    private void CreateCyclingCharacterImage(RectTransform parent, List<Sprite> sprites, string name, Vector2 anchor, Vector2 size, Vector2 offset)
     {
-        if (sprite == null) return;
+        if (sprites == null || sprites.Count == 0) return;
 
         GameObject imageObject = FindOrCreateChild(parent, name, out bool wasCreated);
 
@@ -209,9 +237,80 @@ public class SplashScreenController : MonoBehaviour
 
         Image image = imageObject.GetComponent<Image>();
         if (image == null) image = imageObject.AddComponent<Image>();
-        image.sprite = sprite;
+        if (image.sprite == null) image.sprite = sprites[0];
         image.preserveAspect = true;
         image.raycastTarget = false;
+
+        // Coroutines only actually run in Play mode — harmless to call
+        // this here in Edit mode too (via "Build In Editor"), it just
+        // sits inert until Play starts.
+        if (portraitCycleCoroutines.TryGetValue(imageObject, out Coroutine running) && running != null)
+        {
+            StopCoroutine(running);
+        }
+        portraitCycleCoroutines[imageObject] = StartCoroutine(PortraitCycleRoutine(imageObject, sprites));
+    }
+
+    // Repeats forever: wait portraitCycleInterval, then pop-swap to the
+    // next sprite in the list (wrapping back to the start after the
+    // last), looping through the whole list indefinitely.
+    private IEnumerator PortraitCycleRoutine(GameObject imageObject, List<Sprite> sprites)
+    {
+        Image image = imageObject.GetComponent<Image>();
+        RectTransform rect = imageObject.GetComponent<RectTransform>();
+
+        // Start from wherever the currently-shown sprite already is in
+        // the list (e.g. after a rebuild) rather than always restarting
+        // from the first entry.
+        int index = Mathf.Max(0, sprites.IndexOf(image.sprite));
+
+        while (true)
+        {
+            yield return new WaitForSeconds(portraitCycleInterval);
+
+            index = (index + 1) % sprites.Count;
+            yield return PopSwapSprite(image, rect, sprites[index]);
+        }
+    }
+
+    // Same shrink/swap/grow "ease pop" recipe as PortraitManager's
+    // in-game expression swaps — shrinks to portraitPopScale, swaps the
+    // sprite at the bottom of the dip (when it's smallest and the cut
+    // is least noticeable), then eases back to full size.
+    private IEnumerator PopSwapSprite(Image image, RectTransform rect, Sprite newSprite)
+    {
+        float halfDuration = portraitPopDuration / 2f;
+        bool swapped = false;
+        float elapsed = 0f;
+
+        while (elapsed < portraitPopDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            if (!swapped && elapsed >= halfDuration)
+            {
+                image.sprite = newSprite;
+                swapped = true;
+            }
+
+            float scale;
+            if (elapsed < halfDuration)
+            {
+                float t = Mathf.Clamp01(elapsed / halfDuration);
+                scale = Mathf.Lerp(1f, portraitPopScale, t);
+            }
+            else
+            {
+                float t = Mathf.Clamp01((elapsed - halfDuration) / halfDuration);
+                scale = Mathf.Lerp(portraitPopScale, 1f, t);
+            }
+
+            rect.localScale = new Vector3(scale, scale, 1f);
+            yield return null;
+        }
+
+        if (!swapped) image.sprite = newSprite;
+        rect.localScale = Vector3.one;
     }
 
     private void CreateTitle(RectTransform parent)
@@ -305,12 +404,27 @@ public class SplashScreenController : MonoBehaviour
         if (dayAtmosphereEffectPrefab == null) return;
 
         Transform existing = parent.Find("DayAtmosphereEffect");
-        if (existing != null) return;
+        GameObject instance;
 
-        // Called right after CreateBackground in BuildSplashScreen, so
-        // appending here naturally lands it as Background's very next
-        // sibling — above the art, below the title/portraits/button.
-        GameObject instance = Instantiate(dayAtmosphereEffectPrefab, parent);
-        instance.name = "DayAtmosphereEffect"; // strip the "(Clone)" suffix so Find() above matches on future calls
+        if (existing != null)
+        {
+            instance = existing.gameObject;
+        }
+        else
+        {
+            instance = Instantiate(dayAtmosphereEffectPrefab, parent);
+            instance.name = "DayAtmosphereEffect"; // strip the "(Clone)" suffix so Find() above matches on future calls
+        }
+
+        // Enforced every time, not just on creation — an instance found
+        // already sitting in the scene (e.g. built before the title/
+        // portraits/button existed, or before this ordering was in
+        // place) can otherwise be left wherever it happened to land,
+        // which is what let the god rays render on top of the title
+        // instead of behind it. Sitting right after Background keeps it
+        // above the art but below every other UI element.
+        Transform background = parent.Find("Background");
+        int targetIndex = background != null ? background.GetSiblingIndex() + 1 : 0;
+        instance.transform.SetSiblingIndex(targetIndex);
     }
 }

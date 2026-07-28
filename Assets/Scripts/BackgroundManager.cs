@@ -253,6 +253,15 @@ public class BackgroundManager : MonoBehaviour
     {
         isFading = true;
 
+        // The night ambience container (torches/clouds) is inserted as a
+        // later sibling than topLayer so it renders in FRONT of the
+        // background — including in front of topLayer once it's faded to
+        // opaque black. Without this, torches/clouds stay visibly
+        // floating on top of the "black" screen for the entire
+        // transformation crossfade that happens behind it, instead of
+        // actually being hidden.
+        if (nightAmbienceContainer != null) nightAmbienceContainer.SetActive(false);
+
         topLayer.color = new Color(0f, 0f, 0f, 0f);
 
         float elapsed = 0f;
@@ -704,16 +713,24 @@ public class BackgroundManager : MonoBehaviour
 
         Transform backgroundParent = topLayer.transform.parent;
         Transform existing = backgroundParent.Find("DayAtmosphereEffect");
+        GameObject instance;
 
         if (existing != null)
         {
-            dayAmbienceContainer = existing.gameObject;
-            return;
+            instance = existing.gameObject;
+        }
+        else
+        {
+            instance = Instantiate(dayAtmosphereEffectPrefab, backgroundParent);
+            instance.name = "DayAtmosphereEffect"; // strip the "(Clone)" suffix so Find() above matches on future calls
         }
 
-        GameObject instance = Instantiate(dayAtmosphereEffectPrefab, backgroundParent);
-        instance.name = "DayAtmosphereEffect"; // strip the "(Clone)" suffix so Find() above matches on future calls
-
+        // Enforced every time, not just on creation — an instance found
+        // already sitting in the scene could otherwise be left wherever
+        // it happened to land (e.g. after the grid/portraits/dialogue UI
+        // in sibling order), rendering on top of things it should sit
+        // behind. Sitting right after topLayer keeps it above the
+        // background art but below every other UI element.
         RectTransform instanceRect = instance.transform as RectTransform;
         if (instanceRect != null)
         {
