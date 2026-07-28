@@ -31,6 +31,7 @@ Meritamun: My joy is the will of the Gods, absolutely. No snakes or rats will be
 
 <<showportrait Left Amenhotep>>
 Amenhotep: I ask forgiveness for this small blasphemy...
+<<sadreaction Amenhotep>>
 Amenhotep: but I feel the holy <color=red>City of Thebes</color> is not the same without <color=red>Meritamun</color> here. 
 Amenhotep: My trust in your divine plan wavered on this score, and I came here to this sanctum to unburden myself.  #expression:neutral
 Amenhotep: The arrival of a new Temple Cat has however eased my sorrow somewhat – I have to admit that the local snakes have been feeling the thunder of her paws. 
@@ -91,6 +92,7 @@ Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him 
         <<addhumanaffinity Chaos 1>>
 
     <<elseif $selectedPath == "Path_B">>
+    <<sadreaction Harwa>>
     Harwa:  Oh well, I suppose wisdom must prevail ... I'll sit this one out, but I WILL still place bets on the other racers...
         <<addgodaffinity Thoth 1>> 
         <<addhumanaffinity Chaos 1>>
@@ -118,11 +120,13 @@ Meritamun: Indeed – my Lady and my Lord, I wasn’t here and I heard nothing a
 <<setpuzzle 𓐫𓃠𓁷:Path_A|𓋴𓌅𓌢:Path_B>>
 
 <<showportrait Left Nitiqret>>
+<<sadreaction Nitiqret>>
 Nitiqret: I don’t know why my mother has abandoned me.
 Nitiqret: One minute we were <color=red>grieving Meritamun’s</color> passing into the Duat, together as a family, the next minute it’s like she never even existed?
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrrr* 
+<<sadreaction Nitiqret>>
 Nitiqret: I’m so lost. The nobles here hate me and I have literally no clue why. <color=red>Harwa’s</color> doing fine of course, making new friends at court left right and center. 
 Nitiqret: .... but actually I came here because I heard a <color=red>cat</color> has come to live here! And here you are!
 <<playsustainedsound CatPurr>>
@@ -146,6 +150,7 @@ Nitiqret: Would you like <br> to be given a little𓐫 scritch𓃠 on your head�
 <<showportrait Left Harwa>>
 <<angerreaction Harwa>>
 Harwa: Gods! I am so sick of losing at the dice table. <color=red>Senemut</color> never seems to lose nearly as much money as I do, I don't know what I'm doing wrong.
+<<sadreaction Harwa>>
 Harwa: Father says I'm a terrible prince and I need to pray for guidance as to how to conduct myself.
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
@@ -203,7 +208,7 @@ Sekhmet: GAH!!!
 <<setpuzzle 𓐍𓆏𓏏:Path_A|𓃭𓆑𓈎:Path_B|𓂧𓁹𓆙:Path_C|𓋹𓁐𓋔:Path_D>>
 
 <<showportrait Left Harwa>>
-<<angerreaction Harwa>>
+<<sadreaction Harwa>>
 Harwa: Lost again at the races, rotten luck I suppose.
 Harwa: Father is asking me to spend more time with <color=red>Nitiqret</color> but honestly I can’t stand that simpering baby.
 Harwa: At least you are good company, <color=red>Temple Cat</color>. I wonder if you have a name? #expression:laughing
@@ -238,6 +243,7 @@ Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓐍 Kitten�
 <<showportrait Left Ahmose>>
 <<angerreaction Ahmose>>
 Ahmose: The state of the treasury is an absolute disgrace – it is only in private prayer to you, oh Gods, I can fully, honestly admit this. 
+<<sadreaction Ahmose>>
 Ahmose: Harvests have been mediocre to awful in the last few years. 
 Ahmose: There’s no chance of winning any kind of prolonged campaign against <color=red>the Persians</color>, because it would simply cost an amount of money we do not have.
 <<showportrait Right Cat_Meritamun>>
@@ -283,9 +289,11 @@ Nitiqret: What do you think? should I <br> Put 𓌱 a snake 𓆙 in his bed 𓎟
 
 <<showportrait Left Amenhotep>>
 Amenhotep: It’s not that I didn’t want to have <color=red>a child with Meritamun</color> – but the time wasn’t right and I was only trying to do right by her, for both of us.
+<<sadreaction Amenhotep>>
 Amenhotep: Now Meritamun is dead and I’m here, alone, without her.
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
+<<sadreaction Cat_Meritamun>>
 Cat_Meritamun: *Purrrrrr.....*
 Amenhotep: Our <color=red>child</color> has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust <color=red>Neferura</color> to keep my son safe far𓅨 away𓉻 from Thebes𓋔, or <br>Or send my own agents to seek out <color=red>Neferura</color> and bring her and the child𓅱 back𓍯 to Thebes𓋔? #wordsearch
 <<if $selectedPath == "Path_A">>

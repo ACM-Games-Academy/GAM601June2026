@@ -728,6 +728,17 @@ MonoBehaviour:
   pulseGlowAnchoredOffset: {x: 0, y: 0}
   pulseGlowCircleDiameter: 350
   pulseGlowColor: {r: 1, g: 0.851, b: 0.478, a: 1}
+  sadWaveDropCount: 3
+  sadWaveDropStagger: 0.35
+  sadWaveFlowDuration: 2.6
+  sadWaveFlowDistance: 440
+  sadWaveWeaveAmplitude: 140
+  sadWaveWeaveCycles: 2
+  sadWaveAnchorPoint: {x: 0.5, y: 1}
+  sadWaveAnchoredOffset: {x: 0, y: -60}
+  sadWaveWidth: 340
+  sadWaveHeight: 260
+  sadWaveColor: {r: 0.2629049, g: 0.36394507, b: 0.6603774, a: 1}
 --- !u!4 &76763303
 Transform:
   m_ObjectHideFlags: 0

@@ -18,6 +18,11 @@ using Yarn.Unity;
 //   <<angerreaction Pharaoh>>          Shakes Pharaoh's portrait and
 //                                      flashes a red spiky pulse behind
 //                                      it — a scripted "anger" beat.
+//   <<pulseglow Pharaoh>>              Warm gold success ripple behind
+//                                      Pharaoh's portrait.
+//   <<sadreaction Pharaoh>>            Blue droplets flow down and weave
+//                                      behind Pharaoh's portrait — a
+//                                      scripted "sadness" beat.
 //
 // NAME TAB SLIDING:
 //
@@ -212,6 +217,23 @@ public class PortraitManager : DialoguePresenterBase
     public float pulseGlowCircleDiameter = 350f;
     public Color pulseGlowColor = new Color(1f, 0.851f, 0.478f, 1f); // warm sunlit gold
 
+    [Header("Sad Reaction (emotive)")]
+    // <<sadreaction CharacterName>> — a soft blue droplet cascade that
+    // flows down and weaves left/right behind the portrait, standing
+    // in for quiet sorrow the way <<angerreaction>> stands in for
+    // anger and <<pulseglow>> for a happy/successful beat.
+    public int sadWaveDropCount = 3;
+    public float sadWaveDropStagger = 0.35f;
+    public float sadWaveFlowDuration = 1.6f;
+    public float sadWaveFlowDistance = 220f;
+    public float sadWaveWeaveAmplitude = 35f;
+    public float sadWaveWeaveCycles = 2f;
+    public Vector2 sadWaveAnchorPoint = new Vector2(0.5f, 1f);
+    public Vector2 sadWaveAnchoredOffset = new Vector2(0f, -60f);
+    public float sadWaveWidth = 70f;
+    public float sadWaveHeight = 130f;
+    public Color sadWaveColor = new Color(0.25f, 0.55f, 0.95f, 1f); // soft sorrowful blue
+
     void Awake()
     {
         dialogueRunner.AddCommandHandler<string, string>("showportrait", ShowPortrait);
@@ -219,6 +241,7 @@ public class PortraitManager : DialoguePresenterBase
         dialogueRunner.AddCommandHandler("hideallportraits", HideAllPortraits);
         dialogueRunner.AddCommandHandler<string>("angerreaction", TriggerAngerReaction);
         dialogueRunner.AddCommandHandler<string>("pulseglow", TriggerPulseGlow);
+        dialogueRunner.AddCommandHandler<string>("sadreaction", TriggerSadReaction);
 
         foreach (SlotConfig slot in slots)
         {
@@ -386,6 +409,30 @@ public class PortraitManager : DialoguePresenterBase
             glow.anchoredOffset = pulseGlowAnchoredOffset;
             glow.circleDiameter = pulseGlowCircleDiameter;
             glow.glowColor = pulseGlowColor;
+        });
+    }
+
+    // ── Sad reaction ─────────────────────────────────────────────────────
+
+    // Plays the blue weaving droplet cascade behind a character's
+    // portrait, callable directly from dialogue as
+    // <<sadreaction CharacterName>>. Does nothing (silently) if the
+    // character isn't currently in any slot.
+    public void TriggerSadReaction(string characterName)
+    {
+        PlayEffectOnCharacter<SadWaveEffect>(characterName, wave =>
+        {
+            wave.dropCount = sadWaveDropCount;
+            wave.dropStagger = sadWaveDropStagger;
+            wave.flowDuration = sadWaveFlowDuration;
+            wave.flowDistance = sadWaveFlowDistance;
+            wave.weaveAmplitude = sadWaveWeaveAmplitude;
+            wave.weaveCycles = sadWaveWeaveCycles;
+            wave.anchorPoint = sadWaveAnchorPoint;
+            wave.anchoredOffset = sadWaveAnchoredOffset;
+            wave.dropWidth = sadWaveWidth;
+            wave.dropHeight = sadWaveHeight;
+            wave.waveColor = sadWaveColor;
         });
     }
 
