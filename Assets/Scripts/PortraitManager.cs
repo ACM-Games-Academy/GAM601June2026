@@ -202,12 +202,23 @@ public class PortraitManager : DialoguePresenterBase
     // cleanly cancel an old one instead of them fighting each other
     private Dictionary<string, Coroutine> activeShakes = new Dictionary<string, Coroutine>();
 
+    [Header("Pulse Glow (emotive)")]
+    // <<pulseglow CharacterName>> — the same warm success ripple used
+    // when a wordsearch puzzle is solved, but callable as a standalone
+    // beat from anywhere in a .yarn script (e.g. a character feeling
+    // pleased, relieved, or blessed outside of a puzzle).
+    public Vector2 pulseGlowAnchorPoint = new Vector2(0.5f, 1f);
+    public Vector2 pulseGlowAnchoredOffset = new Vector2(0f, -60f);
+    public float pulseGlowCircleDiameter = 350f;
+    public Color pulseGlowColor = new Color(1f, 0.851f, 0.478f, 1f); // warm sunlit gold
+
     void Awake()
     {
         dialogueRunner.AddCommandHandler<string, string>("showportrait", ShowPortrait);
         dialogueRunner.AddCommandHandler<string>("hideportrait", HidePortrait);
         dialogueRunner.AddCommandHandler("hideallportraits", HideAllPortraits);
         dialogueRunner.AddCommandHandler<string>("angerreaction", TriggerAngerReaction);
+        dialogueRunner.AddCommandHandler<string>("pulseglow", TriggerPulseGlow);
 
         foreach (SlotConfig slot in slots)
         {
@@ -358,6 +369,24 @@ public class PortraitManager : DialoguePresenterBase
         {
             Debug.LogWarning("[AngerDebug] soundEffectManager is not assigned on PortraitManager.");
         }
+    }
+
+    // ── Pulse glow ───────────────────────────────────────────────────────
+
+    // Plays the sunlit success ripple behind a character's portrait,
+    // callable directly from dialogue as <<pulseglow CharacterName>>.
+    // Does nothing (silently) if the character isn't currently in any
+    // slot. Public so gameplay code (e.g. HandleWordFound) can trigger
+    // the exact same effect without going through the command handler.
+    public void TriggerPulseGlow(string characterName)
+    {
+        PlayEffectOnCharacter<PulseGlowEffect>(characterName, glow =>
+        {
+            glow.anchorPoint = pulseGlowAnchorPoint;
+            glow.anchoredOffset = pulseGlowAnchoredOffset;
+            glow.circleDiameter = pulseGlowCircleDiameter;
+            glow.glowColor = pulseGlowColor;
+        });
     }
 
     // Shakes a character's portrait side to side around its resting

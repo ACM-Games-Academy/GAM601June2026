@@ -724,6 +724,10 @@ MonoBehaviour:
   angerPulseAnchoredOffset: {x: 0, y: 0}
   angerPulseCircleDiameter: 1700
   angerSoundEffectName: AngerStinger
+  pulseGlowAnchorPoint: {x: 0.5, y: 1}
+  pulseGlowAnchoredOffset: {x: 0, y: 0}
+  pulseGlowCircleDiameter: 350
+  pulseGlowColor: {r: 1, g: 0.851, b: 0.478, a: 1}
 --- !u!4 &76763303
 Transform:
   m_ObjectHideFlags: 0
