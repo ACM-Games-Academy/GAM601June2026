@@ -5,30 +5,31 @@ using UnityEngine.UI;
 
 // DayAtmosphereEffect
 //
-// Self-contained "daytime background atmosphere" effect — god rays and
-// water sparkles so far, with more effects meant to join it here over
-// time. Lives as a PREFAB (Assets/Prefab/DayAtmosphereEffect.prefab)
-// rather than being built from scratch by each scene's controller
-// script, so editing the prefab (position/rotate the GodRay/Sparkle
-// children, tweak this component) updates every scene that uses it —
-// currently both the gameplay day background (via BackgroundManager)
-// and the splash screen (via SplashScreenController).
+// Self-contained "daytime background atmosphere" effect — god rays,
+// water sparkles, and leaping goldfish so far, with more effects meant
+// to join it here over time. Lives as a PREFAB
+// (Assets/Prefab/DayAtmosphereEffect.prefab) rather than being built
+// from scratch by each scene's controller script, so editing the prefab
+// (position the GodRay/Sparkle/Fish children, tweak this component)
+// updates every scene that uses it — currently both the gameplay day
+// background (via BackgroundManager) and the splash screen (via
+// SplashScreenController).
 //
 // Both of those scripts just Instantiate() this prefab as a child of
 // their own background layer and otherwise leave it alone — this
 // component builds and animates its own children independently.
 //
 // SETUP:
-// 1. This prefab already has its GodRay/Sparkle children built in,
-//    using whatever GodRaySettings asset and Water Sparkles list are
-//    assigned/configured below at the time it was last built. To
-//    rebuild after changing those, either enter Prefab Mode and use the
-//    ⋮ menu's "Build In Editor", or just press Play — Awake() does the
-//    same build automatically.
+// 1. This prefab already has its GodRay/Sparkle/Fish children built in,
+//    using whatever GodRaySettings asset and Water Sparkles/Goldfish
+//    lists are assigned/configured below at the time it was last built.
+//    To rebuild after changing those, either enter Prefab Mode and use
+//    the ⋮ menu's "Build In Editor", or just press Play — Awake() does
+//    the same build automatically.
 // 2. Position the children directly in Prefab Mode if you want to move
-//    them — like the original per-scene system, rebuilding only resets
-//    a child's position/rotation the first time it's created, never
-//    after.
+//    them (fish at their RESTING position, between leaps) — like the
+//    original per-scene system, rebuilding only resets a child's
+//    position/rotation the first time it's created, never after.
 
 [RequireComponent(typeof(RectTransform))]
 public class DayAtmosphereEffect : MonoBehaviour
@@ -86,10 +87,57 @@ public class DayAtmosphereEffect : MonoBehaviour
     private static Sprite cachedSparkleSprite;
     private const int SparkleTextureSize = 64;
 
+    // ── Goldfish ─────────────────────────────────────────────────────────
+
+    [System.Serializable]
+    public class FishConfig
+    {
+        // Anchored to bottom-center (anchorY=0), same convention as the
+        // water sparkles — this is where the fish breaks the surface
+        // and dives back in, not its position mid-leap.
+        public Vector2 anchoredPosition;
+        public float size = 60f;
+        public Color color = new Color(1f, 0.6f, 0.15f, 1f); // goldfish orange
+        public float leapHeight = 110f;
+        // Horizontal drift over the course of one leap — a straight-up
+        // hop reads as mechanical, a bit of travel reads as a real jump.
+        public float leapDistance = 70f;
+        // Which way it faces/travels — flip per fish for variety rather
+        // than having every one leap the same direction.
+        public bool leapRight = true;
+    }
+
+    [Header("Goldfish")]
+    public bool enableGoldfish = true;
+    // Empty by default — add one entry per leap point you want on the
+    // pool and position it in the Inspector or by dragging in the Scene
+    // view (drag it at its RESTING position; it only exists at that
+    // point between leaps).
+    public List<FishConfig> goldfish = new List<FishConfig>();
+    public float maxLeapTiltDegrees = 25f;
+
+    [Header("Goldfish Leap Cycle")]
+    // Unlike the god rays/sparkles, a fish's "visible phase" IS the leap
+    // itself — there's no separate hold; it rises, arcs, and dives back
+    // in over leapDuration, then waits leapHiddenDuration completely
+    // submerged before leaping again. Staggered the same way as the
+    // other two effects.
+    public float leapDuration = 0.9f;
+    public float leapHiddenDuration = 8f;
+
+    private List<Image> fishImages;
+    private List<RectTransform> fishRects;
+    private List<Coroutine> fishCycleCoroutines;
+
+    private static Sprite cachedFishSprite;
+    private const int FishTextureWidth = 96;
+    private const int FishTextureHeight = 48;
+
     void Awake()
     {
         BuildGodRays();
         BuildWaterSparkles();
+        BuildGoldfish();
     }
 
     // Awake() only ever fires once per instance, but this prefab gets
@@ -105,23 +153,26 @@ public class DayAtmosphereEffect : MonoBehaviour
     {
         StartGodRayCycles();
         StartSparkleCycles();
+        StartFishCycles();
     }
 
     void OnDisable()
     {
         StopCycles(ref godRayCycleCoroutines);
         StopCycles(ref sparkleCycleCoroutines);
+        StopCycles(ref fishCycleCoroutines);
     }
 
     // Lets you (re)build without pressing Play — e.g. right after
-    // editing the assigned GodRaySettings asset or the Water Sparkles
-    // list, or while positioning children in Prefab Mode. Available
-    // from the ⋮ menu on this component.
+    // editing the assigned GodRaySettings asset, Water Sparkles list, or
+    // Goldfish list, or while positioning children in Prefab Mode.
+    // Available from the ⋮ menu on this component.
     [ContextMenu("Build In Editor")]
     private void BuildInEditor()
     {
         BuildGodRays();
         BuildWaterSparkles();
+        BuildGoldfish();
 
         // If invoked while already playing, OnEnable already ran once
         // and won't fire again just because we rebuilt — restart the
@@ -131,6 +182,7 @@ public class DayAtmosphereEffect : MonoBehaviour
         {
             StartGodRayCycles();
             StartSparkleCycles();
+            StartFishCycles();
         }
     }
 
@@ -570,22 +622,6 @@ public class DayAtmosphereEffect : MonoBehaviour
         Color32[] pixels = new Color32[SparkleTextureSize * SparkleTextureSize];
         float center = SparkleTextureSize / 2f;
 
-        // Unlike GLSL's smoothstep(edge0, edge1, x), Unity's
-        // Mathf.SmoothStep(from, to, t) clamps t to 0-1 directly rather
-        // than remapping it against an edge0/edge1 domain first — using
-        // it the GLSL way (as the previous version of this method did)
-        // silently produces near-constant output across the whole
-        // texture instead of an actual falloff, which is exactly what
-        // made this render as a solid square. SoftEdge below does the
-        // remap explicitly instead, the same technique already used for
-        // PawPrintEffect/WrongAnswerWaveEffect's blob edges.
-        float SoftEdge(float value, float solidUntil, float softness)
-        {
-            float t = softness > 0f ? Mathf.Clamp01((value - solidUntil) / softness) : (value > solidUntil ? 1f : 0f);
-            float smoothed = t * t * (3f - 2f * t);
-            return 1f - smoothed; // 1 while value <= solidUntil, fades to 0 over the next 'softness'
-        }
-
         const float coreRadius = 0.1f;     // fraction of the half-size — small, crisp core
         const float coreSoftness = 0.12f;
         const float rayThickness = 0.02f;  // thin rays
@@ -624,5 +660,253 @@ public class DayAtmosphereEffect : MonoBehaviour
             new Vector2(0.5f, 0.5f));
 
         return cachedSparkleSprite;
+    }
+
+    // Unlike GLSL's smoothstep(edge0, edge1, x), Unity's
+    // Mathf.SmoothStep(from, to, t) clamps t to 0-1 directly rather than
+    // remapping it against an edge0/edge1 domain first — using it the
+    // GLSL way is what once made the sparkle texture render as a solid
+    // square. This does the remap explicitly instead, the same
+    // technique already used for PawPrintEffect/WrongAnswerWaveEffect's
+    // blob edges. Shared by every procedural texture in this file.
+    private float SoftEdge(float value, float solidUntil, float softness)
+    {
+        float t = softness > 0f ? Mathf.Clamp01((value - solidUntil) / softness) : (value > solidUntil ? 1f : 0f);
+        float smoothed = t * t * (3f - 2f * t);
+        return 1f - smoothed; // 1 while value <= solidUntil, fades to 0 over the next 'softness'
+    }
+
+    // ── Building: goldfish ───────────────────────────────────────────────
+
+    private void BuildGoldfish()
+    {
+        // Same reasoning as BuildGodRays/BuildWaterSparkles — stop old
+        // coroutines before the lists they index into get rebuilt.
+        StopCycles(ref fishCycleCoroutines);
+
+        if (!enableGoldfish)
+        {
+            RemoveExtraChildren("Fish ", 0);
+            fishImages = null;
+            fishRects = null;
+            return;
+        }
+
+        SeedExampleGoldfishIfEmpty();
+
+        RectTransform container = (RectTransform)transform;
+        fishImages = new List<Image>();
+        fishRects = new List<RectTransform>();
+
+        for (int i = 0; i < goldfish.Count; i++)
+        {
+            FishConfig config = goldfish[i];
+
+            GameObject fishObject = FindOrCreateChild(container, "Fish " + i, out bool wasCreated);
+            RectTransform fishRect = fishObject.GetComponent<RectTransform>();
+
+            if (wasCreated)
+            {
+                // Anchored where it rests between leaps — the water's
+                // surface. Starting point only — drag it into place
+                // afterward; later rebuilds won't reset it.
+                fishRect.anchorMin = new Vector2(0.5f, 0f);
+                fishRect.anchorMax = new Vector2(0.5f, 0f);
+                fishRect.pivot = new Vector2(0.5f, 0.5f);
+                fishRect.anchoredPosition = config.anchoredPosition;
+            }
+
+            // Texture is wider than tall (fish-shaped) — keep that
+            // aspect ratio as the config's single 'size' scales up/down.
+            fishRect.sizeDelta = new Vector2(config.size, config.size * (FishTextureHeight / (float)FishTextureWidth));
+            // Flip horizontally so the fish actually faces the direction
+            // it leaps in, rather than always facing the same way.
+            fishRect.localScale = new Vector3(config.leapRight ? -1f : 1f, 1f, 1f);
+
+            Image fishImage = fishObject.GetComponent<Image>();
+            if (fishImage == null) fishImage = fishObject.AddComponent<Image>();
+            fishImage.sprite = GetFishSprite();
+            fishImage.raycastTarget = false;
+            // Fully visible at rest (rather than the invisible-between-
+            // leaps state it'll actually be in during Play) so it can be
+            // seen and positioned while editing the prefab — coroutines
+            // don't tick outside Play mode, so an invisible starting
+            // state would otherwise never show anything to drag.
+            fishImage.color = new Color(config.color.r, config.color.g, config.color.b, 1f);
+
+            fishImages.Add(fishImage);
+            fishRects.Add(fishRect);
+        }
+
+        RemoveExtraChildren("Fish ", goldfish.Count);
+    }
+
+    // First-time convenience only: if you haven't configured any
+    // goldfish yet, seeds two large placeholders leaping opposite
+    // directions, so there's something obvious to find and drag onto
+    // the pool, then dial down afterward.
+    private void SeedExampleGoldfishIfEmpty()
+    {
+        if (goldfish != null && goldfish.Count > 0) return;
+
+        Color obviousGold = new Color(1f, 0.6f, 0.15f, 1f);
+        goldfish = new List<FishConfig>
+        {
+            new FishConfig { anchoredPosition = new Vector2(-150f, 70f), size = 70f, leapHeight = 120f, leapDistance = 80f, leapRight = true, color = obviousGold },
+            new FishConfig { anchoredPosition = new Vector2(150f, 70f), size = 70f, leapHeight = 120f, leapDistance = 80f, leapRight = false, color = obviousGold },
+        };
+    }
+
+    // Starts (or restarts) the goldfish leap coroutines against whatever
+    // fishImages/fishRects currently hold — same reasoning as
+    // StartGodRayCycles/StartSparkleCycles.
+    private void StartFishCycles()
+    {
+        if (!enableGoldfish) return;
+        if (fishImages == null) return;
+
+        StopCycles(ref fishCycleCoroutines);
+
+        fishCycleCoroutines = new List<Coroutine>();
+        for (int i = 0; i < goldfish.Count; i++)
+        {
+            fishCycleCoroutines.Add(StartCoroutine(FishCycleRoutine(i)));
+        }
+    }
+
+    // ── Animation: goldfish ──────────────────────────────────────────────
+
+    // Repeats forever: sit invisible/submerged for leapHiddenDuration,
+    // then leap — rising and falling through a parabolic arc with some
+    // horizontal drift and a lean into the motion, fading in as it
+    // breaks the surface and fading out as it dives back in — then
+    // returns to its resting position and repeats. 'index' is fixed for
+    // this coroutine's entire lifetime, matched against goldfish/
+    // fishImages/fishRects as they stood when it was started (rebuilds
+    // always stop these first — see StopCycles).
+    private IEnumerator FishCycleRoutine(int index)
+    {
+        Image image = fishImages[index];
+        RectTransform rect = fishRects[index];
+
+        // The Edit-mode-visible resting alpha (set in BuildGoldfish) is
+        // only for positioning convenience — the actual Play-mode
+        // resting state is invisible, submerged.
+        SetImageAlpha(image, 0f);
+
+        // Spread starts evenly across one full cycle length, based on
+        // this fish's position in the list, so they don't all leap at
+        // the same time.
+        float cycleLength = leapDuration + leapHiddenDuration;
+        float startDelay = index * (cycleLength / Mathf.Max(goldfish.Count, 1));
+        yield return new WaitForSeconds(startDelay);
+
+        while (true)
+        {
+            FishConfig config = goldfish[index];
+            // Read the RectTransform's own CURRENT position, not
+            // config.anchoredPosition — dragging the fish in the Scene/
+            // Prefab view only changes the RectTransform, not this
+            // separate config value, so using the config here would
+            // silently discard any manual repositioning every time a
+            // leap starts.
+            Vector2 restPosition = rect.anchoredPosition;
+            float direction = config.leapRight ? 1f : -1f;
+
+            float elapsed = 0f;
+            while (elapsed < leapDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / leapDuration);
+
+                // Parabolic arc: 0 at t=0 and t=1, peaks at t=0.5.
+                float arcHeight = 4f * t * (1f - t);
+                Vector2 offset = new Vector2(config.leapDistance * direction * t, config.leapHeight * arcHeight);
+                rect.anchoredPosition = restPosition + offset;
+
+                // Leans into the jump, peaking at the same midpoint as
+                // the arc, rather than any precise tangent calculation.
+                float leanAngle = direction * maxLeapTiltDegrees * Mathf.Sin(t * Mathf.PI);
+                rect.localRotation = Quaternion.Euler(0f, 0f, leanAngle);
+
+                // Fades in over the first 15% (breaking the surface) and
+                // out over the last 15% (diving back in); fully visible
+                // through the middle of the arc.
+                float fadeIn = Mathf.Clamp01(t / 0.15f);
+                float fadeOut = Mathf.Clamp01((1f - t) / 0.15f);
+                SetImageAlpha(image, Mathf.Min(fadeIn, fadeOut));
+
+                yield return null;
+            }
+
+            rect.anchoredPosition = restPosition;
+            rect.localRotation = Quaternion.identity;
+            SetImageAlpha(image, 0f);
+
+            yield return new WaitForSeconds(leapHiddenDuration);
+        }
+    }
+
+    // A small fish silhouette: an oval body with a tapering triangular
+    // tail fin, facing left (flipped per-instance via localScale.x in
+    // BuildGoldfish for fish leaping the other way). Generated once and
+    // cached.
+    private Sprite GetFishSprite()
+    {
+        if (cachedFishSprite != null) return cachedFishSprite;
+
+        Texture2D texture = new Texture2D(FishTextureWidth, FishTextureHeight, TextureFormat.RGBA32, false);
+        texture.wrapMode = TextureWrapMode.Clamp;
+
+        Color32[] pixels = new Color32[FishTextureWidth * FishTextureHeight];
+
+        float bodyCenterX = FishTextureWidth * 0.38f;
+        float bodyCenterY = FishTextureHeight * 0.5f;
+        float bodyRadiusX = FishTextureWidth * 0.30f;
+        float bodyRadiusY = FishTextureHeight * 0.42f;
+        const float bodySoftness = 0.18f; // fraction of radius
+
+        // Tail: a triangular wedge from partway through the body out to
+        // the texture's right edge, narrowing to a point at the tip.
+        float tailStartX = bodyCenterX + bodyRadiusX * 0.5f;
+        float tailTipX = FishTextureWidth * 0.98f;
+        float tailBaseHalfHeight = bodyRadiusY * 0.85f;
+        float tailEdgeSoftness = FishTextureHeight * 0.06f;
+
+        for (int y = 0; y < FishTextureHeight; y++)
+        {
+            for (int x = 0; x < FishTextureWidth; x++)
+            {
+                float px = x + 0.5f;
+                float py = y + 0.5f;
+
+                float dx = (px - bodyCenterX) / bodyRadiusX;
+                float dy = (py - bodyCenterY) / bodyRadiusY;
+                float bodyDist = Mathf.Sqrt(dx * dx + dy * dy);
+                float bodyAlpha = SoftEdge(bodyDist, 1f, bodySoftness);
+
+                float tailAlpha = 0f;
+                if (px >= tailStartX && px <= tailTipX)
+                {
+                    float tailT = Mathf.Clamp01((px - tailStartX) / (tailTipX - tailStartX));
+                    float allowedHalfHeight = Mathf.Lerp(tailBaseHalfHeight, 0f, tailT);
+                    float distFromCenterline = Mathf.Abs(py - bodyCenterY);
+                    tailAlpha = allowedHalfHeight > 0.5f ? SoftEdge(distFromCenterline, allowedHalfHeight, tailEdgeSoftness) : 0f;
+                }
+
+                float alpha = Mathf.Clamp01(Mathf.Max(bodyAlpha, tailAlpha));
+                pixels[y * FishTextureWidth + x] = new Color(1f, 1f, 1f, alpha);
+            }
+        }
+
+        texture.SetPixels32(pixels);
+        texture.Apply();
+
+        cachedFishSprite = Sprite.Create(
+            texture,
+            new Rect(0f, 0f, FishTextureWidth, FishTextureHeight),
+            new Vector2(0.5f, 0.5f));
+
+        return cachedFishSprite;
     }
 }
