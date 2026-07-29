@@ -704,6 +704,25 @@ public class PortraitManager : DialoguePresenterBase
         }
     }
 
+    // Find which slot (if any) a character currently occupies, without
+    // spawning anything there — useful for callers (e.g.
+    // ThoughtBubblePresenter) that need to position their own UI
+    // relative to a character's current portrait rather than spawning a
+    // TEffect via PlayEffectOnCharacter below. Returns null if the
+    // character isn't currently assigned to any slot.
+    public SlotConfig GetSlotForCharacter(string characterName)
+    {
+        foreach (SlotConfig slot in slots)
+        {
+            if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
+            if (assigned != characterName) continue;
+
+            return slot;
+        }
+
+        return null;
+    }
+
     // Find which slot (if any) a character currently occupies, and spawn
     // a TEffect there (e.g. PulseGlowEffect for correct answers,
     // WrongAnswerWaveEffect for incorrect ones). Does nothing if the
