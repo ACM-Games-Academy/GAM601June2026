@@ -730,7 +730,7 @@ MonoBehaviour:
   pulseGlowColor: {r: 1, g: 0.851, b: 0.478, a: 1}
   sadWaveDropCount: 3
   sadWaveDropStagger: 0.35
-  sadWaveFlowDuration: 2.6
+  sadWaveFlowDuration: 5.2
   sadWaveFlowDistance: 440
   sadWaveWeaveAmplitude: 140
   sadWaveWeaveCycles: 2
@@ -3633,8 +3633,8 @@ MonoBehaviour:
   enableDriftingClouds: 1
   cloudCount: 3
   cloudDiameter: 600
-  cloudAlpha: 0.08
-  cloudColor: {r: 0.75, g: 0.8, b: 0.9, a: 1}
+  cloudAlpha: 0.1
+  cloudColor: {r: 0.8, g: 0.82, b: 0.82, a: 1}
   cloudDriftSpeed: 100
   cloudBandCenterY: 300
   cloudBandHeight: 120
@@ -4098,7 +4098,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.9, g: 0.79, b: 0.635, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4136,6 +4136,7 @@ GameObject:
   - component: {fileID: 2958262987057254162}
   - component: {fileID: 2958262987057254173}
   - component: {fileID: 2958262987057254180}
+  - component: {fileID: 2958262987057254190}
   m_Layer: 5
   m_Name: Continue Button
   m_TagString: Untagged
@@ -4233,6 +4234,32 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
   m_EffectDistance: {x: 4, y: -4}
   m_UseGraphicAlpha: 1
+--- !u!114 &2958262987057254190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2958262987057254168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fb85d00695f4181b88e8f3af206896d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  continueButton: {fileID: 2958262987057254173}
+  backgroundManager: {fileID: 1952591781}
+  portraitManager: {fileID: 76763302}
+  glowColor: {r: 1, g: 0.851, b: 0.478, a: 1}
+  minAlpha: 0.075
+  maxAlpha: 0.3
+  brightBackgroundMinAlpha: 0.925
+  brightBackgroundMaxAlpha: 1
+  brightBackgroundGlowColor: {r: 0.35, g: 0.2275, b: 0.0175, a: 1}
+  minShapeSolidity: 0
+  maxShapeSolidity: 1
+  glowScale: 1.8
+  pulseSpeed: 0.35
+  lockTransitionDuration: 0.3
 --- !u!114 &2958262987189859126
 MonoBehaviour:
   m_ObjectHideFlags: 0

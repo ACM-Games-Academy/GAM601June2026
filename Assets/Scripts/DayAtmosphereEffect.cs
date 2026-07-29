@@ -469,7 +469,7 @@ public class DayAtmosphereEffect : MonoBehaviour
 
         while (true)
         {
-            yield return FadeImageAlpha(image, image.color.a, godRaySettings.godRays[index].baseAlpha, godRaySettings.godRayFadeTransitionDuration);
+            yield return FadeImageAlpha(image, image.color.a, godRaySettings.godRays[index].baseAlpha, godRaySettings.godRayFadeTransitionDuration, ease: true);
 
             float elapsed = 0f;
             while (elapsed < godRaySettings.godRayVisibleDuration)
@@ -484,7 +484,7 @@ public class DayAtmosphereEffect : MonoBehaviour
                 yield return null;
             }
 
-            yield return FadeImageAlpha(image, image.color.a, 0f, godRaySettings.godRayFadeTransitionDuration);
+            yield return FadeImageAlpha(image, image.color.a, 0f, godRaySettings.godRayFadeTransitionDuration, ease: true);
 
             yield return new WaitForSeconds(godRaySettings.godRayHiddenDuration);
         }
@@ -528,7 +528,7 @@ public class DayAtmosphereEffect : MonoBehaviour
 
     // ── Shared alpha animation ───────────────────────────────────────────
 
-    private IEnumerator FadeImageAlpha(Image image, float from, float to, float duration)
+    private IEnumerator FadeImageAlpha(Image image, float from, float to, float duration, bool ease = false)
     {
         float elapsed = 0f;
 
@@ -536,6 +536,16 @@ public class DayAtmosphereEffect : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+
+            // Cubic smoothstep: eases into and out of the transition
+            // instead of changing at a constant rate the whole way
+            // through. A linear fade reads as a hard "on/off" switch
+            // because the change starts and stops abruptly at full
+            // speed; easing it is what makes something like the god
+            // rays read as a cloud drifting across rather than a light
+            // being flicked — see <<pulseglow>>-style rides SoftEdge().
+            if (ease) t = t * t * (3f - 2f * t);
+
             SetImageAlpha(image, Mathf.Lerp(from, to, t));
             yield return null;
         }

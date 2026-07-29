@@ -65,48 +65,32 @@ MonoBehaviour:
   - anchoredPosition: {x: -400, y: 60}
     size: 32
     color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
+    baseAlpha: 0.475
   - anchoredPosition: {x: -240, y: 90}
     size: 32
     color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
+    baseAlpha: 0.475
   - anchoredPosition: {x: -80, y: 50}
     size: 32
     color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
+    baseAlpha: 0.475
   - anchoredPosition: {x: 80, y: 80}
     size: 32
     color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
+    baseAlpha: 0.475
   - anchoredPosition: {x: 240, y: 55}
     size: 32
     color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
+    baseAlpha: 0.475
   - anchoredPosition: {x: 400, y: 85}
     size: 32
     color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
-  - anchoredPosition: {x: 400, y: 85}
-    size: 32
-    color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
-  - anchoredPosition: {x: 400, y: 85}
-    size: 32
-    color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
-  - anchoredPosition: {x: 400, y: 85}
-    size: 32
-    color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
-  - anchoredPosition: {x: 400, y: 85}
-    size: 32
-    color: {r: 1, g: 1, b: 0.95, a: 1}
-    baseAlpha: 0.95
-  sparkleTwinkleSpeed: 3
+    baseAlpha: 0.475
+  sparkleTwinkleSpeed: 10
   sparkleTwinkleAmount: 0.012
-  sparkleVisibleDuration: 0.8
+  sparkleVisibleDuration: 0.2
   sparkleHiddenDuration: 10
-  sparkleFadeTransitionDuration: 0.25
+  sparkleFadeTransitionDuration: 0.12
   enableGoldfish: 1
   goldfish:
   - anchoredPosition: {x: -150, y: 70}

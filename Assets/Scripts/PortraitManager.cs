@@ -216,6 +216,7 @@ public class PortraitManager : DialoguePresenterBase
     public Vector2 pulseGlowAnchoredOffset = new Vector2(0f, -60f);
     public float pulseGlowCircleDiameter = 350f;
     public Color pulseGlowColor = new Color(1f, 0.851f, 0.478f, 1f); // warm sunlit gold
+    public string pulseGlowSoundEffectName = "CelebratoryChoir";
 
     [Header("Sad Reaction (emotive)")]
     // <<sadreaction CharacterName>> — a soft blue droplet cascade that
@@ -224,7 +225,7 @@ public class PortraitManager : DialoguePresenterBase
     // anger and <<pulseglow>> for a happy/successful beat.
     public int sadWaveDropCount = 3;
     public float sadWaveDropStagger = 0.35f;
-    public float sadWaveFlowDuration = 1.6f;
+    public float sadWaveFlowDuration = 3.2f;
     public float sadWaveFlowDistance = 220f;
     public float sadWaveWeaveAmplitude = 35f;
     public float sadWaveWeaveCycles = 2f;
@@ -410,6 +411,11 @@ public class PortraitManager : DialoguePresenterBase
             glow.circleDiameter = pulseGlowCircleDiameter;
             glow.glowColor = pulseGlowColor;
         });
+
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(pulseGlowSoundEffectName);
+        }
     }
 
     // ── Sad reaction ─────────────────────────────────────────────────────

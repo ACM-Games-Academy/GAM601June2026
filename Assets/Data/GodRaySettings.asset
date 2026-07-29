@@ -36,4 +36,4 @@ MonoBehaviour:
   godRaySwayAmount: 1
   godRayVisibleDuration: 6
   godRayHiddenDuration: 16
-  godRayFadeTransitionDuration: 2.5
+  godRayFadeTransitionDuration: 5
