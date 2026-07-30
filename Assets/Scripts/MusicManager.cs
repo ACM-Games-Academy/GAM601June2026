@@ -182,6 +182,18 @@ public class MusicManager : MonoBehaviour
         PlayTrack(nightMusicClip);
     }
 
+    // Crossfades to an arbitrary clip not covered by the day/night/
+    // puzzle categories above — e.g. a one-off cutscene track. Callers
+    // that want a clean sequential handoff rather than an audible
+    // overlap (see SplashScreenController's establishing shot) should
+    // call StopMusic() first and wait out fadeDuration before calling
+    // this, since PlayTrack() always crossfades against whatever's
+    // still active.
+    public void PlayClip(AudioClip clip)
+    {
+        PlayTrack(clip);
+    }
+
     // Crossfades to the next clip in puzzleMusicClips (wrapping back to
     // the start after the last one), remembering whatever was playing
     // before (day or night music) so StopPuzzleMusic() can crossfade

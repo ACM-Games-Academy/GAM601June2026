@@ -483,9 +483,15 @@ MonoBehaviour:
   playButtonColor: {r: 0.72, g: 0.53, b: 0.15, a: 1}
   gameplaySceneName: YarnViabilityTest
   establishingShotSprite: {fileID: 5014852358186077688, guid: b53b1bffd86e25e4fb4d90ccc630c23e, type: 3}
+  splashFadeToBlackDuration: 1
   establishingShotFadeInDuration: 1.2
-  establishingShotHoldDuration: 2
+  establishingShotHoldDuration: 12
   establishingShotFadeToBlackDuration: 0.8
+  establishingShotMusicClip: {fileID: 8300000, guid: f45d854aedea7d94ea295282c2a707d7, type: 3}
+  dialogueBoxBackgroundSprite: {fileID: 21300000, guid: afcb828764cc15246b5a74e1e8cbd307, type: 3}
+  establishingShotLine: The world of the living -- everyone I love and care about,
+    gone forever...
+  establishingShotTextFadeInDuration: 0.6
   dayAtmosphereEffectPrefab: {fileID: 100000001, guid: 65f4298b28f24578bb58dfaf930d9217, type: 3}
 --- !u!4 &769040211
 Transform:

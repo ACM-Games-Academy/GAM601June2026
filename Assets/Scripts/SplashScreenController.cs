@@ -74,6 +74,9 @@ public class SplashScreenController : MonoBehaviour
     private Dictionary<GameObject, Coroutine> portraitCycleCoroutines = new Dictionary<GameObject, Coroutine>();
 
     private Image establishingShotOverlayImage;
+    private Image splashBlackOverlay;
+    private CanvasGroup establishingShotDialogueBoxGroup;
+    private TextMeshProUGUI establishingShotDialogueText;
     private bool isTransitioningToGameplay = false;
 
     [Header("Font")]
@@ -91,16 +94,41 @@ public class SplashScreenController : MonoBehaviour
     public Color playButtonColor = new Color(0.72f, 0.53f, 0.15f);
     public string gameplaySceneName = "YarnViabilityTest";
 
-    // Shown full-screen after Play is clicked: crossfades in over the
-    // splash screen, holds, then fades to black before the gameplay
-    // scene actually loads — a brief establishing shot bridging the two,
-    // rather than an abrupt cut straight from the splash screen into
-    // gameplay.
+    // Shown full-screen after Play is clicked: the splash screen fades
+    // to black first, then the establishing shot fades in FROM that
+    // black (not a crossfade over the splash content), holds, then
+    // fades back to black before the gameplay scene actually loads — a
+    // brief establishing shot bridging the two, rather than an abrupt
+    // cut straight from the splash screen into gameplay.
     [Header("Establishing Shot")]
     public Sprite establishingShotSprite;
+    // How long the splash screen itself (art/title/portraits/button)
+    // takes to fade to solid black, before the establishing shot starts
+    // fading in from that black.
+    public float splashFadeToBlackDuration = 1f;
     public float establishingShotFadeInDuration = 1.2f;
-    public float establishingShotHoldDuration = 2f;
+    public float establishingShotHoldDuration = 12f;
     public float establishingShotFadeToBlackDuration = 0.8f;
+    // Played once the splash screen has fully faded to black — the
+    // splash screen's own day music (see Start() below) is faded out
+    // completely first (via MusicManager.StopMusic()), then this track
+    // fades in on its own rather than crossfading against it.
+    public AudioClip establishingShotMusicClip;
+
+    // A single static line shown in a small dialogue box over the
+    // establishing shot — not driven by Yarn Spinner (there's no
+    // interactivity or branching here, just one line appearing and
+    // disappearing on a timer), so this is just plain text. The box
+    // reuses the same background sprite as the main gameplay dialogue
+    // box (Assets/Sprites/UI/Panel Background (1).png) for visual
+    // consistency between the two — assign that same sprite here.
+    public Sprite dialogueBoxBackgroundSprite;
+    [TextArea]
+    public string establishingShotLine = "The world of the living -- everyone I love and care about, gone forever...";
+    // Fades in AFTER the image itself has finished fading in (i.e. at
+    // the start of the hold), rather than at the same time — so the
+    // image gets a beat to register on its own first.
+    public float establishingShotTextFadeInDuration = 0.6f;
 
     // Shared PREFAB with BackgroundManager's daytime god rays — assign
     // the SAME DayAtmosphereEffect prefab asset to both, and editing the
@@ -162,11 +190,23 @@ public class SplashScreenController : MonoBehaviour
         CreateTitle(canvasRect);
         CreatePlayButton(canvasRect);
 
+        // Built before the establishing shot overlay so it renders
+        // directly BEHIND it — solid black, faded in first to hide the
+        // splash content, so the establishing shot image (built next)
+        // can then fade in from true black instead of crossfading over
+        // the splash screen.
+        CreateSplashBlackOverlay(canvasRect);
+
         // Built last so it's the last sibling — renders on top of
         // everything above (title, portraits, Play button) once faded
         // in, the same way any of this file's other elements rely on
         // build order for layering.
         CreateEstablishingShotOverlay(canvasRect);
+
+        // Built after the overlay image, so it renders on top of it —
+        // otherwise the fully-opaque establishing shot image would
+        // cover the dialogue box once both are visible.
+        CreateEstablishingShotDialogueBox(canvasRect);
     }
 
     // ── Find-or-create helpers ───────────────────────────────────────────
@@ -238,6 +278,32 @@ public class SplashScreenController : MonoBehaviour
         image.raycastTarget = false;
     }
 
+    // Full-screen solid black, no sprite — sits directly behind
+    // establishingShotOverlayImage. Built once, kept fully transparent
+    // until PlayEstablishingShotThenLoadGameplay fades it in ahead of
+    // everything else, hiding the splash content in solid black before
+    // the establishing shot image itself starts fading in on top of it.
+    private void CreateSplashBlackOverlay(RectTransform parent)
+    {
+        GameObject overlayObject = FindOrCreateChild(parent, "SplashBlackOverlay", out bool wasCreated);
+
+        if (wasCreated)
+        {
+            RectTransform rect = overlayObject.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.sizeDelta = Vector2.zero;
+            rect.anchoredPosition = Vector2.zero;
+        }
+
+        overlayObject.transform.SetAsLastSibling();
+
+        splashBlackOverlay = overlayObject.GetComponent<Image>();
+        if (splashBlackOverlay == null) splashBlackOverlay = overlayObject.AddComponent<Image>();
+        splashBlackOverlay.raycastTarget = false;
+        splashBlackOverlay.color = new Color(0f, 0f, 0f, 0f);
+    }
+
     // Full-screen overlay for the establishing shot — built once, kept
     // fully transparent (and non-blocking) until PlayEstablishingShotThenLoadGameplay
     // actually animates it. raycastTarget stays off permanently; the
@@ -271,6 +337,65 @@ public class SplashScreenController : MonoBehaviour
         startColor.a = 0f;
         establishingShotOverlayImage.color = startColor;
     }
+
+    // A small dialogue box over the establishing shot, showing a single
+    // static line — same background sprite (and 9-sliced border) as the
+    // main gameplay dialogue box, at a matching bottom-anchored position,
+    // for visual consistency between the two. Built once, kept fully
+    // transparent via a CanvasGroup until PlayEstablishingShotThenLoadGameplay
+    // fades it in/out.
+    private void CreateEstablishingShotDialogueBox(RectTransform parent)
+    {
+        GameObject boxObject = FindOrCreateChild(parent, "EstablishingShotDialogueBox", out bool wasCreated);
+
+        if (wasCreated)
+        {
+            RectTransform rect = boxObject.GetComponent<RectTransform>();
+            // Bottom-anchored, full width minus side margins — the same
+            // convention the gameplay dialogue box's own panel uses.
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, 43f);
+            rect.sizeDelta = new Vector2(-400f, 220f);
+        }
+
+        boxObject.transform.SetAsLastSibling();
+
+        Image panelImage = boxObject.GetComponent<Image>();
+        if (panelImage == null) panelImage = boxObject.AddComponent<Image>();
+        panelImage.sprite = dialogueBoxBackgroundSprite;
+        panelImage.type = Image.Type.Sliced;
+        panelImage.raycastTarget = false;
+
+        CanvasGroup group = boxObject.GetComponent<CanvasGroup>();
+        if (group == null) group = boxObject.AddComponent<CanvasGroup>();
+        group.alpha = 0f;
+        group.interactable = false;
+        group.blocksRaycasts = false;
+        establishingShotDialogueBoxGroup = group;
+
+        GameObject textObject = FindOrCreateChild(boxObject.transform, "Text", out bool textWasCreated);
+
+        if (textWasCreated)
+        {
+            RectTransform textRect = textObject.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = new Vector2(50f, 30f);
+            textRect.offsetMax = new Vector2(-50f, -30f);
+        }
+
+        establishingShotDialogueText = textObject.GetComponent<TextMeshProUGUI>();
+        if (establishingShotDialogueText == null) establishingShotDialogueText = textObject.AddComponent<TextMeshProUGUI>();
+        establishingShotDialogueText.text = establishingShotLine;
+        establishingShotDialogueText.fontSize = 40;
+        establishingShotDialogueText.alignment = TextAlignmentOptions.Center;
+        establishingShotDialogueText.color = Color.black;
+        establishingShotDialogueText.raycastTarget = false;
+        if (gameFont != null) establishingShotDialogueText.font = gameFont;
+    }
+
 
     // Anchors, sizes and positions a character portrait at a screen
     // corner the first time it's created, then starts (or restarts) it
@@ -463,57 +588,123 @@ public class SplashScreenController : MonoBehaviour
         StartCoroutine(PlayEstablishingShotThenLoadGameplay());
     }
 
-    // Crossfades the splash screen into the establishing shot, holds on
-    // it, fades it to black, then loads the gameplay scene. Fading to
-    // black rather than back to the splash screen matters: the gameplay
-    // scene starts already fully lit (night background at full alpha,
-    // no fade-in of its own), so cutting from a black screen into it
-    // reads as a clean transition, while cutting from the establishing
-    // shot's own image would pop.
+    // Fades the splash screen to black, fades the establishing shot in
+    // from that black, holds on it, fades it back to black, then loads
+    // the gameplay scene. Fading to black (both at the start AND before
+    // the scene load) rather than crossfading directly between elements
+    // matters here: the gameplay scene starts already fully lit (night
+    // background at full alpha, no fade-in of its own beyond its own
+    // matching black-cover fade), so cutting from a black screen into it
+    // reads as a clean transition, while a direct crossfade would pop.
     private IEnumerator PlayEstablishingShotThenLoadGameplay()
     {
-        yield return StartCoroutine(FadeEstablishingShotAlpha(0f, 1f, establishingShotFadeInDuration));
+        // Kicked off immediately and left to load in the background for
+        // the whole rest of this coroutine. A plain synchronous
+        // LoadScene() call blocks the main thread while it instantiates
+        // every GameObject in the gameplay scene, which is exactly what
+        // produced a visible skip/hitch right as the screen went black —
+        // nothing could render for however long that instantiation
+        // took. Loading async and holding activation back with
+        // allowSceneActivation lets all of that heavy lifting happen
+        // underneath the still-visible establishing shot instead.
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(gameplaySceneName);
+        asyncLoad.allowSceneActivation = false;
+
+        // Splash music starts fading to silence now, in parallel with
+        // the visual fade below — StopMusic() runs over MusicManager's
+        // own fadeDuration, which the wait further down accounts for
+        // separately from the visual timing here.
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.StopMusic();
+        }
+
+        // Splash content fades to solid black first — splashBlackOverlay
+        // sits directly behind establishingShotOverlayImage, so once
+        // it's fully opaque the establishing shot image can fade in
+        // from true black next, rather than crossfading over the splash
+        // screen's own art/title/button.
+        yield return StartCoroutine(FadeImageAlpha(splashBlackOverlay, 0f, 1f, splashFadeToBlackDuration));
+
+        if (MusicManager.Instance != null)
+        {
+            // The splash track needs to be COMPLETELY silent before the
+            // establishing shot's music starts (rather than the two
+            // overlapping in a crossfade, which is what calling PlayClip
+            // while the old track is still audible would produce) — if
+            // MusicManager's own fadeDuration is longer than the visual
+            // fade just finished, wait out whatever's left of it.
+            float remainingMusicFade = MusicManager.Instance.fadeDuration - splashFadeToBlackDuration;
+            if (remainingMusicFade > 0f) yield return new WaitForSeconds(remainingMusicFade);
+
+            MusicManager.Instance.PlayClip(establishingShotMusicClip);
+        }
+
+        yield return StartCoroutine(FadeImageAlpha(establishingShotOverlayImage, 0f, 1f, establishingShotFadeInDuration));
+
+        if (establishingShotDialogueBoxGroup != null)
+        {
+            StartCoroutine(FadeCanvasGroupAlpha(establishingShotDialogueBoxGroup, 0f, 1f, establishingShotTextFadeInDuration));
+        }
 
         yield return new WaitForSeconds(establishingShotHoldDuration);
 
-        yield return StartCoroutine(FadeEstablishingShotToBlack(establishingShotFadeToBlackDuration));
+        if (establishingShotDialogueBoxGroup != null)
+        {
+            StartCoroutine(FadeCanvasGroupAlpha(establishingShotDialogueBoxGroup, establishingShotDialogueBoxGroup.alpha, 0f, establishingShotFadeToBlackDuration));
+        }
 
-        SceneManager.LoadScene(gameplaySceneName);
+        // Fades the establishing shot image back out, revealing the
+        // still-opaque splashBlackOverlay sitting behind it — solid
+        // black either way, so no separate tint-to-black step is needed.
+        yield return StartCoroutine(FadeImageAlpha(establishingShotOverlayImage, 1f, 0f, establishingShotFadeToBlackDuration));
+
+        // Screen now reads fully black via splashBlackOverlay — but that
+        // Image belongs to THIS scene and is about to be destroyed. Hand
+        // the "stay black" duty off to a persistent overlay that
+        // survives the load, so there's no gap where the outgoing
+        // scene's black cover is gone but the incoming scene's own
+        // black cover hasn't taken effect yet. Snapping it opaque here
+        // is invisible — the screen is already black at this point.
+        SceneTransitionOverlay.GetOrCreate().SetOpaque();
+
+        // The load itself should be long done by now (it only needed a
+        // couple of frames), but wait for it just in case before handing
+        // off — activation itself is then effectively instant since
+        // there's no more work left to do underneath it.
+        while (asyncLoad.progress < 0.9f) yield return null;
+        asyncLoad.allowSceneActivation = true;
     }
 
-    private IEnumerator FadeEstablishingShotAlpha(float fromAlpha, float toAlpha, float duration)
+    private IEnumerator FadeCanvasGroupAlpha(CanvasGroup group, float fromAlpha, float toAlpha, float duration)
     {
-        Color c = Color.white;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            group.alpha = Mathf.Lerp(fromAlpha, toAlpha, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+
+        group.alpha = toAlpha;
+    }
+
+    private IEnumerator FadeImageAlpha(Image image, float fromAlpha, float toAlpha, float duration)
+    {
+        Color c = image.color;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             c.a = Mathf.Lerp(fromAlpha, toAlpha, Mathf.Clamp01(elapsed / duration));
-            establishingShotOverlayImage.color = c;
+            image.color = c;
             yield return null;
         }
 
         c.a = toAlpha;
-        establishingShotOverlayImage.color = c;
-    }
-
-    // Darkens the (already fully visible) establishing shot down to
-    // solid black by animating its tint toward black while alpha stays
-    // at 1 throughout — no separate black overlay object needed.
-    private IEnumerator FadeEstablishingShotToBlack(float duration)
-    {
-        Color start = Color.white;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            establishingShotOverlayImage.color = Color.Lerp(start, Color.black, Mathf.Clamp01(elapsed / duration));
-            yield return null;
-        }
-
-        establishingShotOverlayImage.color = Color.black;
+        image.color = c;
     }
 
     // ── Sky ambience: god rays (via DayAtmosphereEffect prefab) ──────────

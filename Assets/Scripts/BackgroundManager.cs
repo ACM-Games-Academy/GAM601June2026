@@ -212,6 +212,14 @@ public class BackgroundManager : MonoBehaviour
         if (dayCrittersEffect != null) dayCrittersEffect.SetActive(false); // the game starts at night
 
         StartCoroutine(FadeInFromBlackAtStart());
+
+        // Releases the persistent black cover handed off by
+        // SplashScreenController right before this scene loaded (see
+        // SceneTransitionOverlay) — if the scene was entered directly
+        // (e.g. testing it standalone in the Editor) this just creates
+        // an already-transparent overlay and fades it from 0 to 0, a
+        // harmless no-op.
+        SceneTransitionOverlay.GetOrCreate().FadeOut(openingFadeInDuration);
     }
 
     // Fades the solid black cover set at the top of Start() away, so the
@@ -219,6 +227,22 @@ public class BackgroundManager : MonoBehaviour
     private IEnumerator FadeInFromBlackAtStart()
     {
         isFading = true; // same guard FadeToNight/FadeToDay use, so a command firing this early can't fight over topLayer
+
+        // Scene activation just did a burst of synchronous work (every
+        // object's Awake/Start, including one-time procedural texture
+        // generation like the torch/cloud glow sprite and the critters'
+        // mouse/snake art — see GetSoftGlowSprite/GetMouseSprite/
+        // GetSnakeSprite) all in a single frame. That frame's
+        // Time.deltaTime can spike well above normal, and since the
+        // screen is still solid black at this point that's harmless —
+        // EXCEPT that if the fade timer below started accumulating from
+        // that same spiked frame, its very first step would already
+        // leap forward by however long the hitch took, which reads as
+        // a visible skip right as the fade begins. Waiting one frame
+        // here lets that spike land on a frame that does nothing, so
+        // the timer below only ever starts counting from a normal-sized
+        // delta.
+        yield return null;
 
         float elapsed = 0f;
         while (elapsed < openingFadeInDuration)
