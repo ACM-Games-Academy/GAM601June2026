@@ -41,7 +41,7 @@ Amenhotep: The arrival of a new Temple Cat has however eased my sorrow somewhat 
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *purrrrrr* #expression:neutral
 Amenhotep: Meritamun’s <color=red>younger sister Nitiqret</color> is now appointed God’s Wife of Amun. I think she needs your guidance, but is a bit too proud to ask. 
-Amenhotep: And of course there is the little child, <color=red>my son.</color>  Knots of worry gnaw at me day and night, and so I come to ask your guidance on this – should I : <br> Write𓀀 to our child's𓅱 grandmother𓄤 and ask her for news of our little one? Or <br> would it be much safer to not𓇳 send𓅓 letters𓁶 too often lest he be discovered? #wordsearch
+Amenhotep: And of course there is the little child, <color=red>my son.</color>  Knots of worry gnaw at me day and night, and so I come to ask your guidance on this – should I : <br> Write<b><size=+4>𓀀</size></b> to our child's<b><size=+4>𓅱</size></b> grandmother<b><size=+4>𓄤</size></b> and ask her for news of our little one? Or <br> would it be much safer to not<b><size=+4>𓇳</size></b> send<b><size=+4>𓅓</size></b> letters<b><size=+4>𓁶</size></b> too often lest he be discovered? #wordsearch
 <<if $selectedPath == "Path_A">>
     Amenhotep: I shall write to <color=red>Neferura</color> straight away! 
     <<addgodaffinity Bes 1>> 
@@ -64,7 +64,7 @@ Ahmose: That business with my <color=red>eldest daugther Meritamun</color> neede
 Cat_Meritamun: *purrrrrr* #expression:neutral
 Ahmose:  But here’s my question to the great divinities that may be in this holy place, would it be wiser to :
 
-Ahmose: Make𓎡 a move𓃀 against𓂋 Amenhotep? Or <br> Let𓄿 him𓊹 be𓉐 and try to work with him remaining in his post as high priest? #wordsearch
+Ahmose: Make<b><size=+4>𓎡</size></b> a move<b><size=+4>𓃀</size></b> against<b><size=+4>𓂋</size></b> Amenhotep? Or <br> Let<b><size=+4>𓄿</size></b> him<b><size=+4>𓊹</size></b> be<b><size=+4>𓉐</size></b> and try to work with him remaining in his post as high priest? #wordsearch
 
 <<if $selectedPath == "Path_A">>  
     Ahmose: Yes, yes… As soon as Harwa and Nitiqret are settled here I’m going to oust him. I’ll have to see what I can do to start discrediting him, immediately…
@@ -89,7 +89,7 @@ Harwa: I heard from Amenhotep that a desert cat has blessed this holy temple wit
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrrr......*
-Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him I'd pray to ask the Gods, so here I am. Should I <br> join𓏍 the race𓌅 tomorrow𓆣? OR <br> Not𓇳 race𓌅 tomorrow𓆣? #wordsearch
+Harwa: Father thinks I’m being an idiot and I’ll get injured, so I told him I'd pray to ask the Gods, so here I am. Should I <br> join<b><size=+4>𓏍</size></b> the race<b><size=+4>𓌅</size></b> tomorrow<b><size=+4>𓆣</size></b>? OR <br> Not<b><size=+4>𓇳</size></b> race<b><size=+4>𓌅</size></b> tomorrow<b><size=+4>𓆣</size></b>? #wordsearch
 <<if $selectedPath == "Path_A">>  
     Harwa: The Gods have spoken! Haha! On to victory! #expression:laughing
         <<addgodaffinity Sekhmet 1>> 
@@ -135,7 +135,7 @@ Nitiqret: I’m so lost. The nobles here hate me and I have literally no clue wh
 Nitiqret: .... but actually I came here because I heard a <color=red>cat</color> has come to live here! And here you are!
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *PurrrrrrrRRRRRrrrr* 
-Nitiqret: Would you like <br> to be given a little𓐫 scritch𓃠 on your head𓁷? OR <br> would you like to be given a little ride𓋴 on this chariot𓌅 toy𓌢? #wordsearch
+Nitiqret: Would you like <br> to be given a little<b><size=+4>𓐫</size></b> scritch<b><size=+4>𓃠</size></b> on your head<b><size=+4>𓁷</size></b>? OR <br> would you like to be given a little ride<b><size=+4>𓋴</size></b> on this chariot<b><size=+4>𓌅</size></b> toy<b><size=+4>𓌢</size></b>? #wordsearch
 
 <<if $selectedPath == "Path_A">>
     Nitiqret: Wonderful! I shall pet you gently, and then maybe we can find you a little mouse to play with... #expression:happy
@@ -159,7 +159,7 @@ Harwa: Father says I'm a terrible prince and I need to pray for guidance as to h
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrrrr...*
-Harwa: So here I am, asking the gods...Should I <br> step𓆓 away𓉻 from𓋾 the dice table? or <br> go back and try to win back my𓄣 previous𓏛 losses𓈗? #wordsearch
+Harwa: So here I am, asking the gods...Should I <br> step<b><size=+4>𓆓</size></b> away<b><size=+4>𓉻</size></b> from<b><size=+4>𓋾</size></b> the dice table? or <br> go back and try to win back my<b><size=+4>𓄣</size></b> previous<b><size=+4>𓏛</size></b> losses<b><size=+4>𓈗</size></b>? #wordsearch
 
 <<if $selectedPath == "Path_A">>
     Harwa: As the Gods wish, I suppose… actually maybe this means I can go back to betting on Chariot races!
@@ -220,7 +220,7 @@ Harwa: At least you are good company, <color=red>Temple Cat</color>. I wonder if
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
-Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet𓐍 Kitten𓆏 Beans𓏏 <br> Lioness𓃭 of the Ferocious𓆑 Desert𓈎 Sands <br> Mighty𓂧 Scourge𓁹 of Snakes𓆙 , or <br> ... Holy𓋹 Lady𓁐 of Thebes𓋔? #wordsearch
+Harwa: Oh I know, I'll ask -- would you like to be named <br> Sweet<b><size=+4>𓐍</size></b> Kitten<b><size=+4>𓆏</size></b> Beans<b><size=+4>𓏏</size></b> <br> Lioness<b><size=+4>𓃭</size></b> of the Ferocious<b><size=+4>𓆑</size></b> Desert<b><size=+4>𓈎</size></b> Sands <br> Mighty<b><size=+4>𓂧</size></b> Scourge<b><size=+4>𓁹</size></b> of Snakes<b><size=+4>𓆙</size></b> , or <br> ... Holy<b><size=+4>𓋹</size></b> Lady<b><size=+4>𓁐</size></b> of Thebes<b><size=+4>𓋔</size></b>? #wordsearch
 
 <<if $selectedPath == "Path_A">>
     Harwa: Sweet Kitten Beans it is! #expression:laughing
@@ -255,7 +255,7 @@ Ahmose: There’s no chance of winning any kind of prolonged campaign against <c
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
-Ahmose: What I actually need is some sort of <color=red>distraction</color> to bolster our support here in <color=red>Thebes</color>. Here are the choices I see before me, either of which are expensive but probably less expensive than a war. Should I <br> Marry𓋀 Nitiqret to Harwa in a lavish𓇼 ceremony𓇓 or <br> Start building a new𓈍 temple𓊽 here in Thebes𓋔? #wordsearch 
+Ahmose: What I actually need is some sort of <color=red>distraction</color> to bolster our support here in <color=red>Thebes</color>. Here are the choices I see before me, either of which are expensive but probably less expensive than a war. Should I <br> Marry<b><size=+4>𓋀</size></b> Nitiqret to Harwa in a lavish<b><size=+4>𓇼</size></b> ceremony<b><size=+4>𓇓</size></b> or <br> Start building a new<b><size=+4>𓈍</size></b> temple<b><size=+4>𓊽</size></b> here in Thebes<b><size=+4>𓋔</size></b>? #wordsearch 
 <<if $selectedPath == "Path_A">>
     Ahmose: Oh dear. I am not looking forward to bullying them into that. The things a father has to do for Egypt! Not that I’m questioning your divine will -- it was going to happen anyway and now is as good a time as any.
     <<addgodaffinity Bast 1>>
@@ -277,7 +277,7 @@ Nitiqret: <color=red>Harwa</color> is being mean to me and I must seek vengeance
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
-Nitiqret: What do you think? should I <br> Put 𓌱 a snake 𓆙 in his bed 𓎟 or <br> Tell him he has to stop𓊪 throwing𓂝 dirt𓆈 at me in front of his friends to impress them? #wordsearch  
+Nitiqret: What do you think? should I <br> Put <b><size=+4>𓌱</size></b> a snake <b><size=+4>𓆙</size></b> in his bed <b><size=+4>𓎟</size></b> or <br> Tell him he has to stop<b><size=+4>𓊪</size></b> throwing<b><size=+4>𓂝</size></b> dirt<b><size=+4>𓆈</size></b> at me in front of his friends to impress them? #wordsearch  
 
 <<if $selectedPath == "Path_A">>
     Nitiqret: Oh! Good idea! I actually saw you catch a snake earlier… now where did you put it … #expression:happy
@@ -304,7 +304,7 @@ Amenhotep: Now Meritamun is dead and I’m here, alone, without her.
 <<playsustainedsound CatPurr>>
 <<sadreaction Cat_Meritamun>>
 Cat_Meritamun: *Purrrrrr.....*
-Amenhotep: Our <color=red>child</color> has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust <color=red>Neferura</color> to keep my son safe far𓅨 away𓉻 from Thebes𓋔, or <br>Or send my own agents to seek out <color=red>Neferura</color> and bring her and the child𓅱 back𓍯 to Thebes𓋔? #wordsearch
+Amenhotep: Our <color=red>child</color> has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust <color=red>Neferura</color> to keep my son safe far<b><size=+4>𓅨</size></b> away<b><size=+4>𓉻</size></b> from Thebes<b><size=+4>𓋔</size></b>, or <br>Or send my own agents to seek out <color=red>Neferura</color> and bring her and the child<b><size=+4>𓅱</size></b> back<b><size=+4>𓍯</size></b> to Thebes<b><size=+4>𓋔</size></b>? #wordsearch
 <<if $selectedPath == "Path_A">>
     Amenhotep: Yes, that's probably the wiser option, his safety should be my main concern.
     <<addgodaffinity Thoth 1>>

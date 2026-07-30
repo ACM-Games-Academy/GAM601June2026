@@ -77,8 +77,8 @@ public class CritterCatchEffect : MonoBehaviour
     // its current critter to finish (caught or despawned) before
     // spawning another.
     public int concurrentSlots = 1;
-    public float hiddenDurationMin = 6f;
-    public float hiddenDurationMax = 14f;
+    public float hiddenDurationMin = 12f;
+    public float hiddenDurationMax = 28f;
 
     [Header("Wander Movement")]
     // Units per second while actively dashing — roughly half the speed
@@ -101,6 +101,16 @@ public class CritterCatchEffect : MonoBehaviour
     // pauses combined) before it despawns on its own, if never caught.
     public float maxLifetime = 8f;
 
+    [Header("Difficulty Scaling")]
+    // Every catchesPerDifficultyTier total catches (mice + snakes
+    // combined), each dash gets difficultySpeedMultiplierPerTier times
+    // longer — applied as a straight moveSpeed multiplier, since
+    // distance covered per dash is moveSpeed * (a randomized duration
+    // that doesn't itself change). Compounds continuously: 10 catches =
+    // 1.5x, 20 = 2.25x, 30 = 3.375x, and so on, never capping.
+    public int catchesPerDifficultyTier = 10;
+    public float difficultySpeedMultiplierPerTier = 1.5f;
+
     [Header("Placement")]
     // How much of the display layer's own full height/width a critter
     // is allowed to wander into — 1 would be genuinely edge-to-edge, a
@@ -122,9 +132,44 @@ public class CritterCatchEffect : MonoBehaviour
     // around it. 1.69 = another 30% on top of an earlier 30% increase.
     public float hitboxSizeMultiplier = 1.69f;
 
+    [Header("Click Hint")]
+    // If nothing's been caught yet by the time this many critters have
+    // spawned, a paw cursor starts following the one spawning right now
+    // around the screen — a nudge for anyone who hasn't realized
+    // critters are clickable. Once anything gets caught, hints stop for
+    // good; there's no need to keep nudging a player who already gets it.
+    public int hintFirstSpawnNumber = 6;
+    // After the first hint, it keeps reappearing every Nth spawn from
+    // there (16th, 26th, 36th...) for as long as the catch count is
+    // still zero.
+    public int hintRepeatEverySpawns = 10;
+    // The same paw cursor texture used for GridHoverExpression's custom
+    // hover cursor (Sprites/UI) — reused here as an ordinary UI Image
+    // rather than a system cursor, so it can visually move to follow the
+    // critter around the screen.
+    public Texture2D hintPawTexture;
+    public float hintPawSize = 90f;
+    [Range(0f, 1f)] public float hintPawAlpha = 0.85f;
+    // Measured from the tip of the cursor's white arrow (its top-left
+    // corner — see BuildHintPaw, which pivots the icon there instead of
+    // its center) to the critter's own center. Zero means the arrow tip
+    // sits exactly on the critter, same as cursorHotspot=(0,0) does when
+    // this same texture is used as an actual system cursor elsewhere
+    // (GridHoverExpression) — nudge this if the tip should sit a little
+    // off to the side instead of dead-center.
+    public Vector2 hintPawOffset = Vector2.zero;
+    public float hintPulseSpeed = 3f;
+    [Range(0f, 0.5f)] public float hintPulseScaleAmount = 0.15f;
+
     private RectTransform container;
     private List<Coroutine> slotCoroutines;
     private float containerHalfWidth;
+    private int totalSpawnCount = 0;
+
+    // The frame a critter was last caught on — see DialogueBoxClickToAdvance,
+    // which checks this to ignore a click that also lands on the dialogue
+    // box the same frame a catch happens.
+    public static int LastCatchFrame { get; private set; } = -1;
 
     void Awake()
     {
@@ -239,6 +284,16 @@ public class CritterCatchEffect : MonoBehaviour
     // comment) until it's either caught, or maxLifetime runs out.
     private IEnumerator SkitterRoutine()
     {
+        totalSpawnCount++;
+        bool showHint = ShouldShowHintForThisSpawn();
+
+        // Fixed for this critter's whole lifetime at spawn time — a
+        // catch landing mid-skitter (only possible with concurrentSlots
+        // > 1) shouldn't retroactively speed up a critter already in
+        // flight.
+        int difficultyTier = (mouseCaughtCount + snakeCaughtCount) / Mathf.Max(1, catchesPerDifficultyTier);
+        float currentMoveSpeed = moveSpeed * Mathf.Pow(difficultySpeedMultiplierPerTier, difficultyTier);
+
         CritterType type = Random.value < 0.5f ? CritterType.Mouse : CritterType.Snake;
         bool entersFromRight = Random.value < 0.5f;
 
@@ -280,7 +335,20 @@ public class CritterCatchEffect : MonoBehaviour
         bool caught = false;
         Button critterButton = critterObject.AddComponent<Button>();
         critterButton.transition = Selectable.Transition.None;
-        critterButton.onClick.AddListener(() => caught = true);
+        critterButton.onClick.AddListener(() =>
+        {
+            caught = true;
+            // A critter is constantly darting around, so the click that
+            // presses it down and the click that releases over it can
+            // land on two different frames — if it's moved out from
+            // under the cursor by release time, Unity's UI event system
+            // can end up also delivering that same click to whatever's
+            // now underneath (the dialogue box), which reads as the
+            // click "leaking through" to advance dialogue. Recording the
+            // catch frame here lets DialogueBoxClickToAdvance recognize
+            // and ignore that same-frame leak (see LastCatchFrame).
+            LastCatchFrame = Time.frameCount;
+        });
 
         GameObject visualObject = new GameObject("Visual", typeof(RectTransform));
         RectTransform visualRect = visualObject.GetComponent<RectTransform>();
@@ -295,6 +363,11 @@ public class CritterCatchEffect : MonoBehaviour
         critterImage.sprite = type == CritterType.Mouse ? GetMouseSprite() : GetSnakeSprite();
         critterImage.color = type == CritterType.Mouse ? mouseColor : snakeColor;
         critterImage.raycastTarget = false;
+
+        if (showHint)
+        {
+            BuildHintPaw(critterRect);
+        }
 
         // The very first dash always heads inward onto the screen, so
         // it doesn't just sit at the edge — every dash after that picks
@@ -316,7 +389,7 @@ public class CritterCatchEffect : MonoBehaviour
                 dashElapsed += dt;
                 lifetime += dt;
 
-                Vector2 pos = critterRect.anchoredPosition + direction * moveSpeed * dt;
+                Vector2 pos = critterRect.anchoredPosition + direction * currentMoveSpeed * dt;
                 pos.x = Mathf.Clamp(pos.x, -halfRangeX, halfRangeX);
                 pos.y = Mathf.Clamp(pos.y, -halfRangeY, halfRangeY);
                 critterRect.anchoredPosition = pos;
@@ -355,6 +428,99 @@ public class CritterCatchEffect : MonoBehaviour
         }
 
         if (critterObject != null) Destroy(critterObject);
+    }
+
+    // ── Click hint ──────────────────────────────────────────────────────
+
+    // True on the hintFirstSpawnNumber-th spawn, and every
+    // hintRepeatEverySpawns-th spawn after that — but only for as long
+    // as nothing has ever been caught. The moment a catch happens, this
+    // returns false forever (mouseCaughtCount + snakeCaughtCount stays
+    // above zero for the rest of the session).
+    private bool ShouldShowHintForThisSpawn()
+    {
+        if (mouseCaughtCount + snakeCaughtCount > 0) return false;
+        if (totalSpawnCount == hintFirstSpawnNumber) return true;
+
+        return totalSpawnCount > hintFirstSpawnNumber
+            && hintRepeatEverySpawns > 0
+            && (totalSpawnCount - hintFirstSpawnNumber) % hintRepeatEverySpawns == 0;
+    }
+
+    private static Sprite cachedHintPawSprite;
+    private static Texture2D cachedHintPawSpriteSource;
+
+    // Builds a Sprite from hintPawTexture on first use (cached from
+    // then on, and rebuilt only if the Inspector reference is ever
+    // swapped to a different texture) — needed because the texture
+    // asset is imported as a Cursor, not a Sprite, so it has no Sprite
+    // sub-asset of its own to reference directly.
+    private Sprite GetHintPawSprite()
+    {
+        if (hintPawTexture == null) return null;
+
+        if (cachedHintPawSprite == null || cachedHintPawSpriteSource != hintPawTexture)
+        {
+            cachedHintPawSprite = Sprite.Create(
+                hintPawTexture,
+                new Rect(0f, 0f, hintPawTexture.width, hintPawTexture.height),
+                new Vector2(0.5f, 0.5f));
+            cachedHintPawSpriteSource = hintPawTexture;
+        }
+
+        return cachedHintPawSprite;
+    }
+
+    // Builds a pulsing paw icon as a child of the critter's own
+    // RectTransform, offset above it — being a child means it
+    // automatically follows the critter's every dart and freeze for
+    // free, and is automatically destroyed the moment the critter is
+    // (caught or despawned), with no extra cleanup bookkeeping needed.
+    private void BuildHintPaw(RectTransform critterRect)
+    {
+        Sprite pawSprite = GetHintPawSprite();
+        if (pawSprite == null)
+        {
+            Debug.LogWarning("CritterCatchEffect: Hint Paw Texture isn't assigned — skipping the click hint.");
+            return;
+        }
+
+        GameObject hintObject = new GameObject("ClickHint", typeof(RectTransform));
+        RectTransform hintRect = hintObject.GetComponent<RectTransform>();
+        hintRect.SetParent(critterRect, false);
+        hintRect.anchorMin = new Vector2(0.5f, 0.5f);
+        hintRect.anchorMax = new Vector2(0.5f, 0.5f);
+        // Pivoted at the RectTransform's top-left corner rather than its
+        // center — that's where the sprite's white arrow tip is drawn
+        // (its top-left corner too), so anchoredPosition below places
+        // the ARROW TIP itself at the critter's center, rather than the
+        // icon's geometric middle. A UI Image always fills its whole
+        // rect edge to edge with the sprite regardless of the sprite's
+        // own baked-in pivot, which is why this has to be the
+        // RectTransform's pivot, not Sprite.Create's.
+        hintRect.pivot = new Vector2(0f, 1f);
+        hintRect.anchoredPosition = hintPawOffset;
+        hintRect.sizeDelta = new Vector2(hintPawSize, hintPawSize);
+
+        Image hintImage = hintObject.AddComponent<Image>();
+        hintImage.sprite = pawSprite;
+        hintImage.color = new Color(1f, 1f, 1f, hintPawAlpha);
+        hintImage.raycastTarget = false; // a visual nudge only — never steals the click meant for the critter underneath
+
+        StartCoroutine(PulseHintPaw(hintRect));
+    }
+
+    // Gently breathes the hint paw's scale so it reads as an animated
+    // "click here" nudge rather than a static icon — loops until the
+    // paw (and the critter it's parented to) is destroyed.
+    private IEnumerator PulseHintPaw(RectTransform hintRect)
+    {
+        while (hintRect != null)
+        {
+            float scale = 1f + Mathf.Sin(Time.time * hintPulseSpeed) * hintPulseScaleAmount;
+            hintRect.localScale = new Vector3(scale, scale, 1f);
+            yield return null;
+        }
     }
 
     private int mouseCaughtCount = 0;

@@ -88,7 +88,7 @@ public class PortraitManager : DialoguePresenterBase
 
     [Header("Dimming")]
     [Range(0f, 1f)] public float activeAlpha = 1f;
-    [Range(0f, 1f)] public float inactiveAlpha = 0.4f;
+    [Range(0f, 1f)] public float inactiveAlpha = 0.48f;
     public float dimFadeDuration = 0.3f;
 
     // Multiplied into an inactive portrait's own colors (on top of

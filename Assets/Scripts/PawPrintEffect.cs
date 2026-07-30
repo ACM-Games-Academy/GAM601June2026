@@ -89,7 +89,7 @@ public class PawPrintEffect : MonoBehaviour
     // plus four smaller round "toe" pads arranged in an arc above it.
     // Each pad is its own soft-edged ellipse; a pixel's alpha is
     // whichever pad covers it most, so overlapping pads blend cleanly.
-    private Sprite GeneratePawSprite()
+    private static Sprite GeneratePawSprite()
     {
         Texture2D texture = new Texture2D(TextureSize, TextureSize, TextureFormat.RGBA32, false);
         texture.wrapMode = TextureWrapMode.Clamp;

@@ -617,7 +617,7 @@ MonoBehaviour:
       sprite: {fileID: -720758889363181054, guid: 65c241fb97def0b40b57efc3236240f8, type: 3}
       isDefault: 0
   activeAlpha: 1
-  inactiveAlpha: 0.4
+  inactiveAlpha: 0.7
   dimFadeDuration: 0.3
   inactiveTintColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   slideOffsetX: 60
@@ -1705,14 +1705,16 @@ MonoBehaviour:
   - Got you, scaly one!
   thoughtDisplayDuration: 2.5
   concurrentSlots: 1
-  hiddenDurationMin: 6
-  hiddenDurationMax: 14
+  hiddenDurationMin: 12
+  hiddenDurationMax: 28
   moveSpeed: 358.4
   dashDurationMin: 0.15
   dashDurationMax: 0.35
   pauseDurationMin: 0.15
   pauseDurationMax: 0.5
   maxLifetime: 8
+  catchesPerDifficultyTier: 10
+  difficultySpeedMultiplierPerTier: 1.5
   verticalRangeFraction: 0.85
   horizontalRangeFraction: 0.9
   mouseSize: 70
@@ -1720,6 +1722,14 @@ MonoBehaviour:
   mouseColor: {r: 0.45, g: 0.38, b: 0.32, a: 1}
   snakeColor: {r: 0.35, g: 0.55, b: 0.25, a: 1}
   hitboxSizeMultiplier: 1.69
+  hintFirstSpawnNumber: 6
+  hintRepeatEverySpawns: 10
+  hintPawTexture: {fileID: 2800000, guid: 1f908382a5ad69542ab9df8cdc390f64, type: 3}
+  hintPawSize: 90
+  hintPawAlpha: 0.85
+  hintPawOffset: {x: 0, y: 0}
+  hintPulseSpeed: 3
+  hintPulseScaleAmount: 0.15
 --- !u!1 &555015184
 GameObject:
   m_ObjectHideFlags: 0
@@ -4631,6 +4641,7 @@ MonoBehaviour:
   daySprite: {fileID: 7980238798014242262, guid: a2949a1ba2ee9ef48b4c817e712f8156, type: 3}
   nightSprite: {fileID: -4065028796746238123, guid: d0a1cd1140ccb9f40abfcb4ca828b796, type: 3}
   fadeDuration: 1.5
+  openingFadeInDuration: 1.5
   wordsearchPanel: {fileID: 1505255842}
   gridManager: {fileID: 555015186}
   torchGlows:
