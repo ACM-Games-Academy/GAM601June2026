@@ -5,7 +5,7 @@
 <<wait 2>>
 <<showportrait Left Sekhmet>>
 <<pulseglow Sekhmet>>
-Sekhmet: The <color=red>fate of Egypt</color> is at a [b]crossroads.[/b] #expression:neutral
+Sekhmet: The <color=red>fate of Egypt</color> is at a <b>crossroads.</b> #expression:neutral
 <<showportrait Right Meritamun>>
 Meritamun: But what does that mean for me?  #expression:worried
 Sekhmet: You will carry messages of the divine will to mortals: <color=red>you are our eyes in the mortal realm.</color> You are to help us guide them to glory. Is that understood? #expression:neutral
