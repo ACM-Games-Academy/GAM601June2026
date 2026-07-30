@@ -247,7 +247,23 @@ public class PortraitManager : DialoguePresenterBase
         foreach (SlotConfig slot in slots)
         {
             if (slot.portraitImage != null)
+            {
                 slotRestingPositions[slot.slotName] = slot.portraitImage.rectTransform.anchoredPosition;
+
+                // A UI Image blocks raycasts across its whole rectangle
+                // by default, even where the sprite is fully
+                // transparent — so a portrait's transparent background
+                // was silently eating clicks meant for anything
+                // rendered behind it (e.g. CritterCatchEffect's mice
+                // and snakes), even though the player could clearly see
+                // through to it. This makes raycasts test the sprite's
+                // actual pixel alpha instead of just its rect, so a
+                // click passes through the transparent parts of a
+                // portrait to whatever's actually visible underneath.
+                // Requires the portrait Sprite's texture to have "Read/
+                // Write Enabled" checked in its import settings.
+                slot.portraitImage.alphaHitTestMinimumThreshold = 0.1f;
+            }
         }
     }
 

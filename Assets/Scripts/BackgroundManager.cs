@@ -62,6 +62,12 @@ public class BackgroundManager : MonoBehaviour
     [Header("Settings")]
     public float fadeDuration = 1.5f;
 
+    // How long the very first frame of the scene takes to fade in from
+    // solid black — softens the cut from the splash screen's own
+    // fade-to-black (see SplashScreenController) into gameplay, rather
+    // than the scene just popping in fully lit immediately.
+    public float openingFadeInDuration = 1.5f;
+
     [Header("Wordsearch Visibility")]
     // The top-level wordsearch UI object (your GridPanel, or a parent
     // panel wrapping it). Shown when day arrives, hidden at night.
@@ -128,20 +134,52 @@ public class BackgroundManager : MonoBehaviour
 
     private GameObject dayAmbienceContainer;
 
+    [Header("Day Ambience — Critters")]
+    // CritterCatchEffect's own GameObject (not a prefab — it builds its
+    // own display layer itself) — toggled active/inactive at the exact
+    // same points as dayAmbienceContainer above, since critters have no
+    // business skittering across a night sky.
+    public GameObject dayCrittersEffect;
+
     private bool isFading = false;
 
     // The scene STARTS AT NIGHT — see Start() below.
     private bool isDay = false;
 
+    // Awake() runs strictly before Start() (and before the scene's
+    // first frame is ever presented) — covering both layers in solid
+    // black here, rather than in Start(), closes a real gap where
+    // whatever these Images happened to be serialized as in the scene
+    // file (e.g. bottomLayer still showing the fully-lit day background
+    // from whenever it was last edited/previewed in the Editor) could
+    // otherwise flash through for a frame before any script corrects it.
+    void Awake()
+    {
+        if (bottomLayer != null) bottomLayer.color = Color.black;
+        if (topLayer != null) topLayer.color = Color.black;
+    }
+
     void Start()
     {
         // Initialise both layers to the NIGHTTIME background,
-        // matching how the game actually begins
+        // matching how the game actually begins. bottomLayer's tint is
+        // reset to white here — Awake() above deliberately left it
+        // black, and SetAlpha only ever touches alpha, never RGB, so
+        // without this reset it would stay black-tinted (i.e.
+        // invisible) forever.
+        bottomLayer.color = Color.white;
         bottomLayer.sprite = nightSprite;
         topLayer.sprite = nightSprite;
 
         SetAlpha(bottomLayer, 1f);
-        SetAlpha(topLayer, 0f);
+
+        // Cover everything in solid black immediately, then fade it away
+        // below — without this, the very first frame shows the fully-lit
+        // night scene instantly, popping in rather than easing in.
+        // (Awake() above already set this; restated here so this still
+        // reads correctly and stays correct on its own even if Awake()
+        // above is ever changed.)
+        topLayer.color = new Color(0f, 0f, 0f, 1f);
 
         isDay = false;
 
@@ -170,6 +208,33 @@ public class BackgroundManager : MonoBehaviour
 
         BuildDayAmbience();
         dayAmbienceContainer.SetActive(false); // the game starts at night
+
+        if (dayCrittersEffect != null) dayCrittersEffect.SetActive(false); // the game starts at night
+
+        StartCoroutine(FadeInFromBlackAtStart());
+    }
+
+    // Fades the solid black cover set at the top of Start() away, so the
+    // scene eases in rather than popping in fully lit on its first frame.
+    private IEnumerator FadeInFromBlackAtStart()
+    {
+        isFading = true; // same guard FadeToNight/FadeToDay use, so a command firing this early can't fight over topLayer
+
+        float elapsed = 0f;
+        while (elapsed < openingFadeInDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, Mathf.Clamp01(elapsed / openingFadeInDuration));
+            topLayer.color = new Color(0f, 0f, 0f, alpha);
+            yield return null;
+        }
+
+        // Reset topLayer to its normal resting state (transparent white)
+        // now that it's invisible, so the first real <<fadetoday>>/
+        // <<fadetonight>> — which only ever touch alpha, not RGB —
+        // behaves exactly as it always has.
+        topLayer.color = new Color(1f, 1f, 1f, 0f);
+        isFading = false;
     }
 
     // ── Yarn-callable commands ─────────────────────────────────────────────
@@ -199,6 +264,10 @@ public class BackgroundManager : MonoBehaviour
         // God rays don't belong in a night sky — hide immediately, same
         // as the wordsearch panel above.
         if (dayAmbienceContainer != null) dayAmbienceContainer.SetActive(false);
+
+        // Same for the critters — mice and snakes shouldn't keep
+        // skittering across a night sky.
+        if (dayCrittersEffect != null) dayCrittersEffect.SetActive(false);
 
         if (MusicManager.Instance != null)
         {
@@ -237,6 +306,7 @@ public class BackgroundManager : MonoBehaviour
         }
 
         if (dayAmbienceContainer != null) dayAmbienceContainer.SetActive(true);
+        if (dayCrittersEffect != null) dayCrittersEffect.SetActive(true);
     }
 
     // ── Opening day reveal (cutscene helpers) ───────────────────────────────
@@ -320,6 +390,7 @@ public class BackgroundManager : MonoBehaviour
         }
 
         if (dayAmbienceContainer != null) dayAmbienceContainer.SetActive(true);
+        if (dayCrittersEffect != null) dayCrittersEffect.SetActive(true);
     }
 
     // ── Crossfade coroutine ───────────────────────────────────────────────

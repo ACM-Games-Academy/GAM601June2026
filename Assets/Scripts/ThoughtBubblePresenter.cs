@@ -79,6 +79,7 @@ public class ThoughtBubblePresenter : DialoguePresenterBase
     [Range(0.5f, 1f)] public float popStartScale = 0.6f;
 
     private Coroutine popCoroutine;
+    private Coroutine autoHideCoroutine;
 
     // Whatever scale the bubble was authored at in the scene (e.g. if
     // it's been manually resized to something other than 1,1,1) — the
@@ -139,6 +140,28 @@ public class ThoughtBubblePresenter : DialoguePresenterBase
         return thought.Length > 0;
     }
 
+    // Shows the bubble on demand from gameplay code, independent of
+    // whatever dialogue line (if any) is currently running — e.g.
+    // CritterCatchEffect calling this when the player successfully
+    // catches a mouse or snake. Since there's no "next line" to
+    // naturally hide it the way a dialogue-driven thought gets replaced
+    // or dismissed, this hides itself again automatically after
+    // 'duration' seconds.
+    public void ShowThought(string thoughtText, float duration)
+    {
+        ShowBubble(thoughtText);
+
+        if (autoHideCoroutine != null) StopCoroutine(autoHideCoroutine);
+        autoHideCoroutine = StartCoroutine(AutoHideAfter(duration));
+    }
+
+    private IEnumerator AutoHideAfter(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        autoHideCoroutine = null;
+        HideBubble();
+    }
+
     private void ShowBubble(string thoughtText)
     {
         if (bubbleObject == null || bubbleText == null) return;
@@ -157,6 +180,12 @@ public class ThoughtBubblePresenter : DialoguePresenterBase
         {
             StopCoroutine(popCoroutine);
             popCoroutine = null;
+        }
+
+        if (autoHideCoroutine != null)
+        {
+            StopCoroutine(autoHideCoroutine);
+            autoHideCoroutine = null;
         }
 
         if (bubbleObject != null) bubbleObject.SetActive(false);

@@ -482,6 +482,10 @@ MonoBehaviour:
   playButtonLabel: Play
   playButtonColor: {r: 0.72, g: 0.53, b: 0.15, a: 1}
   gameplaySceneName: YarnViabilityTest
+  establishingShotSprite: {fileID: 5014852358186077688, guid: b53b1bffd86e25e4fb4d90ccc630c23e, type: 3}
+  establishingShotFadeInDuration: 1.2
+  establishingShotHoldDuration: 2
+  establishingShotFadeToBlackDuration: 0.8
   dayAtmosphereEffectPrefab: {fileID: 100000001, guid: 65f4298b28f24578bb58dfaf930d9217, type: 3}
 --- !u!4 &769040211
 Transform:

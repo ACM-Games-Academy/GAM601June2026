@@ -35,8 +35,11 @@ using TMPro;
 //      - Background Sprite       → Assets/Sprites/Background/TempleDayBackground.png
 //      - Left Portrait Cycle     → one sprite per other character (Bes, Sekhmet, Harwa, ...)
 //      - Right Portrait Cycle    → every Meritamun/Cat_Meritamun expression sprite
-//    Both lists cycle forever with a pop transition between entries —
-//    see "Portrait Cycle Timing" for pacing.
+//      - Establishing Shot Sprite → Assets/Sprites/Background/Establishing_Scene_Image_2.png
+//        (optional — leave unassigned to skip straight to the gameplay
+//        scene like before, no establishing shot)
+//    Both portrait lists cycle forever with a pop transition between
+//    entries — see "Portrait Cycle Timing" for pacing.
 // 5. Adjust Gameplay Scene Name if your main scene isn't named
 //    "YarnViabilityTest".
 // 6. Optional: right-click this component's header (⋮ menu) and choose
@@ -70,6 +73,9 @@ public class SplashScreenController : MonoBehaviour
 
     private Dictionary<GameObject, Coroutine> portraitCycleCoroutines = new Dictionary<GameObject, Coroutine>();
 
+    private Image establishingShotOverlayImage;
+    private bool isTransitioningToGameplay = false;
+
     [Header("Font")]
     // Applied to both the title and the Play button label. Leave blank
     // to fall back to TextMeshPro's default project font.
@@ -84,6 +90,17 @@ public class SplashScreenController : MonoBehaviour
     public string playButtonLabel = "Play";
     public Color playButtonColor = new Color(0.72f, 0.53f, 0.15f);
     public string gameplaySceneName = "YarnViabilityTest";
+
+    // Shown full-screen after Play is clicked: crossfades in over the
+    // splash screen, holds, then fades to black before the gameplay
+    // scene actually loads — a brief establishing shot bridging the two,
+    // rather than an abrupt cut straight from the splash screen into
+    // gameplay.
+    [Header("Establishing Shot")]
+    public Sprite establishingShotSprite;
+    public float establishingShotFadeInDuration = 1.2f;
+    public float establishingShotHoldDuration = 2f;
+    public float establishingShotFadeToBlackDuration = 0.8f;
 
     // Shared PREFAB with BackgroundManager's daytime god rays — assign
     // the SAME DayAtmosphereEffect prefab asset to both, and editing the
@@ -144,6 +161,12 @@ public class SplashScreenController : MonoBehaviour
             anchor: new Vector2(1f, 0f), size: new Vector2(450f, 700f), offset: new Vector2(-60f, 0f));
         CreateTitle(canvasRect);
         CreatePlayButton(canvasRect);
+
+        // Built last so it's the last sibling — renders on top of
+        // everything above (title, portraits, Play button) once faded
+        // in, the same way any of this file's other elements rely on
+        // build order for layering.
+        CreateEstablishingShotOverlay(canvasRect);
     }
 
     // ── Find-or-create helpers ───────────────────────────────────────────
@@ -213,6 +236,40 @@ public class SplashScreenController : MonoBehaviour
         image.sprite = backgroundSprite;
         image.preserveAspect = false; // fill the screen edge to edge
         image.raycastTarget = false;
+    }
+
+    // Full-screen overlay for the establishing shot — built once, kept
+    // fully transparent (and non-blocking) until PlayEstablishingShotThenLoadGameplay
+    // actually animates it. raycastTarget stays off permanently; the
+    // click-guard in OnPlayButtonClicked is what stops a second click
+    // from starting a second transition, rather than this overlay
+    // physically blocking input.
+    private void CreateEstablishingShotOverlay(RectTransform parent)
+    {
+        if (establishingShotSprite == null) return;
+
+        GameObject overlayObject = FindOrCreateChild(parent, "EstablishingShotOverlay", out bool wasCreated);
+
+        if (wasCreated)
+        {
+            RectTransform rect = overlayObject.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.sizeDelta = Vector2.zero;
+            rect.anchoredPosition = Vector2.zero;
+        }
+
+        overlayObject.transform.SetAsLastSibling();
+
+        establishingShotOverlayImage = overlayObject.GetComponent<Image>();
+        if (establishingShotOverlayImage == null) establishingShotOverlayImage = overlayObject.AddComponent<Image>();
+        establishingShotOverlayImage.sprite = establishingShotSprite;
+        establishingShotOverlayImage.preserveAspect = false; // fill the screen edge to edge
+        establishingShotOverlayImage.raycastTarget = false;
+
+        Color startColor = Color.white;
+        startColor.a = 0f;
+        establishingShotOverlayImage.color = startColor;
     }
 
     // Anchors, sizes and positions a character portrait at a screen
@@ -388,7 +445,75 @@ public class SplashScreenController : MonoBehaviour
 
     private void OnPlayButtonClicked()
     {
+        // Guards against a second click starting a second overlapping
+        // transition (and a second eventual LoadScene call) while the
+        // establishing shot is already playing.
+        if (isTransitioningToGameplay) return;
+        isTransitioningToGameplay = true;
+
+        if (establishingShotOverlayImage == null)
+        {
+            // No establishing shot configured (or its sprite was never
+            // assigned) — fall back to the original instant cut rather
+            // than silently doing nothing.
+            SceneManager.LoadScene(gameplaySceneName);
+            return;
+        }
+
+        StartCoroutine(PlayEstablishingShotThenLoadGameplay());
+    }
+
+    // Crossfades the splash screen into the establishing shot, holds on
+    // it, fades it to black, then loads the gameplay scene. Fading to
+    // black rather than back to the splash screen matters: the gameplay
+    // scene starts already fully lit (night background at full alpha,
+    // no fade-in of its own), so cutting from a black screen into it
+    // reads as a clean transition, while cutting from the establishing
+    // shot's own image would pop.
+    private IEnumerator PlayEstablishingShotThenLoadGameplay()
+    {
+        yield return StartCoroutine(FadeEstablishingShotAlpha(0f, 1f, establishingShotFadeInDuration));
+
+        yield return new WaitForSeconds(establishingShotHoldDuration);
+
+        yield return StartCoroutine(FadeEstablishingShotToBlack(establishingShotFadeToBlackDuration));
+
         SceneManager.LoadScene(gameplaySceneName);
+    }
+
+    private IEnumerator FadeEstablishingShotAlpha(float fromAlpha, float toAlpha, float duration)
+    {
+        Color c = Color.white;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            c.a = Mathf.Lerp(fromAlpha, toAlpha, Mathf.Clamp01(elapsed / duration));
+            establishingShotOverlayImage.color = c;
+            yield return null;
+        }
+
+        c.a = toAlpha;
+        establishingShotOverlayImage.color = c;
+    }
+
+    // Darkens the (already fully visible) establishing shot down to
+    // solid black by animating its tint toward black while alpha stays
+    // at 1 throughout — no separate black overlay object needed.
+    private IEnumerator FadeEstablishingShotToBlack(float duration)
+    {
+        Color start = Color.white;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            establishingShotOverlayImage.color = Color.Lerp(start, Color.black, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+
+        establishingShotOverlayImage.color = Color.black;
     }
 
     // ── Sky ambience: god rays (via DayAtmosphereEffect prefab) ──────────
