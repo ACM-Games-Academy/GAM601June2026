@@ -184,6 +184,21 @@ public class PortraitManager : DialoguePresenterBase
     // reasoning as activeFades above
     private Dictionary<string, Coroutine> activeExpressionPops = new Dictionary<string, Coroutine>();
 
+    // Tracks the running flash-and-restore coroutine per slot (see
+    // FlashPortrait below), and what that slot looked like right before
+    // its current flash started, so it can be put back exactly.
+    private Dictionary<string, Coroutine> activeFlashes = new Dictionary<string, Coroutine>();
+    private Dictionary<string, SlotSnapshot> flashSnapshots = new Dictionary<string, SlotSnapshot>();
+
+    private class SlotSnapshot
+    {
+        public bool hadCharacter;
+        public string character;
+        public Sprite sprite;
+        public Color color;
+        public bool enabled;
+    }
+
     // Each slot's authored resting position, captured once at startup so
     // repeated slide-ins always animate from/to the correct place even
     // if a portrait is re-shown mid-animation.
@@ -436,13 +451,32 @@ public class PortraitManager : DialoguePresenterBase
 
     // ── Sad reaction ─────────────────────────────────────────────────────
 
+    // Every Transform a sad-reaction cascade is currently flowing
+    // under — see TriggerSadReaction/StopAllSadReactions. A cascade's
+    // own drops (the initial one and every one it spawns as it goes,
+    // see SadWaveEffect.SpawnNextDrop) are all parented as siblings
+    // under the SAME anchor, so stopping a cascade just means finding
+    // and destroying every SadWaveEffect still living under its anchor.
+    private List<Transform> activeSadWaveAnchors = new List<Transform>();
+
+    // <<sadreaction X>> always sits immediately BEFORE the line it's
+    // meant to accompany (see Prototype.yarn) — meaning RunLineAsync
+    // fires for that very line just moments after TriggerSadReaction
+    // runs, as that line starts being shown, not once it's dismissed.
+    // Without this flag, StopAllSadReactions() in RunLineAsync would
+    // kill the cascade on that same call, before it ever got to play.
+    // Set here, consumed (and cleared) by the very next RunLineAsync,
+    // so the cascade survives exactly the one line it belongs to and
+    // only gets cut on the line after that.
+    private bool skipNextSadReactionStop = false;
+
     // Plays the blue weaving droplet cascade behind a character's
     // portrait, callable directly from dialogue as
     // <<sadreaction CharacterName>>. Does nothing (silently) if the
     // character isn't currently in any slot.
     public void TriggerSadReaction(string characterName)
     {
-        PlayEffectOnCharacter<SadWaveEffect>(characterName, wave =>
+        Transform anchor = PlayEffectOnCharacter<SadWaveEffect>(characterName, wave =>
         {
             wave.dropCount = sadWaveDropCount;
             wave.dropStagger = sadWaveDropStagger;
@@ -456,6 +490,35 @@ public class PortraitManager : DialoguePresenterBase
             wave.dropHeight = sadWaveHeight;
             wave.waveColor = sadWaveColor;
         });
+
+        if (anchor != null)
+        {
+            activeSadWaveAnchors.Add(anchor);
+            skipNextSadReactionStop = true;
+        }
+    }
+
+    // Immediately cuts off any sad-reaction droplet cascade(s) still
+    // playing, wherever they are — called the moment dialogue moves past
+    // the beat a <<sadreaction>> was scripted for (a new line starting,
+    // or dialogue ending; see RunLineAsync/OnDialogueCompleteAsync)
+    // rather than letting it linger and cascade on into a later line it
+    // wasn't meant to accompany.
+    private void StopAllSadReactions()
+    {
+        if (activeSadWaveAnchors.Count == 0) return;
+
+        foreach (Transform anchor in activeSadWaveAnchors)
+        {
+            if (anchor == null) continue;
+
+            foreach (SadWaveEffect drop in anchor.GetComponentsInChildren<SadWaveEffect>())
+            {
+                Destroy(drop.gameObject);
+            }
+        }
+
+        activeSadWaveAnchors.Clear();
     }
 
     // Shakes a character's portrait side to side around its resting
@@ -739,12 +802,92 @@ public class PortraitManager : DialoguePresenterBase
         return null;
     }
 
+    // Shows a character's given expression in a slot at full brightness
+    // for 'duration' seconds, then restores whatever that slot was
+    // showing before the flash started (or hides it again if it was
+    // empty) — for gameplay moments that want a portrait to pop up
+    // outside of normal dialogue flow (e.g. CritterCatchEffect flashing
+    // Cat_Meritamun's "hunting" expression into the Right slot when a
+    // mouse or snake is caught, even if she isn't already showing
+    // there). Does nothing if the slot or character/expression can't be
+    // found.
+    public void FlashPortrait(string slotName, string characterName, string expressionName, float duration)
+    {
+        SlotConfig slot = slots.Find(s => s.slotName == slotName);
+        if (slot == null) return;
+
+        CharacterPortraits character = characters.Find(c => c.characterName == characterName);
+        if (character == null || character.expressions.Count == 0) return;
+
+        Expression chosen = character.expressions.Find(e => e.expressionName == expressionName)
+            ?? character.expressions.Find(e => e.isDefault)
+            ?? character.expressions[0];
+        if (chosen == null) return;
+
+        bool alreadyFlashing = activeFlashes.TryGetValue(slot.slotName, out Coroutine running) && running != null;
+
+        if (alreadyFlashing)
+        {
+            StopCoroutine(running);
+        }
+        else
+        {
+            // Only snapshot on the FIRST flash of a back-to-back run —
+            // a second catch landing while the portrait's still up from
+            // an earlier one should restart the timer against the
+            // ORIGINAL pre-flash state, not treat the flash itself as
+            // the thing to restore to.
+            flashSnapshots[slot.slotName] = new SlotSnapshot
+            {
+                hadCharacter = slotAssignments.TryGetValue(slot.slotName, out string previousCharacter),
+                character = previousCharacter,
+                sprite = slot.portraitImage.sprite,
+                color = slot.portraitImage.color,
+                enabled = slot.portraitImage.enabled,
+            };
+        }
+
+        slotAssignments[slot.slotName] = characterName;
+        slot.portraitImage.sprite = chosen.sprite;
+        slot.portraitImage.enabled = true;
+        slot.portraitImage.color = ActiveColor(activeAlpha);
+        PlayAppearancePop(slot);
+
+        activeFlashes[slot.slotName] = StartCoroutine(EndFlashAfter(slot, duration));
+    }
+
+    private IEnumerator EndFlashAfter(SlotConfig slot, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        activeFlashes[slot.slotName] = null;
+
+        if (!flashSnapshots.TryGetValue(slot.slotName, out SlotSnapshot snapshot)) yield break;
+        flashSnapshots.Remove(slot.slotName);
+
+        if (snapshot.hadCharacter)
+        {
+            slotAssignments[slot.slotName] = snapshot.character;
+            slot.portraitImage.sprite = snapshot.sprite;
+            slot.portraitImage.color = snapshot.color;
+            slot.portraitImage.enabled = snapshot.enabled;
+        }
+        else
+        {
+            HidePortrait(slot.slotName);
+        }
+    }
+
     // Find which slot (if any) a character currently occupies, and spawn
     // a TEffect there (e.g. PulseGlowEffect for correct answers,
     // WrongAnswerWaveEffect for incorrect ones). Does nothing if the
     // character isn't currently assigned to any slot — that's an
     // expected case (e.g. they've left the scene), not an error.
-    public void PlayEffectOnCharacter<TEffect>(string characterName, System.Action<TEffect> configureEffect = null, bool inFront = false)
+    // Returns the Transform the effect was actually parented under (or
+    // null if the character wasn't in any slot) — callers that need to
+    // find/stop what they just spawned later (see TriggerSadReaction)
+    // can hang onto it instead of re-resolving the slot themselves.
+    public Transform PlayEffectOnCharacter<TEffect>(string characterName, System.Action<TEffect> configureEffect = null, bool inFront = false)
         where TEffect : MonoBehaviour
     {
         foreach (SlotConfig slot in slots)
@@ -752,25 +895,26 @@ public class PortraitManager : DialoguePresenterBase
             if (!slotAssignments.TryGetValue(slot.slotName, out string assigned)) continue;
             if (assigned != characterName) continue;
 
-            SpawnEffectInSlot(slot, configureEffect, inFront);
-            return;
+            return SpawnEffectInSlot(slot, configureEffect, inFront);
         }
+
+        return null;
     }
 
     // Same idea, but for callers that already know exactly which slot
     // they mean (e.g. a cinematic sequence) rather than needing to
     // resolve one from a character name — useful mid-transformation,
     // when "who's in this slot" is about to change.
-    public void PlayEffectInSlot<TEffect>(string slotName, System.Action<TEffect> configureEffect = null, bool inFront = false)
+    public Transform PlayEffectInSlot<TEffect>(string slotName, System.Action<TEffect> configureEffect = null, bool inFront = false)
         where TEffect : MonoBehaviour
     {
         SlotConfig slot = slots.Find(s => s.slotName == slotName);
-        if (slot == null) return;
+        if (slot == null) return null;
 
-        SpawnEffectInSlot(slot, configureEffect, inFront);
+        return SpawnEffectInSlot(slot, configureEffect, inFront);
     }
 
-    private void SpawnEffectInSlot<TEffect>(SlotConfig slot, System.Action<TEffect> configureEffect, bool inFront)
+    private Transform SpawnEffectInSlot<TEffect>(SlotConfig slot, System.Action<TEffect> configureEffect, bool inFront)
         where TEffect : MonoBehaviour
     {
         Transform effectParent;
@@ -804,6 +948,8 @@ public class PortraitManager : DialoguePresenterBase
 
         // Let the caller tweak settings before Start() runs
         configureEffect?.Invoke(effect);
+
+        return effectParent;
     }
 
     // Builds a throwaway RectTransform that exactly mirrors a portrait
@@ -883,6 +1029,8 @@ public class PortraitManager : DialoguePresenterBase
     public override YarnTask OnDialogueCompleteAsync()
     {
         HideAllPortraits();
+        StopAllSadReactions();
+        skipNextSadReactionStop = false;
         return YarnTask.CompletedTask;
     }
 
@@ -892,10 +1040,22 @@ public class PortraitManager : DialoguePresenterBase
         // has advanced past whatever line triggered a sustained sound
         // (e.g. <<playsustainedsound CatPurr>>) — cut it off here
         // rather than letting it run to completion regardless of
-        // dialogue pacing.
+        // dialogue pacing. A <<sadreaction>> cascade gets the same
+        // treatment, for the same reason: it's scripted to accompany
+        // one specific beat, and shouldn't still be dripping down the
+        // screen once the player has clicked past it into a new line.
         if (soundEffectManager != null)
         {
             soundEffectManager.StopSustainedSound();
+        }
+
+        if (skipNextSadReactionStop)
+        {
+            skipNextSadReactionStop = false;
+        }
+        else
+        {
+            StopAllSadReactions();
         }
 
         string speaker = line.CharacterName;

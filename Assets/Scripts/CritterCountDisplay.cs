@@ -41,7 +41,7 @@ public class CritterCountDisplay : MonoBehaviour
 
     [Header("Timing")]
     // How long the readout stays up before hiding itself again.
-    public float displayDuration = 2.7f;
+    public float displayDuration = 5.4f;
 
     private Coroutine hideCoroutine;
 

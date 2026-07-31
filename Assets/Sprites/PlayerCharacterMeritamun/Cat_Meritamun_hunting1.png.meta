@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 06b2b865c727ee340b1b85bcd3e39efe
+guid: 06786becd3ce3104f9c3174939918c4f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6602605326545006164
-    second: Ahmose (1)_0
+      213: -3526103690260959377
+    second: Cat_Meritamun_hunting1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Ahmose (1)_0
+      name: Cat_Meritamun_hunting1_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 2
         y: 8
-        width: 949
-        height: 1469
+        width: 1022
+        height: 1442
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ca1de270075de54a0800000000000000
-      internalID: -6602605326545006164
+      spriteID: f6f2dc43063c01fc0800000000000000
+      internalID: -3526103690260959377
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 2e36482405cedc04fb3557a2e48c8fde
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Ahmose (1)_0: -6602605326545006164
+      Cat_Meritamun_hunting1_0: -3526103690260959377
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

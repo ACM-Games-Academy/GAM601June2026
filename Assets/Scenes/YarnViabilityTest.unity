@@ -495,7 +495,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -602, y: -198}
-  m_SizeDelta: {x: 904.5688, y: 1221.2}
+  m_SizeDelta: {x: 736.7628, y: 1221.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &76763301
 GameObject:
@@ -616,8 +616,11 @@ MonoBehaviour:
     - expressionName: puzzled
       sprite: {fileID: -720758889363181054, guid: 65c241fb97def0b40b57efc3236240f8, type: 3}
       isDefault: 0
+    - expressionName: hunting
+      sprite: {fileID: -3526103690260959377, guid: 06786becd3ce3104f9c3174939918c4f, type: 3}
+      isDefault: 0
   activeAlpha: 1
-  inactiveAlpha: 0.803
+  inactiveAlpha: 0.893
   dimFadeDuration: 0.3
   inactiveTintColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   slideOffsetX: 60
@@ -1695,14 +1698,18 @@ MonoBehaviour:
   backgroundManager: {fileID: 1952591781}
   thoughtBubblePresenter: {fileID: 76763310}
   countDisplay: {fileID: 777000113}
+  portraitManager: {fileID: 76763302}
+  huntingPortraitSlot: Right
+  huntingCharacterName: Cat_Meritamun
+  huntingExpressionName: hunting
   mouseCaughtLines:
   - 'Yeeeesss!! Feel the wrath of my claws! '
-  - 'I rule this Temple you insolent fool rat! '
-  - 'Agent of Apep get thee gone from this Holy Place!  '
+  - 'I RULE this Temple you insolent fool rat! '
+  - 'This turf is MINE you pestilential agent of Apep!  '
   snakeCaughtLines:
-  - Ha! The scion of Apep withers under my claw!
-  - 'With the death of this snake Chaos in abated! '
-  - 'Yeeeeesss! Eat dirt you legless fool! '
+  - Haha! Another scion of Apep withers under my claw!
+  - 'Chaos in abated! Die you scaly miscreant!  '
+  - 'Yeeeeesss!! Eat dirt you legless fool! '
   thoughtDisplayDuration: 2.5
   concurrentSlots: 1
   hiddenDurationMin: 12
@@ -2365,7 +2372,7 @@ MonoBehaviour:
   snakeCountText: {fileID: 777000112}
   mouseIcon: {fileID: 777000117}
   snakeIcon: {fileID: 777000121}
-  displayDuration: 2.7
+  displayDuration: 5.4
 --- !u!1 &777000114
 GameObject:
   m_ObjectHideFlags: 0

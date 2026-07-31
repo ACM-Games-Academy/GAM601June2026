@@ -52,6 +52,15 @@ public class CritterCatchEffect : MonoBehaviour
     public BackgroundManager backgroundManager;
     public ThoughtBubblePresenter thoughtBubblePresenter;
     public CritterCountDisplay countDisplay;
+    // Used to flash Cat_Meritamun's "hunting" expression into the Right
+    // slot for the duration of the catch exclamation, in case her
+    // portrait isn't already up there (e.g. she's off-slot or it's
+    // someone else's turn to speak) — otherwise the speech bubble can
+    // appear with no portrait behind it at all.
+    public PortraitManager portraitManager;
+    public string huntingPortraitSlot = "Right";
+    public string huntingCharacterName = "Cat_Meritamun";
+    public string huntingExpressionName = "hunting";
 
     [Header("Exclamations")]
     // A random line from the matching list plays whenever that
@@ -564,6 +573,11 @@ public class CritterCatchEffect : MonoBehaviour
                 string line = lines[Random.Range(0, lines.Count)];
                 thoughtBubblePresenter.ShowThought(line, thoughtDisplayDuration);
             }
+        }
+
+        if (portraitManager != null)
+        {
+            portraitManager.FlashPortrait(huntingPortraitSlot, huntingCharacterName, huntingExpressionName, thoughtDisplayDuration);
         }
     }
 

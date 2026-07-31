@@ -185,7 +185,7 @@ Cat_Meritamun: \[You know, <color=red>Harwa</color> -- you'd be so much more con
 Bast: So, <color=red>Meritamun</color> – what is <color=red>your father Pharoah Ahmose</color> going to do about the Persians at the border? Will he sue for peace? 
 Bast: Growing up in the shadow of war is a difficult thing for a <color=red>child</color> such as yours, you know…
 <<showportrait Right Meritamun>>
-Meritamun: I’m sorry my Lady <color=red>Bast</color>, but I confess I am confused – #expression:worried
+Meritamun: I’m sorry my <color=red>Lady Bast</color>, but I confess I am confused – #expression:worried
 Meritamun: As I recall, I was by the grace of your blessing, <color=red>with child when I died...</color>
 Meritamun: …but the unborn babe <color=red>didn’t survive my own death.</color> #expression:worried
 Meritamun: I agree with you, however – war can be hard on the very young and the very old.#expression:worried
