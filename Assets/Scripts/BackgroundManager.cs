@@ -168,6 +168,11 @@ public class BackgroundManager : MonoBehaviour
     // business skittering across a night sky.
     public GameObject dayCrittersEffect;
 
+    // Faded out (rather than left to pop or freeze) in FadeToNight if
+    // a critter-catch exclamation or Yarn thought bubble is still up
+    // when night falls — see ThoughtBubblePresenter.FadeOutOverTime.
+    public ThoughtBubblePresenter thoughtBubblePresenter;
+
     private bool isFading = false;
 
     // The scene STARTS AT NIGHT — see Start() below.
@@ -398,6 +403,17 @@ public class BackgroundManager : MonoBehaviour
         // Same for the critters — mice and snakes shouldn't keep
         // skittering across a night sky.
         if (dayCrittersEffect != null) dayCrittersEffect.SetActive(false);
+
+        // A critter-catch exclamation (or a Yarn-driven bracketed
+        // thought) can still be up when night falls — without this it
+        // either sat frozen at full opacity while the background darkened
+        // around it, or got yanked away instantly, either way reading as
+        // out of sync with everything else's gradual crossfade. Fading
+        // it out over the SAME fadeDuration keeps it in step.
+        if (thoughtBubblePresenter != null)
+        {
+            thoughtBubblePresenter.FadeOutOverTime(fadeDuration);
+        }
 
         if (MusicManager.Instance != null)
         {

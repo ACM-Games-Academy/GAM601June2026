@@ -65,12 +65,10 @@ public class OpeningDayRevealSequence : MonoBehaviour
     [Header("Location Title Card")]
     // Shown once the daytime background has fully revealed around
     // Cat_Meritamun's portrait — styled to match SplashScreenController's
-    // own title text (same font/size/position), just in black rather
-    // than the splash screen's gold, and with no bold weight since a
-    // location card reads more like a caption than a game logo.
-    // Everything else (wordsearch grid, day ambience, critters) stays
-    // hidden until this has fully faded back out — see
-    // BackgroundManager.ShowDayGameplayElements.
+    // own title text (same font/size/position/bold weight), just in
+    // black rather than the splash screen's gold. Everything else
+    // (wordsearch grid, day ambience, critters) stays hidden until this
+    // has fully faded back out — see BackgroundManager.ShowDayGameplayElements.
     public string locationTitleText = "Thebes";
     public TMP_FontAsset titleFont;
     public float titleFontSize = 180f;
@@ -149,6 +147,7 @@ public class OpeningDayRevealSequence : MonoBehaviour
         text.text = locationTitleText;
         text.fontSize = titleFontSize;
         text.alignment = TextAlignmentOptions.Center;
+        text.fontStyle = FontStyles.Bold;
         text.raycastTarget = false;
         if (titleFont != null) text.font = titleFont;
 

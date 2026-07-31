@@ -90,9 +90,23 @@ public class ThoughtBubblePresenter : DialoguePresenterBase
     // transient in-between value as the new "rest" scale.
     private Vector3 restScale = Vector3.one;
 
+    // Added (if not already present) so FadeOutOverTime below can fade
+    // the whole bubble — its background image AND its text child
+    // together — with a single alpha value, rather than juggling each
+    // Graphic's own color separately.
+    private CanvasGroup bubbleCanvasGroup;
+
+    private Coroutine syncedFadeOutCoroutine;
+
     void Awake()
     {
-        if (bubbleObject != null) restScale = bubbleObject.transform.localScale;
+        if (bubbleObject != null)
+        {
+            restScale = bubbleObject.transform.localScale;
+
+            bubbleCanvasGroup = bubbleObject.GetComponent<CanvasGroup>();
+            if (bubbleCanvasGroup == null) bubbleCanvasGroup = bubbleObject.AddComponent<CanvasGroup>();
+        }
     }
 
     public override YarnTask OnDialogueStartedAsync()
@@ -166,8 +180,15 @@ public class ThoughtBubblePresenter : DialoguePresenterBase
     {
         if (bubbleObject == null || bubbleText == null) return;
 
+        if (syncedFadeOutCoroutine != null)
+        {
+            StopCoroutine(syncedFadeOutCoroutine);
+            syncedFadeOutCoroutine = null;
+        }
+
         bubbleText.text = thoughtText;
         bubbleObject.SetActive(true);
+        if (bubbleCanvasGroup != null) bubbleCanvasGroup.alpha = 1f;
         SetDialogueChromeVisible(false);
 
         if (popCoroutine != null) StopCoroutine(popCoroutine);
@@ -188,8 +209,64 @@ public class ThoughtBubblePresenter : DialoguePresenterBase
             autoHideCoroutine = null;
         }
 
+        if (syncedFadeOutCoroutine != null)
+        {
+            StopCoroutine(syncedFadeOutCoroutine);
+            syncedFadeOutCoroutine = null;
+        }
+
         if (bubbleObject != null) bubbleObject.SetActive(false);
         SetDialogueChromeVisible(true);
+    }
+
+    // Fades the bubble out over 'duration' instead of HideBubble()'s
+    // instant SetActive(false) — for moments where something ELSE in
+    // the scene is fading over that same span (e.g. BackgroundManager
+    // crossfading to night) and a bubble either sitting frozen at full
+    // opacity or abruptly popping away mid-crossfade would read as out
+    // of sync with everything around it. Does nothing if the bubble
+    // isn't currently showing.
+    public void FadeOutOverTime(float duration)
+    {
+        if (bubbleObject == null || !bubbleObject.activeSelf) return;
+
+        if (syncedFadeOutCoroutine != null) StopCoroutine(syncedFadeOutCoroutine);
+        syncedFadeOutCoroutine = StartCoroutine(SyncedFadeOutCoroutine(duration));
+    }
+
+    private IEnumerator SyncedFadeOutCoroutine(float duration)
+    {
+        // A synced fade takes priority over whatever's currently
+        // animating the bubble on its own (its pop-in, or its own timed
+        // auto-hide) — cancel those so they can't fight this over
+        // bubbleCanvasGroup.alpha or visibility partway through.
+        if (popCoroutine != null)
+        {
+            StopCoroutine(popCoroutine);
+            popCoroutine = null;
+        }
+
+        if (autoHideCoroutine != null)
+        {
+            StopCoroutine(autoHideCoroutine);
+            autoHideCoroutine = null;
+        }
+
+        float startAlpha = bubbleCanvasGroup != null ? bubbleCanvasGroup.alpha : 1f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            if (bubbleCanvasGroup != null)
+            {
+                bubbleCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, Mathf.Clamp01(elapsed / duration));
+            }
+            yield return null;
+        }
+
+        syncedFadeOutCoroutine = null;
+        HideBubble();
     }
 
     private void SetDialogueChromeVisible(bool visible)
