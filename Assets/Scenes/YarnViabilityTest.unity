@@ -1696,13 +1696,13 @@ MonoBehaviour:
   thoughtBubblePresenter: {fileID: 76763310}
   countDisplay: {fileID: 777000113}
   mouseCaughtLines:
-  - Yes! Gotcha you rodent!
-  - Ha! Nowhere left to run, little mouse.
-  - Another one for the Temple Cat.
+  - 'Yeeeesss!! Feel the wrath of my claws! '
+  - 'I rule this Temple you insolent fool rat! '
+  - 'Agent of Apep get thee gone from this Holy Place!  '
   snakeCaughtLines:
-  - Ha! Caught a snake!
-  - One less snake slithering around here.
-  - Got you, scaly one!
+  - Ha! The scion of Apep withers under my claw!
+  - 'With the death of this snake Chaos in abated! '
+  - 'Yeeeeesss! Eat dirt you legless fool! '
   thoughtDisplayDuration: 2.5
   concurrentSlots: 1
   hiddenDurationMin: 12
