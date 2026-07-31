@@ -3973,6 +3973,15 @@ MonoBehaviour:
   revealDayDuration: 1.5
   particleScatterRadius: 400
   particleSparkleSize: 45
+  locationTitleText: Thebes
+  titleFont: {fileID: 11400000, guid: b87044a48c70ced41ac41db4c27894a4, type: 2}
+  titleFontSize: 180
+  titleSizeDelta: {x: 1400, y: 300}
+  titleAnchoredPosition: {x: 0, y: -120}
+  titleColor: {r: 0, g: 0, b: 0, a: 1}
+  titleFadeInDuration: 1
+  titleHoldDuration: 2
+  titleFadeOutDuration: 1.5
 --- !u!4 &1612384392
 Transform:
   m_ObjectHideFlags: 0
@@ -4649,6 +4658,13 @@ MonoBehaviour:
   nightSprite: {fileID: -4065028796746238123, guid: d0a1cd1140ccb9f40abfcb4ca828b796, type: 3}
   fadeDuration: 1.5
   openingFadeInDuration: 1.5
+  intertitleText: The Land of the Dead
+  intertitleFont: {fileID: 11400000, guid: b87044a48c70ced41ac41db4c27894a4, type: 2}
+  intertitleFontSize: 72
+  intertitleColor: {r: 0.95, g: 0.85, b: 0.55, a: 1}
+  intertitleFadeInDuration: 1.5
+  intertitleHoldDuration: 2.5
+  intertitleFadeOutDuration: 2.5
   wordsearchPanel: {fileID: 1505255842}
   gridManager: {fileID: 555015186}
   torchGlows:

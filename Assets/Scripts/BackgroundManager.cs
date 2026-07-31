@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Yarn.Unity;
@@ -67,6 +68,32 @@ public class BackgroundManager : MonoBehaviour
     // fade-to-black (see SplashScreenController) into gameplay, rather
     // than the scene just popping in fully lit immediately.
     public float openingFadeInDuration = 1.5f;
+
+    [Header("Opening Intertitle")]
+    // Plays once, entirely on top of the still-solid-black screen,
+    // BEFORE the background reveal (FadeInFromBlackAtStart) below ever
+    // starts — text fades in, holds, fades out, and only THEN does the
+    // night background itself begin fading into view. Since Yarn
+    // Spinner's DialogueRunner auto-starts independently of this
+    // sequence, whatever <<wait>> sits at the top of the starting node
+    // needs to cover at least this whole sequence's total duration
+    // (intertitle fade in + hold + fade out + openingFadeInDuration
+    // above), or the first portrait/line can appear before the
+    // intertitle has actually finished — there's no code-level link
+    // between the two, just this comment as a reminder to keep them in
+    // sync if either changes.
+    public string intertitleText = "The Land of the Dead";
+    public TMP_FontAsset intertitleFont;
+    public float intertitleFontSize = 72f;
+    public Color intertitleColor = new Color(0.95f, 0.85f, 0.55f); // warm gold, matches the game's title-screen palette
+    public float intertitleFadeInDuration = 1.5f;
+    public float intertitleHoldDuration = 2.5f;
+    // Deliberately the slowest of the three — "fades out slowly" was
+    // asked for specifically, so this shouldn't just mirror
+    // intertitleFadeInDuration by default.
+    public float intertitleFadeOutDuration = 2.5f;
+
+    private TextMeshProUGUI intertitleTextComponent;
 
     [Header("Wordsearch Visibility")]
     // The top-level wordsearch UI object (your GridPanel, or a parent
@@ -211,15 +238,94 @@ public class BackgroundManager : MonoBehaviour
 
         if (dayCrittersEffect != null) dayCrittersEffect.SetActive(false); // the game starts at night
 
-        StartCoroutine(FadeInFromBlackAtStart());
-
-        // Releases the persistent black cover handed off by
-        // SplashScreenController right before this scene loaded (see
-        // SceneTransitionOverlay) — if the scene was entered directly
-        // (e.g. testing it standalone in the Editor) this just creates
-        // an already-transparent overlay and fades it from 0 to 0, a
-        // harmless no-op.
+        // Released EARLY — concurrently with the intertitle below, not
+        // after it. This persistent overlay (see SceneTransitionOverlay)
+        // sits on a Canvas with a much higher sorting order than
+        // anything in this scene, specifically so it can cover the
+        // scene-load boundary — but that also means it would silently
+        // hide the intertitle text behind itself for as long as it
+        // stayed opaque. topLayer below is still fully opaque black at
+        // this point (its own fade hasn't started yet), so the screen
+        // stays solid black regardless once this overlay clears out of
+        // the way. If the scene was entered directly (e.g. testing it
+        // standalone in the Editor) this just creates an already-
+        // transparent overlay and fades it from 0 to 0, a harmless no-op.
         SceneTransitionOverlay.GetOrCreate().FadeOut(openingFadeInDuration);
+
+        StartCoroutine(PlayIntertitleThenRevealScene());
+    }
+
+    // Plays the opening intertitle text on top of the still-solid-black
+    // screen, then hands off to the background reveal that used to
+    // start immediately in Start().
+    private IEnumerator PlayIntertitleThenRevealScene()
+    {
+        yield return StartCoroutine(PlayIntertitle());
+
+        StartCoroutine(FadeInFromBlackAtStart());
+    }
+
+    // Builds (once) a centered, full-screen-anchored text object sitting
+    // above topLayer — same "find or create" convention as the rest of
+    // this project's runtime-built UI — then fades it in, holds, and
+    // fades it back out, entirely while the background underneath is
+    // still solid black. Skipped entirely if intertitleText is blank.
+    private IEnumerator PlayIntertitle()
+    {
+        if (string.IsNullOrEmpty(intertitleText)) yield break;
+
+        BuildIntertitle();
+
+        yield return StartCoroutine(FadeIntertitleAlpha(0f, 1f, intertitleFadeInDuration));
+        yield return new WaitForSeconds(intertitleHoldDuration);
+        yield return StartCoroutine(FadeIntertitleAlpha(1f, 0f, intertitleFadeOutDuration));
+    }
+
+    private void BuildIntertitle()
+    {
+        if (intertitleTextComponent != null) return;
+
+        Transform backgroundParent = topLayer.transform.parent;
+
+        GameObject textObject = new GameObject("Intertitle", typeof(RectTransform));
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.SetParent(backgroundParent, false);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        // Last sibling so it renders above topLayer (still opaque black
+        // at this point) and above the night ambience/god rays layers
+        // built just above — nothing should be able to cover this text.
+        rect.SetAsLastSibling();
+
+        intertitleTextComponent = textObject.AddComponent<TextMeshProUGUI>();
+        intertitleTextComponent.text = intertitleText;
+        intertitleTextComponent.fontSize = intertitleFontSize;
+        intertitleTextComponent.alignment = TextAlignmentOptions.Center;
+        intertitleTextComponent.color = new Color(intertitleColor.r, intertitleColor.g, intertitleColor.b, 0f);
+        intertitleTextComponent.raycastTarget = false;
+        if (intertitleFont != null) intertitleTextComponent.font = intertitleFont;
+    }
+
+    private IEnumerator FadeIntertitleAlpha(float fromAlpha, float toAlpha, float duration)
+    {
+        Color c = intertitleTextComponent.color;
+        c.a = fromAlpha;
+        intertitleTextComponent.color = c;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            c.a = Mathf.Lerp(fromAlpha, toAlpha, Mathf.Clamp01(elapsed / duration));
+            intertitleTextComponent.color = c;
+            yield return null;
+        }
+
+        c.a = toAlpha;
+        intertitleTextComponent.color = c;
     }
 
     // Fades the solid black cover set at the top of Start() away, so the
@@ -407,7 +513,16 @@ public class BackgroundManager : MonoBehaviour
 
         isDay = true;
         isFading = false;
+    }
 
+    // Split out from RevealDayFromBlackOverlay above so
+    // OpeningDayRevealSequence can insert its "Thebes" location title
+    // card in the gap between the background finishing its reveal and
+    // the wordsearch grid/day ambience/critters actually appearing,
+    // rather than having them all pop in together the instant the
+    // background is visible.
+    public void ShowDayGameplayElements()
+    {
         if (wordsearchPanel != null)
         {
             wordsearchPanel.SetActive(true);

@@ -2,7 +2,7 @@
 ---
 <<declare $selectedPath = "">>
 <<hideallportraits>>
-<<wait 2>>
+<<wait 8>>
 <<showportrait Left Sekhmet>>
 <<pulseglow Sekhmet>>
 Sekhmet: The <color=red>fate of Egypt</color> is at a <b>crossroads.</b> #expression:neutral
