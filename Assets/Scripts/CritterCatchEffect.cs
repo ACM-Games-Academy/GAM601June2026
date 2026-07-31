@@ -333,9 +333,14 @@ public class CritterCatchEffect : MonoBehaviour
         hitboxImage.raycastTarget = true;
 
         bool caught = false;
-        Button critterButton = critterObject.AddComponent<Button>();
-        critterButton.transition = Selectable.Transition.None;
-        critterButton.onClick.AddListener(() =>
+
+        // Shared by both the critter's own padded hitbox AND the hint
+        // paw icon below (when showing) — while the hint is up, players
+        // naturally click on the visible paw graphic itself rather than
+        // the critter underneath it, and the paw's art extends beyond
+        // the critter's own hitbox bounds (see BuildHintPaw), so a click
+        // landing there needs to count as a catch too.
+        void MarkCaught()
         {
             caught = true;
             // A critter is constantly darting around, so the click that
@@ -348,7 +353,11 @@ public class CritterCatchEffect : MonoBehaviour
             // catch frame here lets DialogueBoxClickToAdvance recognize
             // and ignore that same-frame leak (see LastCatchFrame).
             LastCatchFrame = Time.frameCount;
-        });
+        }
+
+        Button critterButton = critterObject.AddComponent<Button>();
+        critterButton.transition = Selectable.Transition.None;
+        critterButton.onClick.AddListener(MarkCaught);
 
         GameObject visualObject = new GameObject("Visual", typeof(RectTransform));
         RectTransform visualRect = visualObject.GetComponent<RectTransform>();
@@ -366,7 +375,7 @@ public class CritterCatchEffect : MonoBehaviour
 
         if (showHint)
         {
-            BuildHintPaw(critterRect);
+            BuildHintPaw(critterRect, MarkCaught);
         }
 
         // The very first dash always heads inward onto the screen, so
@@ -476,7 +485,7 @@ public class CritterCatchEffect : MonoBehaviour
     // automatically follows the critter's every dart and freeze for
     // free, and is automatically destroyed the moment the critter is
     // (caught or despawned), with no extra cleanup bookkeeping needed.
-    private void BuildHintPaw(RectTransform critterRect)
+    private void BuildHintPaw(RectTransform critterRect, UnityEngine.Events.UnityAction onClick)
     {
         Sprite pawSprite = GetHintPawSprite();
         if (pawSprite == null)
@@ -505,7 +514,18 @@ public class CritterCatchEffect : MonoBehaviour
         Image hintImage = hintObject.AddComponent<Image>();
         hintImage.sprite = pawSprite;
         hintImage.color = new Color(1f, 1f, 1f, hintPawAlpha);
-        hintImage.raycastTarget = false; // a visual nudge only — never steals the click meant for the critter underneath
+
+        // The hint's art extends beyond the critter's own padded hitbox
+        // (see the pivot comment above), and players naturally click on
+        // the visible paw they can see rather than the critter hiding
+        // under/behind it — so this needs to be clickable in its own
+        // right too, wired to the exact same catch handler as the
+        // critter's own hitbox, rather than passively sitting on top and
+        // silently eating clicks meant to catch it.
+        hintImage.raycastTarget = true;
+        Button hintButton = hintObject.AddComponent<Button>();
+        hintButton.transition = Selectable.Transition.None;
+        hintButton.onClick.AddListener(onClick);
 
         StartCoroutine(PulseHintPaw(hintRect));
     }

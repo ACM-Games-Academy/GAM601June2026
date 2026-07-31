@@ -617,7 +617,7 @@ MonoBehaviour:
       sprite: {fileID: -720758889363181054, guid: 65c241fb97def0b40b57efc3236240f8, type: 3}
       isDefault: 0
   activeAlpha: 1
-  inactiveAlpha: 0.7
+  inactiveAlpha: 0.803
   dimFadeDuration: 0.3
   inactiveTintColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   slideOffsetX: 60
