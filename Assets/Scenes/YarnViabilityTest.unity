@@ -592,6 +592,12 @@ MonoBehaviour:
     - expressionName: laughing
       sprite: {fileID: 2165043705081866506, guid: cbe067ba14794e54281f36ee61d98f1f, type: 3}
       isDefault: 0
+    - expressionName: injured
+      sprite: {fileID: -2946277928548522828, guid: 2974a45e94c5360408966088b3f115fc, type: 3}
+      isDefault: 0
+    - expressionName: injured_laughing
+      sprite: {fileID: -5926443441287485299, guid: 1dfc7fb670079524787355bf0883401b, type: 3}
+      isDefault: 0
   - characterName: Bast
     expressions:
     - expressionName: neutral
@@ -3965,6 +3971,7 @@ MonoBehaviour:
   backgroundManager: {fileID: 1952591781}
   portraitManager: {fileID: 76763302}
   soundEffectManager: {fileID: 1638165528}
+  thoughtBubblePresenter: {fileID: 76763310}
   portraitSlotName: Right
   revealCharacterName: Cat_Meritamun
   crossfadeSoundEffectName: MagicalTinkle
@@ -3989,6 +3996,112 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1612384390}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 555.9083, y: 681.48773, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &444000101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 444000102}
+  - component: {fileID: 444000103}
+  m_Layer: 0
+  m_Name: ClosingNightReveal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &444000103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 444000101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e3c3ee99a7c421190e53f58a2a16493, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ClosingNightRevealSequence
+  backgroundManager: {fileID: 1952591781}
+  portraitManager: {fileID: 76763302}
+  soundEffectManager: {fileID: 1638165528}
+  thoughtBubblePresenter: {fileID: 76763310}
+  portraitSlotName: Right
+  revealCharacterName: Meritamun
+  revealExpressionName: worried
+  crossfadeSoundEffectName: MagicalTinkle
+  fadeToBlackDuration: 1
+  portraitCrossfadeDuration: 1.2
+  revealNightDuration: 1.5
+  particleScatterRadius: 400
+  particleSparkleSize: 45
+--- !u!4 &444000102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 444000101}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 555.9083, y: 681.48773, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &333000101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 333000102}
+  - component: {fileID: 333000103}
+  m_Layer: 0
+  m_Name: CritterJudgment
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &333000103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 333000101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53a459e8b3d0496a9d1bcbc95c41ea95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CritterJudgmentSequence
+  dialogueRunner: {fileID: 8309902629198137192}
+  critterCatchEffect: {fileID: 555000103}
+  countDisplay: {fileID: 777000113}
+  poorCatchRatio: 0.25
+  excellentCatchRatio: 0.9
+--- !u!4 &333000102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 333000101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 555.9083, y: 681.48773, z: 0}
@@ -4717,6 +4830,7 @@ MonoBehaviour:
   dayAtmosphereEffectPrefab: {fileID: 100000001, guid: 65f4298b28f24578bb58dfaf930d9217, type: 3}
   dayCrittersEffect: {fileID: 555000101}
   thoughtBubblePresenter: {fileID: 76763310}
+  portraitManager: {fileID: 76763302}
 --- !u!4 &1952591782
 Transform:
   m_ObjectHideFlags: 0
@@ -6257,3 +6371,5 @@ SceneRoots:
   - {fileID: 1638165530}
   - {fileID: 1463571559}
   - {fileID: 555000102}
+  - {fileID: 444000102}
+  - {fileID: 333000102}

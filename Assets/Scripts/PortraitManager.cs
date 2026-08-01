@@ -276,10 +276,34 @@ public class PortraitManager : DialoguePresenterBase
                 // click passes through the transparent parts of a
                 // portrait to whatever's actually visible underneath.
                 // Requires the portrait Sprite's texture to have "Read/
-                // Write Enabled" checked in its import settings.
+                // Write Enabled" checked in its import settings — see
+                // SetSlotSprite for why this alone isn't quite enough.
                 slot.portraitImage.alphaHitTestMinimumThreshold = 0.1f;
             }
         }
+    }
+
+    // Every place in this file that assigns a new sprite to a slot's
+    // portraitImage should go through here rather than setting
+    // slot.portraitImage.sprite directly. Reason: if ANY sprite ever
+    // gets shown whose texture doesn't have "Read/Write Enabled"
+    // checked, Unity silently resets that Image's own
+    // alphaHitTestMinimumThreshold to 0 the moment it's assigned (with
+    // a console warning) — and since Awake() above only ever sets that
+    // threshold ONCE at scene start, that reset would otherwise stick
+    // for the rest of the session: the slot permanently reverts to
+    // blocking clicks across its whole rectangle, even after switching
+    // to a completely different, correctly-configured character later
+    // (this exact bug happened twice already — Cat_Meritamun's
+    // "hunting" portrait, then Harwa's "injured"/"injured_laughing"
+    // ones, both imported without Read/Write Enabled). Re-asserting the
+    // threshold immediately after every sprite change can't fix an
+    // unreadable texture's own alpha sampling, but it does mean the
+    // NEXT (readable) sprite shown afterward isn't left broken by it.
+    private void SetSlotSprite(SlotConfig slot, Sprite sprite)
+    {
+        slot.portraitImage.sprite = sprite;
+        slot.portraitImage.alphaHitTestMinimumThreshold = 0.1f;
     }
 
     // ── Yarn commands ────────────────────────────────────────────────────
@@ -315,7 +339,7 @@ public class PortraitManager : DialoguePresenterBase
         Expression defaultExpression = character.expressions.Find(e => e.isDefault)
             ?? character.expressions[0];
 
-        slot.portraitImage.sprite = defaultExpression.sprite;
+        SetSlotSprite(slot, defaultExpression.sprite);
         slot.portraitImage.enabled = true;
         slot.portraitImage.color = InactiveColor(inactiveAlpha);
 
@@ -451,24 +475,31 @@ public class PortraitManager : DialoguePresenterBase
 
     // ── Sad reaction ─────────────────────────────────────────────────────
 
-    // Every Transform a sad-reaction cascade is currently flowing
-    // under — see TriggerSadReaction/StopAllSadReactions. A cascade's
+    // One entry per currently-playing sad-reaction cascade. A cascade's
     // own drops (the initial one and every one it spawns as it goes,
     // see SadWaveEffect.SpawnNextDrop) are all parented as siblings
-    // under the SAME anchor, so stopping a cascade just means finding
-    // and destroying every SadWaveEffect still living under its anchor.
-    private List<Transform> activeSadWaveAnchors = new List<Transform>();
+    // under the SAME anchor, so stopping one just means finding and
+    // destroying every SadWaveEffect still living under its anchor.
+    private class SadWaveCascade
+    {
+        public Transform anchor;
 
-    // <<sadreaction X>> always sits immediately BEFORE the line it's
-    // meant to accompany (see Prototype.yarn) — meaning RunLineAsync
-    // fires for that very line just moments after TriggerSadReaction
-    // runs, as that line starts being shown, not once it's dismissed.
-    // Without this flag, StopAllSadReactions() in RunLineAsync would
-    // kill the cascade on that same call, before it ever got to play.
-    // Set here, consumed (and cleared) by the very next RunLineAsync,
-    // so the cascade survives exactly the one line it belongs to and
-    // only gets cut on the line after that.
-    private bool skipNextSadReactionStop = false;
+        // <<sadreaction X>> always sits immediately BEFORE the line
+        // it's meant to accompany (see Prototype.yarn) — meaning
+        // RunLineAsync fires for that very line just moments after
+        // TriggerSadReaction runs, as that line starts being shown, not
+        // once it's dismissed. Starts true so AdvanceSadReactionsForNewLine
+        // below lets this cascade survive that first line untouched, and
+        // only becomes eligible to be stopped on the NEXT new line after
+        // that. Tracked per-cascade (rather than one shared flag) so
+        // that a SECOND <<sadreaction>> firing for a different character
+        // before the first one's grace line arrives can't accidentally
+        // re-arm protection for the first — each cascade only ever gets
+        // its own one-line grace period, once.
+        public bool protectedForNextLine;
+    }
+
+    private List<SadWaveCascade> activeSadWaveCascades = new List<SadWaveCascade>();
 
     // Plays the blue weaving droplet cascade behind a character's
     // portrait, callable directly from dialogue as
@@ -493,32 +524,59 @@ public class PortraitManager : DialoguePresenterBase
 
         if (anchor != null)
         {
-            activeSadWaveAnchors.Add(anchor);
-            skipNextSadReactionStop = true;
+            activeSadWaveCascades.Add(new SadWaveCascade { anchor = anchor, protectedForNextLine = true });
         }
     }
 
-    // Immediately cuts off any sad-reaction droplet cascade(s) still
-    // playing, wherever they are — called the moment dialogue moves past
-    // the beat a <<sadreaction>> was scripted for (a new line starting,
-    // or dialogue ending; see RunLineAsync/OnDialogueCompleteAsync)
-    // rather than letting it linger and cascade on into a later line it
-    // wasn't meant to accompany.
-    private void StopAllSadReactions()
+    private void StopCascade(SadWaveCascade cascade)
     {
-        if (activeSadWaveAnchors.Count == 0) return;
+        if (cascade.anchor == null) return;
 
-        foreach (Transform anchor in activeSadWaveAnchors)
+        foreach (SadWaveEffect drop in cascade.anchor.GetComponentsInChildren<SadWaveEffect>())
         {
-            if (anchor == null) continue;
+            Destroy(drop.gameObject);
+        }
+    }
 
-            foreach (SadWaveEffect drop in anchor.GetComponentsInChildren<SadWaveEffect>())
+    // Called once per new line (see RunLineAsync). Each cascade gets
+    // exactly one line of grace from the moment it's triggered, tracked
+    // independently — so if a SECOND <<sadreaction>> fires for a
+    // different character before the first cascade's own grace line
+    // arrives, the first one still gets cut off on schedule instead of
+    // having its protection silently renewed by the second's.
+    private void AdvanceSadReactionsForNewLine()
+    {
+        for (int i = activeSadWaveCascades.Count - 1; i >= 0; i--)
+        {
+            SadWaveCascade cascade = activeSadWaveCascades[i];
+
+            if (cascade.protectedForNextLine)
             {
-                Destroy(drop.gameObject);
+                cascade.protectedForNextLine = false;
+                continue;
             }
+
+            StopCascade(cascade);
+            activeSadWaveCascades.RemoveAt(i);
+        }
+    }
+
+    // Immediately and unconditionally cuts off every sad-reaction
+    // cascade currently playing, ignoring any pending grace period —
+    // for scene transitions that AREN'T a new dialogue line and
+    // therefore have no "next line" moment to naturally resolve
+    // against: dialogue ending (OnDialogueCompleteAsync), and
+    // <<fadetonight>>/<<fadetoday>> (BackgroundManager) and the
+    // transformation cutscenes (OpeningDayRevealSequence,
+    // ClosingNightRevealSequence), which bypass RunLineAsync entirely.
+    public void StopAllSadReactions()
+    {
+        foreach (SadWaveCascade cascade in activeSadWaveCascades)
+        {
+            StopCascade(cascade);
         }
 
-        activeSadWaveAnchors.Clear();
+        activeSadWaveCascades.Clear();
     }
 
     // Shakes a character's portrait side to side around its resting
@@ -588,16 +646,23 @@ public class PortraitManager : DialoguePresenterBase
     }
 
     // Crossfades whichever character is showing in a slot to a
-    // different character's default expression, in place, instead of
-    // an instant swap — used for one-off cinematic reveals (e.g. the
-    // opening day sequence's Meritamun -> Cat_Meritamun transformation).
-    // A temporary Image fades in on top of the slot's portrait WHILE the
-    // portrait itself fades out in the same loop — unlike a background
-    // (a fully opaque rectangle, where fading a new layer in alone looks
-    // identical to a true crossfade), portrait art has transparent
-    // regions and mismatched silhouettes, so the old portrait has to be
-    // faded out explicitly or it stays visible through the gaps.
-    public IEnumerator CrossfadeCharacterInSlot(string slotName, string newCharacterName, float duration)
+    // different character's expression, in place, instead of an instant
+    // swap — used for one-off cinematic reveals (e.g. the opening day
+    // sequence's Meritamun -> Cat_Meritamun transformation, or
+    // ClosingNightRevealSequence's reverse). A temporary Image fades in
+    // on top of the slot's portrait WHILE the portrait itself fades out
+    // in the same loop — unlike a background (a fully opaque rectangle,
+    // where fading a new layer in alone looks identical to a true
+    // crossfade), portrait art has transparent regions and mismatched
+    // silhouettes, so the old portrait has to be faded out explicitly or
+    // it stays visible through the gaps.
+    //
+    // targetExpressionName is optional — leave it null (the default) to
+    // crossfade to the character's own default expression, same as
+    // before this parameter was added. Pass a specific expression name
+    // (e.g. "worried") to crossfade to that one instead; falls back to
+    // the default if that name isn't found on the character.
+    public IEnumerator CrossfadeCharacterInSlot(string slotName, string newCharacterName, float duration, string targetExpressionName = null)
     {
         SlotConfig slot = slots.Find(s => s.slotName == slotName);
         if (slot == null)
@@ -613,7 +678,10 @@ public class PortraitManager : DialoguePresenterBase
             yield break;
         }
 
-        Expression defaultExpression = newCharacter.expressions.Find(e => e.isDefault)
+        Expression defaultExpression = (!string.IsNullOrEmpty(targetExpressionName)
+                ? newCharacter.expressions.Find(e => e.expressionName == targetExpressionName)
+                : null)
+            ?? newCharacter.expressions.Find(e => e.isDefault)
             ?? newCharacter.expressions[0];
 
         RectTransform portraitRect = slot.portraitImage.rectTransform;
@@ -654,7 +722,7 @@ public class PortraitManager : DialoguePresenterBase
         // The slot now truly shows the new character at full opacity,
         // exactly as if <<showportrait>> had been called for them
         slotAssignments[slotName] = newCharacterName;
-        slot.portraitImage.sprite = defaultExpression.sprite;
+        SetSlotSprite(slot, defaultExpression.sprite);
         slot.portraitImage.enabled = true;
         slot.portraitImage.color = ActiveColor(activeAlpha);
         PlayAppearancePop(slot);
@@ -725,7 +793,7 @@ public class PortraitManager : DialoguePresenterBase
 
         if (expressionPopDuration <= 0f)
         {
-            if (newSprite != null) slot.portraitImage.sprite = newSprite;
+            if (newSprite != null) SetSlotSprite(slot, newSprite);
             activeExpressionPops[slot.slotName] = null;
             yield break;
         }
@@ -740,7 +808,7 @@ public class PortraitManager : DialoguePresenterBase
 
             if (newSprite != null && !swapped && elapsed >= halfDuration)
             {
-                slot.portraitImage.sprite = newSprite;
+                SetSlotSprite(slot, newSprite);
                 swapped = true;
             }
 
@@ -762,7 +830,7 @@ public class PortraitManager : DialoguePresenterBase
 
         if (newSprite != null && !swapped)
         {
-            slot.portraitImage.sprite = newSprite;
+            SetSlotSprite(slot, newSprite);
         }
 
         rect.localScale = Vector3.one;
@@ -848,7 +916,7 @@ public class PortraitManager : DialoguePresenterBase
         }
 
         slotAssignments[slot.slotName] = characterName;
-        slot.portraitImage.sprite = chosen.sprite;
+        SetSlotSprite(slot, chosen.sprite);
         slot.portraitImage.enabled = true;
         slot.portraitImage.color = ActiveColor(activeAlpha);
         PlayAppearancePop(slot);
@@ -868,7 +936,7 @@ public class PortraitManager : DialoguePresenterBase
         if (snapshot.hadCharacter)
         {
             slotAssignments[slot.slotName] = snapshot.character;
-            slot.portraitImage.sprite = snapshot.sprite;
+            SetSlotSprite(slot, snapshot.sprite);
             slot.portraitImage.color = snapshot.color;
             slot.portraitImage.enabled = snapshot.enabled;
         }
@@ -1030,7 +1098,6 @@ public class PortraitManager : DialoguePresenterBase
     {
         HideAllPortraits();
         StopAllSadReactions();
-        skipNextSadReactionStop = false;
         return YarnTask.CompletedTask;
     }
 
@@ -1049,14 +1116,7 @@ public class PortraitManager : DialoguePresenterBase
             soundEffectManager.StopSustainedSound();
         }
 
-        if (skipNextSadReactionStop)
-        {
-            skipNextSadReactionStop = false;
-        }
-        else
-        {
-            StopAllSadReactions();
-        }
+        AdvanceSadReactionsForNewLine();
 
         string speaker = line.CharacterName;
 
@@ -1088,7 +1148,7 @@ public class PortraitManager : DialoguePresenterBase
                         chosen = character.expressions[0];
 
                     if (chosen != null)
-                        slot.portraitImage.sprite = chosen.sprite;
+                        SetSlotSprite(slot, chosen.sprite);
                 }
 
                 FadeTo(slot, true);

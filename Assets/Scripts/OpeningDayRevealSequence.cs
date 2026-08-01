@@ -45,6 +45,13 @@ public class OpeningDayRevealSequence : MonoBehaviour
     public BackgroundManager backgroundManager;
     public PortraitManager portraitManager;
     public SoundEffectManager soundEffectManager;
+    // If a bracketed thought line ever pops the speech bubble right
+    // before this cutscene, it would otherwise sit frozen at full
+    // opacity through the whole fade/crossfade/reveal below — this is a
+    // COMMAND, not a new dialogue line, so ThoughtBubblePresenter never
+    // gets its usual "a new line started" signal to dismiss it. Mirrors
+    // ClosingNightRevealSequence's identical guard.
+    public ThoughtBubblePresenter thoughtBubblePresenter;
 
     [Header("Reveal Settings")]
     public string portraitSlotName = "Right";
@@ -87,6 +94,19 @@ public class OpeningDayRevealSequence : MonoBehaviour
             Debug.LogWarning("OpeningDayRevealSequence: Background Manager or Portrait Manager not assigned.");
             yield break;
         }
+
+        // Fades out in step with the background below (same duration),
+        // rather than being left to sit frozen at full opacity — see the
+        // field comment above. Does nothing if no bubble is currently up.
+        if (thoughtBubblePresenter != null)
+        {
+            thoughtBubblePresenter.FadeOutOverTime(fadeToBlackDuration);
+        }
+
+        // Same reasoning — a <<sadreaction>> triggered earlier in this
+        // beat has no "new line" left to stop it on once this cutscene
+        // (a COMMAND, not a line) takes over.
+        portraitManager.StopAllSadReactions();
 
         yield return backgroundManager.FadeToBlackOverlay(fadeToBlackDuration);
 

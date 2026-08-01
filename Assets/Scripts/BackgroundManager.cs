@@ -173,6 +173,11 @@ public class BackgroundManager : MonoBehaviour
     // when night falls — see ThoughtBubblePresenter.FadeOutOverTime.
     public ThoughtBubblePresenter thoughtBubblePresenter;
 
+    // Used to cut off any still-playing <<sadreaction>> droplet cascade
+    // at the same points thoughtBubblePresenter above gets faded out —
+    // see PortraitManager.StopAllSadReactions.
+    public PortraitManager portraitManager;
+
     private bool isFading = false;
 
     // The scene STARTS AT NIGHT — see Start() below.
@@ -415,6 +420,14 @@ public class BackgroundManager : MonoBehaviour
             thoughtBubblePresenter.FadeOutOverTime(fadeDuration);
         }
 
+        // Same reasoning as the thought bubble above — a <<sadreaction>>
+        // triggered earlier in this same beat has no "new line" left to
+        // stop it on if night falls before one arrives.
+        if (portraitManager != null)
+        {
+            portraitManager.StopAllSadReactions();
+        }
+
         if (MusicManager.Instance != null)
         {
             MusicManager.Instance.PlayNightMusic();
@@ -438,6 +451,14 @@ public class BackgroundManager : MonoBehaviour
         // FadeToNight above.
         if (nightAmbienceContainer != null) nightAmbienceContainer.SetActive(false);
 
+        // Same reasoning as FadeToNight's equivalent call — stop any
+        // <<sadreaction>> cascade still running from the night scene
+        // that's ending, rather than letting it linger into daytime.
+        if (portraitManager != null)
+        {
+            portraitManager.StopAllSadReactions();
+        }
+
         if (MusicManager.Instance != null)
         {
             MusicManager.Instance.PlayDayMusic();
@@ -457,10 +478,12 @@ public class BackgroundManager : MonoBehaviour
 
     // ── Opening day reveal (cutscene helpers) ───────────────────────────────
     //
-    // Used by OpeningDayRevealSequence for the one-off opening transition,
-    // where the screen fades to black BEHIND a portrait (which stays
-    // visible, since topLayer already renders behind the portraits
-    // canvas), rather than straight-crossfading to the day sprite.
+    // Used by OpeningDayRevealSequence (night→day) and
+    // ClosingNightRevealSequence (day→night) for their one-off
+    // transformation cutscenes, where the screen fades to black BEHIND
+    // a portrait (which stays visible, since topLayer already renders
+    // behind the portraits canvas), rather than straight-crossfading to
+    // the destination sprite.
 
     // Fades topLayer to solid opaque black, covering bottomLayer (and
     // anything else drawn behind the portraits) without touching
@@ -469,14 +492,22 @@ public class BackgroundManager : MonoBehaviour
     {
         isFading = true;
 
-        // The night ambience container (torches/clouds) is inserted as a
-        // later sibling than topLayer so it renders in FRONT of the
-        // background — including in front of topLayer once it's faded to
-        // opaque black. Without this, torches/clouds stay visibly
-        // floating on top of the "black" screen for the entire
-        // transformation crossfade that happens behind it, instead of
-        // actually being hidden.
+        // Every ambience/gameplay layer is inserted as a later sibling
+        // than topLayer, so each renders in FRONT of the background —
+        // including in front of topLayer once it's faded to opaque
+        // black. Without this, whichever set belongs to the CURRENT
+        // time of day (torches/clouds at night; wordsearch, god rays,
+        // critters by day) would stay visibly floating on top of the
+        // "black" screen for the whole transformation crossfade that
+        // happens behind it, instead of actually being hidden. Hiding
+        // all of them unconditionally is safe regardless of which
+        // direction this cutscene is running: whichever set doesn't
+        // belong to the CURRENT time of day is already inactive, so
+        // hiding it again is a harmless no-op.
         if (nightAmbienceContainer != null) nightAmbienceContainer.SetActive(false);
+        if (dayAmbienceContainer != null) dayAmbienceContainer.SetActive(false);
+        if (dayCrittersEffect != null) dayCrittersEffect.SetActive(false);
+        if (wordsearchPanel != null) wordsearchPanel.SetActive(false);
 
         topLayer.color = new Color(0f, 0f, 0f, 0f);
 
@@ -529,6 +560,44 @@ public class BackgroundManager : MonoBehaviour
 
         isDay = true;
         isFading = false;
+    }
+
+    // Mirrors RevealDayFromBlackOverlay above, for ClosingNightRevealSequence's
+    // day→night transformation cutscene: swaps bottomLayer straight to
+    // nightSprite while fully hidden behind the black overlay, then
+    // fades the black overlay back out to reveal it. Unlike the day
+    // reveal, nothing here needs a separate "reveal gameplay elements"
+    // step — night has no wordsearch/day-ambience/critters equivalent,
+    // so nightAmbienceContainer is switched on directly at the end.
+    public IEnumerator RevealNightFromBlackOverlay(float duration)
+    {
+        bottomLayer.sprite = nightSprite;
+        SetAlpha(bottomLayer, 1f);
+
+        if (MusicManager.Instance != null)
+        {
+            MusicManager.Instance.PlayNightMusic();
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, Mathf.Clamp01(elapsed / duration));
+            topLayer.color = new Color(0f, 0f, 0f, alpha);
+            yield return null;
+        }
+
+        // Reset topLayer to its normal resting state (transparent white)
+        // now that it's invisible, so later ordinary day/night
+        // crossfades — which only ever touch alpha, not RGB — behave
+        // exactly as they did before this cutscene ran.
+        topLayer.color = new Color(1f, 1f, 1f, 0f);
+
+        isDay = false;
+        isFading = false;
+
+        if (nightAmbienceContainer != null) nightAmbienceContainer.SetActive(true);
     }
 
     // Split out from RevealDayFromBlackOverlay above so

@@ -555,6 +555,13 @@ public class CritterCatchEffect : MonoBehaviour
     private int mouseCaughtCount = 0;
     private int snakeCaughtCount = 0;
 
+    // Read-only outside this class — used by CritterJudgmentSequence for
+    // the end-of-chapter "how did you do" reveal.
+    public int MouseCaughtCount => mouseCaughtCount;
+    public int SnakeCaughtCount => snakeCaughtCount;
+    public int TotalCaughtCount => mouseCaughtCount + snakeCaughtCount;
+    public int TotalSpawnCount => totalSpawnCount;
+
     private void OnCritterCaught(CritterType type)
     {
         if (type == CritterType.Mouse) mouseCaughtCount++;

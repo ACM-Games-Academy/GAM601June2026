@@ -43,7 +43,21 @@ public class CritterCountDisplay : MonoBehaviour
     // How long the readout stays up before hiding itself again.
     public float displayDuration = 5.4f;
 
+    [Header("Final Tally (end of chapter)")]
+    // How much bigger this panel becomes when shown via ShowFinalTally
+    // below — applied as a straight uniform scale on top of its normal
+    // corner-sized RectTransform, so the icons/text/background all grow
+    // together proportionally rather than needing a second, separately
+    // authored "big" copy of this same UI.
+    public float finalTallyScale = 3f;
+
     private Coroutine hideCoroutine;
+    private RectTransform rectTransform;
+
+    void Awake()
+    {
+        rectTransform = GetComponent<RectTransform>();
+    }
 
     // Called once, e.g. from CritterCatchEffect.Awake(), to give the
     // two icons their sprite and tint — kept separate from ShowCounts
@@ -83,5 +97,32 @@ public class CritterCountDisplay : MonoBehaviour
         yield return new WaitForSeconds(displayDuration);
         hideCoroutine = null;
         gameObject.SetActive(false);
+    }
+
+    // Shows the SAME readout used throughout the game, but re-anchored
+    // to the center of the screen and scaled up — for the end-of-chapter
+    // "how did you do" reveal (see CritterJudgmentSequence). Unlike
+    // ShowCounts, this doesn't auto-hide: it's meant to stay up through
+    // Bes's reaction line and the chapter-ending narration that follows,
+    // and nothing in the current game flow needs the corner HUD back
+    // afterward.
+    public void ShowFinalTally(int mouseCount, int snakeCount)
+    {
+        if (hideCoroutine != null)
+        {
+            StopCoroutine(hideCoroutine);
+            hideCoroutine = null;
+        }
+
+        if (mouseCountText != null) mouseCountText.text = "Mice: " + mouseCount;
+        if (snakeCountText != null) snakeCountText.text = "Snakes: " + snakeCount;
+
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = Vector2.zero;
+        rectTransform.localScale = new Vector3(finalTallyScale, finalTallyScale, 1f);
+
+        gameObject.SetActive(true);
     }
 }
