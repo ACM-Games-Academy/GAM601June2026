@@ -4,6 +4,9 @@
 <<declare $catName = "">>
 <<declare $harwaInjured = false>>
 <<declare $critterJudgmentTier = "">>
+<<declare $ahmoseDistraction = "">>
+<<declare $sonReturnChoice = "">>
+<<declare $amenhotepFate = "">>
 <<hideallportraits>>
 <<wait 8>>
 <<showportrait Left Sekhmet>>
@@ -73,14 +76,16 @@ Ahmose:  But here’s my question to the great divinities that may be in this ho
 
 Ahmose: Make <b><size=+4>𓎡</size></b> a move <b><size=+4>𓃀</size></b> against <b><size=+4>𓂋</size></b> Amenhotep? Or <br> Let <b><size=+4>𓄿</size></b> him <b><size=+4>𓊹</size></b> be <b><size=+4>𓉐</size></b> and try to work with him remaining in his post as high priest? #wordsearch
 
-<<if $selectedPath == "Path_A">>  
+<<if $selectedPath == "Path_A">>
     Ahmose: Yes, yes… As soon as Harwa and Nitiqret are settled here I’m going to oust him. I’ll have to see what I can do to start discrediting him, immediately…
-        <<addgodaffinity Sekhmet 1>> 
+    <<set $amenhotepFate = "ousted">>
+        <<addgodaffinity Sekhmet 1>>
         <<addhumanaffinity Harwa 1>>
 
     <<elseif $selectedPath == "Path_B">>
-    Ahmose: I suppose that is the safer option, at least until Harwa and Nitiqret are settled here. 
-        <<addgodaffinity Bast 1>> 
+    Ahmose: I suppose that is the safer option, at least until Harwa and Nitiqret are settled here.
+    <<set $amenhotepFate = "kept">>
+        <<addgodaffinity Bast 1>>
         <<addhumanaffinity Nitiqret 1>>
 <<endif>>
 Cat_Meritamun: \[ Oh father! What are you doing\]  #expression:puzzled
@@ -322,10 +327,12 @@ Cat_Meritamun: *Purrrrrr.....*
 Ahmose: What I actually need is some sort of <color=red>distraction</color> to bolster our support here in <color=red>Thebes</color>. Here are the choices I see before me, either of which are expensive but probably less expensive than a war. Should I <br> Marry <b><size=+4>𓋀</size></b> Nitiqret to Harwa in a lavish <b><size=+4>𓇼</size></b> ceremony <b><size=+4>𓇓</size></b> or <br> Start building a new <b><size=+4>𓈍</size></b> temple <b><size=+4>𓊽</size></b> here in Thebes <b><size=+4>𓋔</size></b>? #wordsearch 
 <<if $selectedPath == "Path_A">>
     Ahmose: Oh dear. I am not looking forward to bullying them into that. The things a father has to do for Egypt! Not that I’m questioning your divine will -- it was going to happen anyway and now is as good a time as any.
+    <<set $ahmoseDistraction = "marriage">>
     <<addgodaffinity Bast 1>>
     <<addhumanaffinity Chaos 1>>
 <<elseif $selectedPath == "Path_B">>
     Ahmose: Yes, yes... I shall start a magnificent new civic project, perfect pretext for a little extra taxation...
+    <<set $ahmoseDistraction = "temple">>
     <<addgodaffinity Thoth 1>>
     <<addhumanaffinity Nitiqret 1>>
 <<endif>>
@@ -348,16 +355,59 @@ Cat_Meritamun: *Purrrrrr.....*
 Amenhotep: Our <color=red>child</color> has no way to come home to me with Ahmose’s spies everywhere. Should I <br> Trust <color=red>Neferura</color> to keep my son safe far <b><size=+4>𓅨</size></b> away <b><size=+4>𓉻</size></b> from Thebes <b><size=+4>𓋔</size></b>, or <br>Or send my own agents to seek out <color=red>Neferura</color> and bring her and the child <b><size=+4>𓅱</size></b> back <b><size=+4>𓍯</size></b> to Thebes <b><size=+4>𓋔</size></b>? #wordsearch
 <<if $selectedPath == "Path_A">>
     Amenhotep: Yes, that's probably the wiser option, his safety should be my main concern.
+    <<set $sonReturnChoice = "hidden">>
     <<addgodaffinity Thoth 1>>
     <<addhumanaffinity Ptahhotep 1>>
 <<elseif $selectedPath == "Path_B">>
     Amenhotep: It would be so good to have a small piece of <color=red>Meritamun</color> here with me.
+    <<set $sonReturnChoice = "returned">>
     <<addgodaffinity Bast 1>>
     <<addhumanaffinity Chaos 1>>
 <<endif>>
 Cat_Meritamun: \[ I have a <color=red>son</color>... and <color=red>he lives?!?!</color>\] #expression:puzzled
 <<hideallportraits>>
 <<fadetonight BackgroundManager>>
+
+<<showportrait Left Sekhmet>>
+<<showportrait Right Meritamun>>
+Sekhmet: So what you're saying is that the harvest was bad, the people are restless, and there's nothing in the coffers to fight the Persians with?
+<<if $ahmoseDistraction == "marriage">>
+    Meritamun: Yes, and my father is planning to marry my sister Nitiqret to my brother Harwa in a lavish ceremony to distract the people from the bad harvest and the lack of funds for war.
+    Sekhmet: Lily-livered. Weak. Pathetic excuse for a pharoah -- sounds more like he's trying to distract himself than anyone else.
+<<elseif $ahmoseDistraction == "temple">>
+    Meritamun: Yes, and my father is planning to start building a new temple in Thebes as a pretext for a little extra taxation from the nobles, possibly to funnel that money towards a war with the Persians.
+    Sekhmet: Seems a roundabout approach, but it perhaps it's a dull edge we can hone to sharpness.
+<<endif>>
+<<hideallportraits>>
+
+<<showportrait Left Bast>>
+<<showportrait Right Meritamun>>
+Bast: So you found out about your son, Meritamun.
+<<if $sonReturnChoice == "hidden">>
+    Meritamun: Yes, and I have decided to trust Neferura to keep my son safe far away from Thebes.
+    Bast: And the grief of Amenhotep? 
+    Bast: Have you no sympathy for his lonliness? 
+<<elseif $sonReturnChoice == "returned">>
+    Meritamun: Yes, and I have decided to bring my son back to Thebes.
+    Bast: You should name him Ptahhotep, for the peace that he may create in Amenhotep's heart.
+<<endif>>
+<<hideallportraits>>
+
+<<showportrait Left Thoth>>
+<<showportrait Right Meritamun>>
+Thoth: So what you're saying is that your former lover Amenhotep is now saddled with your son, and your father thinks it's a power play and is paranoid about it? 
+<<if $amenhotepFate == "ousted">>
+    Meritamun: Yes, and I think the best place for Amenhotep to be is away from my father, so I have decided to let my father oust Amenhotep from his position as high priest.
+    Thoth: The best thing one can say about this is that, a hundred years hence, none of this will matter...
+    Meritamun: I suppose that is true, my Lord. #expression:worried
+<<elseif $amenhotepFate == "kept">>
+    Meritamun: Yes,and I think the best place for Amenhotep is for him to remain in his position as high priest, so that he can use his influence to give our son a legacy in Thebes.
+    Thoth: Bold move.  
+    Meritamun: You think so, my Lord?
+    Thoth: I think so. 
+    Meritamun: oh. #expression:worried
+<<endif>>
+<<hideallportraits>>
 
 <<showportrait Left Bes>>
 <<showcritterjudgment CritterJudgment>>

@@ -117,6 +117,17 @@ public class CritterCountDisplay : MonoBehaviour
         if (mouseCountText != null) mouseCountText.text = "Mice: " + mouseCount;
         if (snakeCountText != null) snakeCountText.text = "Snakes: " + snakeCount;
 
+        // This object starts inactive in the scene, and Unity doesn't
+        // run Awake() on an inactive GameObject's components until it's
+        // activated for the first time — normally ShowCounts() above
+        // does that (called on every catch), which is how rectTransform
+        // usually ends up assigned before this method ever runs. But if
+        // the player never catches a single critter, ShowCounts() never
+        // fires, Awake() never runs, and rectTransform is still null
+        // here — so it's fetched directly as a fallback instead of
+        // assuming Awake() already did it.
+        if (rectTransform == null) rectTransform = GetComponent<RectTransform>();
+
         rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
         rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
