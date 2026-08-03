@@ -1811,6 +1811,19 @@ MonoBehaviour:
   wordLength: 3
   wrongAnswerReactionDelay: 0.4
   correctAnswerReactionDelay: 1
+  scrambleEnabled: 1
+  scrambleInterval: 30
+  scrambleSlideDuration: 0.6
+  scrambleScatterDistance: 400
+  waveLeadDuration: 3
+  wavePulseCount: 3
+  wavePopHeight: 10
+  wavePopScale: 1.05
+  wavePopDuration: 0.5
+  midSelectionGraceDuration: 3
+  graceCountdownFont: {fileID: 11400000, guid: d3ad7626796f021459f44cdf43b0b1dc, type: 2}
+  graceCountdownFontSize: 160
+  graceCountdownColor: {r: 1, g: 0.3, b: 0.3, a: 1}
 --- !u!1 &665250418
 GameObject:
   m_ObjectHideFlags: 0

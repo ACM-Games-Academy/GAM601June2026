@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -109,6 +110,11 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        StartCoroutine(ScrambleLoop());
+    }
+
     private Vector2 gridPanelFootprint;
 
     // ── Runtime state ─────────────────────────────────────────────────────
@@ -134,6 +140,73 @@ public class GridManager : MonoBehaviour
     // on top of each other.
     public float wrongAnswerReactionDelay = 0.4f;
     public float correctAnswerReactionDelay = 1.0f;
+
+    [Header("Grid Scramble")]
+    // Every this many seconds while a puzzle is actively being solved
+    // (inputEnabled), the grid re-shuffles into a fresh random layout —
+    // the same answer word(s), just newly randomized positions and fill
+    // glyphs (see PlaceWordsInGrid/BuildPuzzleGlyphPool, both of which
+    // this reuses unchanged by simply calling LoadInlinePuzzle again
+    // with the same word list) — a time-pressure mechanic so lingering
+    // too long doesn't pay off. Set scrambleEnabled false to turn the
+    // whole thing off without touching anything else.
+    public bool scrambleEnabled = true;
+    public float scrambleInterval = 30f;
+    public float scrambleSlideDuration = 0.6f;
+    // How far cells fly out/in during the scatter, in UI units.
+    public float scrambleScatterDistance = 400f;
+
+    [Header("Grid Scramble — Anticipation Wave")]
+    // In the final stretch of scrambleInterval before a scramble fires,
+    // the grid's columns cascade a gentle lift-and-pop, left to right —
+    // like a countdown tick — repeating wavePulseCount times, evenly
+    // spaced across waveLeadDuration (3 pulses over 3 seconds = once per
+    // second), as a subtle "getting impatient" warning that the reset is
+    // imminent. Purely cosmetic: runs on top of the existing countdown
+    // without touching inputEnabled or the timing itself.
+    public float waveLeadDuration = 3f;
+    // How many times the ripple sweeps across during waveLeadDuration —
+    // each pulse is a full left-to-right column cascade in its own right,
+    // not a continuation of the last one.
+    public int wavePulseCount = 3;
+    // How far cells lift (in UI units) and scale up at the peak of their
+    // pop. Kept small — this is meant to read as a subtle ripple, not a
+    // bounce.
+    public float wavePopHeight = 10f;
+    public float wavePopScale = 1.05f;
+    // How long a single cell's lift-and-settle takes, start to finish.
+    // Longer than the pop's amplitude might suggest — the smoothing curve
+    // (see PopColumn) already eases gently in and out, so a slower
+    // duration is what actually reads as smooth rather than snappy. Needs
+    // to comfortably fit within a single pulse's share of the lead time
+    // (waveLeadDuration / wavePulseCount) or successive pulses will start
+    // to overlap.
+    public float wavePopDuration = 0.5f;
+
+    [Header("Grid Scramble — Mid-Selection Grace Period")]
+    // If the player has at least one cell selected when the scramble
+    // timer fires, they get this many seconds of visible countdown
+    // before the scramble actually happens, rather than losing an
+    // in-progress selection with no warning.
+    public float midSelectionGraceDuration = 3f;
+    public TMP_FontAsset graceCountdownFont;
+    public float graceCountdownFontSize = 160f;
+    public Color graceCountdownColor = new Color(1f, 0.3f, 0.3f, 1f); // urgent red
+
+    // The word list most recently passed to LoadInlinePuzzle — stored so
+    // a scramble can rebuild the SAME puzzle (same answers) rather than
+    // needing WordsearchDialogueBridge to hand it over again each time.
+    private List<InlineWord> currentInlineWords;
+
+    // Bumped every time LoadInlinePuzzle runs, so the scramble loop can
+    // tell whether the puzzle it was timing has been replaced by a
+    // genuinely new one (e.g. dialogue advanced to the next <<setpuzzle>>)
+    // while it was mid-wait, and abandon that stale cycle rather than
+    // scrambling (or grace-counting-down for) a puzzle that isn't even
+    // showing anymore.
+    private int puzzleGeneration = 0;
+
+    private TextMeshProUGUI graceCountdownText;
 
     // Fired when a word is found — WordsearchDialogueBridge listens
     public event System.Action<string> OnWordFound;
@@ -180,6 +253,9 @@ public class GridManager : MonoBehaviour
     // Clears the existing grid and builds a fresh one.
     public void LoadInlinePuzzle(List<InlineWord> inlineWords)
     {
+        currentInlineWords = inlineWords;
+        puzzleGeneration++;
+
         ClearGrid();
 
         activeWords = new ActiveWord[inlineWords.Count];
@@ -216,6 +292,17 @@ public class GridManager : MonoBehaviour
         {
             foreach (Transform child in gridPanel)
             {
+                // Destroy() doesn't actually remove the child until the end
+                // of the frame — until then it's still a live participant
+                // in gridPanel's GridLayoutGroup. BuildGrid() instantiates
+                // the replacement cells (and force-rebuilds the layout)
+                // within this same frame, so without deactivating first,
+                // the layout pass would see BOTH the old and new cells at
+                // once and lay all of them out as one oversized grid,
+                // pushing the genuinely-new cells a whole grid's-height
+                // lower than the panel. Deactivating makes GridLayoutGroup
+                // skip it immediately, before the actual destruction happens.
+                child.gameObject.SetActive(false);
                 Destroy(child.gameObject);
             }
         }
@@ -294,6 +381,17 @@ public class GridManager : MonoBehaviour
                 grid[row, col] = cellScript;
             }
         }
+
+        // GridLayoutGroup doesn't reposition freshly-instantiated children
+        // right away — that normally happens in a deferred layout pass
+        // before the next render. On the very first puzzle load that gap
+        // is invisible (several frames of fade-ins pass before the player
+        // can interact), but ScrambleGrid's SlideCellsIn reads each cell's
+        // anchoredPosition immediately after this method returns, in the
+        // same coroutine tick — without this, it would read every cell's
+        // stale pre-layout position (all identical), so they'd all slide
+        // to the same point and stack on top of each other.
+        LayoutRebuilder.ForceRebuildLayoutImmediate(gridPanel as RectTransform);
 
         Debug.Log("GridManager: Built " + width + "x" + height +
                   " grid with " + (activeWords != null ? activeWords.Length : 0) + " words.");
@@ -587,5 +685,355 @@ public class GridManager : MonoBehaviour
 
         selectedCells.Clear();
         isClearingSelection = false;
+    }
+
+    // ── Grid scramble ────────────────────────────────────────────────────
+
+    // Runs for the lifetime of this component: waits for a puzzle to
+    // actually be active (inputEnabled), times out scrambleInterval
+    // seconds, then either scrambles immediately or — if the player has
+    // an in-progress selection — shows the grace countdown first. Loops
+    // forever, so every puzzle loaded from here on gets the same
+    // treatment with no extra wiring needed elsewhere.
+    private IEnumerator ScrambleLoop()
+    {
+        while (true)
+        {
+            if (!scrambleEnabled || !inputEnabled)
+            {
+                yield return null;
+                continue;
+            }
+
+            int generationAtStart = puzzleGeneration;
+            float elapsed = 0f;
+            int pulsesFired = 0;
+            bool halftimeFired = false;
+            float pulseInterval = wavePulseCount > 0 ? waveLeadDuration / wavePulseCount : waveLeadDuration;
+            float leadStart = scrambleInterval - waveLeadDuration;
+            // Derived from scrambleInterval itself rather than a fixed
+            // number, so it stays at the true midpoint (e.g. 15s of a 30s
+            // period) even if scrambleInterval is tuned for harder/easier
+            // puzzles later.
+            float halftimeMark = scrambleInterval / 2f;
+
+            while (elapsed < scrambleInterval)
+            {
+                if (!scrambleEnabled || !inputEnabled || puzzleGeneration != generationAtStart) break;
+
+                // One single ripple at the midpoint — a "still going?"
+                // nudge distinct from the countdown pulses below. Guarded
+                // against leadStart so it can never coincide with (or fire
+                // inside) the final countdown window on a very short
+                // scrambleInterval.
+                if (!halftimeFired && elapsed >= halftimeMark && halftimeMark < leadStart)
+                {
+                    halftimeFired = true;
+                    StartCoroutine(RunAnticipationWave(generationAtStart));
+                }
+
+                // Fires wavePulseCount separate ripples, evenly spaced
+                // across the lead window (pulseInterval apart) rather than
+                // one continuous cascade — each check is against "have we
+                // reached the Nth pulse's start time yet," so this still
+                // fires the right number of pulses even across frame-rate
+                // hitches that skip past a boundary.
+                if (pulsesFired < wavePulseCount && elapsed >= leadStart + pulsesFired * pulseInterval)
+                {
+                    StartCoroutine(RunAnticipationWave(generationAtStart));
+                    pulsesFired++;
+                }
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            // The puzzle this cycle was timing got solved, hidden, or
+            // replaced by a new one while we were waiting — nothing to
+            // scramble; go back to waiting for whatever's active now.
+            if (!scrambleEnabled || !inputEnabled || puzzleGeneration != generationAtStart) continue;
+
+            if (selectedCells.Count > 0)
+            {
+                yield return StartCoroutine(RunGraceCountdown());
+
+                // Same check again — the grace period itself may have
+                // resolved the selection (found/wrong answer) or the
+                // puzzle may have moved on entirely while it ran.
+                if (!scrambleEnabled || !inputEnabled || puzzleGeneration != generationAtStart) continue;
+            }
+
+            yield return StartCoroutine(ScrambleGrid());
+        }
+    }
+
+    // One ripple: cascades a lift-and-pop across the grid one column at a
+    // time, left to right. ScrambleLoop calls this once per pulse (see
+    // wavePulseCount), so the columns are staggered to fit within a
+    // single pulse's own share of the lead window (waveLeadDuration /
+    // wavePulseCount) rather than the full lead window — otherwise this
+    // pulse's cascade would still be mid-flight when the next pulse fires.
+    // Each column's own pop runs independently (PopColumn) so neighboring
+    // columns visibly overlap in flight, which is what actually reads as
+    // a "ripple" rather than a strict one-at-a-time sequence.
+    private IEnumerator RunAnticipationWave(int generationAtStart)
+    {
+        if (grid == null) yield break;
+
+        float pulseInterval = wavePulseCount > 0 ? waveLeadDuration / wavePulseCount : waveLeadDuration;
+
+        int columns = grid.GetLength(1);
+        float columnStagger = columns > 1
+            ? Mathf.Max(0f, (pulseInterval - wavePopDuration) / (columns - 1))
+            : 0f;
+
+        for (int col = 0; col < columns; col++)
+        {
+            if (!scrambleEnabled || !inputEnabled || puzzleGeneration != generationAtStart || grid == null)
+                yield break;
+
+            StartCoroutine(PopColumn(col, generationAtStart));
+
+            if (col < columns - 1) yield return new WaitForSeconds(columnStagger);
+        }
+    }
+
+    // Lifts every cell in one column up and slightly larger, then eases
+    // them back down to exactly where they started. Uses sin² rather than
+    // a plain sine: a plain sine already peaks smoothly, but still starts
+    // and ends each pop at full speed (nonzero velocity the instant it
+    // begins/ends), which is what reads as a "snap" rather than a gentle
+    // ripple. Squaring it flattens the curve at both ends — zero velocity
+    // at rest, easing smoothly up to the peak and back — so the motion
+    // itself feels smooth, on top of the small amplitude (wavePopHeight/
+    // wavePopScale) that keeps it subtle. Always restores each cell to
+    // its exact resting scale/position at the end, whether it finished
+    // naturally or bailed out early (puzzle solved or replaced mid-wave),
+    // so a cell can never be left visibly lifted.
+    private IEnumerator PopColumn(int col, int generationAtStart)
+    {
+        if (grid == null) yield break;
+
+        int rows = grid.GetLength(0);
+        List<RectTransform> rects = new List<RectTransform>();
+        List<Vector2> basePositions = new List<Vector2>();
+
+        for (int row = 0; row < rows; row++)
+        {
+            Cell cell = grid[row, col];
+            if (cell == null) continue;
+
+            RectTransform rect = cell.GetComponent<RectTransform>();
+            rects.Add(rect);
+            basePositions.Add(rect.anchoredPosition);
+        }
+
+        float elapsed = 0f;
+        while (elapsed < wavePopDuration)
+        {
+            if (!scrambleEnabled || !inputEnabled || puzzleGeneration != generationAtStart) break;
+
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / wavePopDuration);
+            float sine = Mathf.Sin(t * Mathf.PI);
+            float lift = sine * sine;
+            float scale = Mathf.Lerp(1f, wavePopScale, lift);
+
+            for (int i = 0; i < rects.Count; i++)
+            {
+                if (rects[i] == null) continue;
+                rects[i].anchoredPosition = basePositions[i] + new Vector2(0f, wavePopHeight * lift);
+                rects[i].localScale = new Vector3(scale, scale, 1f);
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < rects.Count; i++)
+        {
+            if (rects[i] == null) continue;
+            rects[i].anchoredPosition = basePositions[i];
+            rects[i].localScale = Vector3.one;
+        }
+    }
+
+    // Counts down on screen for midSelectionGraceDuration seconds, or
+    // until the player's selection resolves on its own (found, wrong
+    // answer, or manually deselecting everything) — whichever comes
+    // first — before the scramble in ScrambleLoop actually proceeds.
+    private IEnumerator RunGraceCountdown()
+    {
+        EnsureGraceCountdownText();
+        if (graceCountdownText == null) yield break;
+
+        graceCountdownText.gameObject.SetActive(true);
+
+        float remaining = midSelectionGraceDuration;
+        while (remaining > 0f && selectedCells.Count > 0)
+        {
+            graceCountdownText.text = Mathf.CeilToInt(remaining).ToString();
+            remaining -= Time.deltaTime;
+            yield return null;
+        }
+
+        graceCountdownText.gameObject.SetActive(false);
+    }
+
+    // Builds (once) a big, centered countdown label directly over the
+    // grid panel — a sibling inserted right after gridPanel itself
+    // (rather than a child of it) so ClearGrid()'s "destroy every child"
+    // sweep on the next puzzle load can never take it out along with the
+    // cells.
+    private void EnsureGraceCountdownText()
+    {
+        if (graceCountdownText != null) return;
+        if (gridPanel == null) return;
+
+        RectTransform panelRect = gridPanel as RectTransform;
+        if (panelRect == null) return;
+
+        GameObject textObject = new GameObject("ScrambleGraceCountdown", typeof(RectTransform));
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.SetParent(panelRect.parent, false);
+        rect.anchorMin = panelRect.anchorMin;
+        rect.anchorMax = panelRect.anchorMax;
+        rect.pivot = panelRect.pivot;
+        rect.anchoredPosition = panelRect.anchoredPosition;
+        rect.sizeDelta = panelRect.sizeDelta;
+        rect.SetSiblingIndex(panelRect.GetSiblingIndex() + 1); // render on top of the grid panel and all its cells
+
+        graceCountdownText = textObject.AddComponent<TextMeshProUGUI>();
+        graceCountdownText.alignment = TextAlignmentOptions.Center;
+        graceCountdownText.fontSize = graceCountdownFontSize;
+        graceCountdownText.color = graceCountdownColor;
+        graceCountdownText.fontStyle = FontStyles.Bold;
+        graceCountdownText.raycastTarget = false;
+        if (graceCountdownFont != null) graceCountdownText.font = graceCountdownFont;
+
+        textObject.SetActive(false);
+    }
+
+    // Clears any in-progress selection, slides the current cells out in
+    // a random scatter, rebuilds the puzzle from the SAME word list
+    // (fresh random placement, same answers — see LoadInlinePuzzle), then
+    // slides the new cells in from a random scatter to settle into their
+    // laid-out positions. Leaves inputEnabled true throughout except
+    // while the cells are physically mid-flight, since this is a reset,
+    // not an end to the puzzle.
+    private IEnumerator ScrambleGrid()
+    {
+        if (selectedCells.Count > 0)
+        {
+            foreach (Cell cell in selectedCells)
+            {
+                if (!cell.isPartOfFoundWord) cell.ResetColour();
+            }
+            selectedCells.Clear();
+        }
+
+        inputEnabled = false;
+
+        yield return StartCoroutine(SlideCellsOut());
+
+        if (currentInlineWords != null)
+        {
+            LoadInlinePuzzle(currentInlineWords);
+        }
+
+        yield return StartCoroutine(SlideCellsIn());
+
+        inputEnabled = true;
+    }
+
+    // Scatters every currently-visible cell outward from its own
+    // position in a random direction, easing in (starts slow,
+    // accelerates away) — the "cells flying apart" half of the scramble.
+    private IEnumerator SlideCellsOut()
+    {
+        if (grid == null) yield break;
+
+        List<RectTransform> cellRects = new List<RectTransform>();
+        List<Vector2> startPositions = new List<Vector2>();
+        List<Vector2> offsets = new List<Vector2>();
+
+        foreach (Cell cell in grid)
+        {
+            if (cell == null) continue;
+
+            RectTransform rect = cell.GetComponent<RectTransform>();
+            cellRects.Add(rect);
+            startPositions.Add(rect.anchoredPosition);
+
+            float angle = Random.Range(0f, Mathf.PI * 2f);
+            offsets.Add(new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * scrambleScatterDistance);
+        }
+
+        float elapsed = 0f;
+        while (elapsed < scrambleSlideDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / scrambleSlideDuration);
+            float eased = t * t;
+
+            for (int i = 0; i < cellRects.Count; i++)
+            {
+                if (cellRects[i] == null) continue;
+                cellRects[i].anchoredPosition = Vector2.Lerp(startPositions[i], startPositions[i] + offsets[i], eased);
+            }
+
+            yield return null;
+        }
+    }
+
+    // The freshly-rebuilt grid's cells are already laid out at their
+    // correct final positions the instant they're instantiated (the
+    // GridLayoutGroup on gridPanel handles that) — this captures each
+    // one's already-correct position as its TARGET, displaces it out to
+    // a random scattered starting point instead, then eases it back —
+    // the "cells flying together" half of the scramble.
+    private IEnumerator SlideCellsIn()
+    {
+        if (grid == null) yield break;
+
+        List<RectTransform> cellRects = new List<RectTransform>();
+        List<Vector2> targetPositions = new List<Vector2>();
+        List<Vector2> startPositions = new List<Vector2>();
+
+        foreach (Cell cell in grid)
+        {
+            if (cell == null) continue;
+
+            RectTransform rect = cell.GetComponent<RectTransform>();
+            cellRects.Add(rect);
+
+            Vector2 target = rect.anchoredPosition;
+            targetPositions.Add(target);
+
+            float angle = Random.Range(0f, Mathf.PI * 2f);
+            Vector2 start = target + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * scrambleScatterDistance;
+            startPositions.Add(start);
+            rect.anchoredPosition = start;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < scrambleSlideDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / scrambleSlideDuration);
+            float eased = 1f - (1f - t) * (1f - t);
+
+            for (int i = 0; i < cellRects.Count; i++)
+            {
+                if (cellRects[i] == null) continue;
+                cellRects[i].anchoredPosition = Vector2.Lerp(startPositions[i], targetPositions[i], eased);
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < cellRects.Count; i++)
+        {
+            if (cellRects[i] != null) cellRects[i].anchoredPosition = targetPositions[i];
+        }
     }
 }
