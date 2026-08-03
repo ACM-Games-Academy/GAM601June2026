@@ -315,6 +315,173 @@ public static class ProceduralAudioClips
         return clip;
     }
 
+    // A dense cluster of small, bright, hard "clack" impacts — like a
+    // double handful of mahjong tiles being stirred and clinked together
+    // on a table. Built almost entirely from many short percussive
+    // knocks (see AddMahjongKnock) rather than a continuous filtered-
+    // noise bed, since that's what actually reads as "lots of small hard
+    // objects" rather than "one big grinding mass." Each knock is a
+    // brief, randomly-pitched resonant tone (different tiles ring at
+    // slightly different pitches) plus a tiny burst of noise right at
+    // the moment of contact, both under a fast exponential decay so
+    // nothing rings long enough to sound like a bell — just a clack. An
+    // overall swell-in/swell-out envelope makes the whole handful read
+    // as one stirring gesture rather than a flat loop of identical
+    // clicks with hard edges. variantSeed picks a different duration,
+    // knock count, and every knock's own timing/pitch/loudness, so a
+    // bank of these (see SoundEffectManager's "MahjongShuffle"
+    // registration) don't all sound identical. Uses its own seeded
+    // System.Random rather than UnityEngine.Random, so generating clips
+    // never disturbs the game's own random state.
+    public static AudioClip GenerateMahjongShuffleSound(int variantSeed)
+    {
+        System.Random rng = new System.Random(variantSeed);
+
+        float duration = 0.8f + (float)rng.NextDouble() * 0.4f; // 0.8s-1.2s — long enough to cover a full ripple sweep
+        int totalSamples = Mathf.CeilToInt(duration * SampleRate);
+        float[] samples = new float[totalSamples];
+
+        int knockCount = 22 + rng.Next(0, 13); // 22-34 individual tile clacks
+
+        for (int k = 0; k < knockCount; k++)
+        {
+            float knockTime = (float)rng.NextDouble() * duration;
+
+            // Each tile has its own bright resonant pitch — mahjong
+            // tiles are small and hard, so this sits well above a low
+            // stone-on-stone knock.
+            float pitch = 700f + (float)rng.NextDouble() * 1900f; // 700-2600Hz
+            float knockAmplitude = 0.5f + (float)rng.NextDouble() * 0.5f;
+            float ringDuration = 0.02f + (float)rng.NextDouble() * 0.025f; // very short — a click, not a bell
+
+            AddMahjongKnock(samples, knockTime, pitch, knockAmplitude, ringDuration, rng);
+        }
+
+        // Overall shuffle envelope — swells in, busiest through the
+        // middle, fades back out — applied on top of every knock's own
+        // decay.
+        for (int i = 0; i < totalSamples; i++)
+        {
+            float t = i / (float)SampleRate;
+            float swell = Mathf.Sin(Mathf.PI * (t / duration)); // 0 at both edges, 1 at the midpoint
+            float envelope = Mathf.Lerp(0.5f, 1f, swell);
+            samples[i] *= envelope;
+        }
+
+        // Normalize
+        float peak = 0f;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
+        }
+        if (peak > 0f)
+        {
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] = samples[i] / peak * 0.85f;
+            }
+        }
+
+        AudioClip clip = AudioClip.Create("MahjongShuffle_Procedural_" + variantSeed, totalSamples, 1, SampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
+
+    // A deeper, longer cousin of GenerateMahjongShuffleSound — the same
+    // dense cluster-of-knocks construction (reusing AddMahjongKnock),
+    // but pitched down roughly an octave and stretched out with more
+    // knocks, to cover the puzzle grid's full scramble animation — cells
+    // scattering apart, then flying back together — rather than a quick
+    // ripple. variantSeed picks a different duration, knock count, and
+    // every knock's own timing/pitch/loudness, so a bank of these (see
+    // SoundEffectManager's "MahjongScramble" registration) don't all
+    // sound identical. Uses its own seeded System.Random rather than
+    // UnityEngine.Random, so generating clips never disturbs the game's
+    // own random state.
+    public static AudioClip GenerateMahjongScrambleSound(int variantSeed)
+    {
+        System.Random rng = new System.Random(variantSeed);
+
+        float duration = 1.3f + (float)rng.NextDouble() * 0.5f; // 1.3s-1.8s — comfortably covers the scatter+reassemble animation
+        int totalSamples = Mathf.CeilToInt(duration * SampleRate);
+        float[] samples = new float[totalSamples];
+
+        int knockCount = 34 + rng.Next(0, 17); // 34-50 — more knocks than the shuffle, to fill the longer duration at a similar density
+
+        for (int k = 0; k < knockCount; k++)
+        {
+            float knockTime = (float)rng.NextDouble() * duration;
+
+            // Same idea as the shuffle's tiles, but roughly an octave
+            // lower — heavier, deeper tiles clattering apart rather than
+            // a quick stir.
+            float pitch = 350f + (float)rng.NextDouble() * 950f; // 350-1300Hz
+            float knockAmplitude = 0.5f + (float)rng.NextDouble() * 0.5f;
+            float ringDuration = 0.035f + (float)rng.NextDouble() * 0.035f; // a touch longer than the shuffle's clicks, for a rounder, deeper knock
+
+            AddMahjongKnock(samples, knockTime, pitch, knockAmplitude, ringDuration, rng);
+        }
+
+        // Overall envelope — swells in as the tiles first break apart,
+        // busiest through the middle of the scatter, fades back out as
+        // they settle into the rebuilt grid.
+        for (int i = 0; i < totalSamples; i++)
+        {
+            float t = i / (float)SampleRate;
+            float swell = Mathf.Sin(Mathf.PI * (t / duration));
+            float envelope = Mathf.Lerp(0.5f, 1f, swell);
+            samples[i] *= envelope;
+        }
+
+        // Normalize
+        float peak = 0f;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            peak = Mathf.Max(peak, Mathf.Abs(samples[i]));
+        }
+        if (peak > 0f)
+        {
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] = samples[i] / peak * 0.85f;
+            }
+        }
+
+        AudioClip clip = AudioClip.Create("MahjongScramble_Procedural_" + variantSeed, totalSamples, 1, SampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
+    }
+
+    // Adds one bright tile "clack" into 'samples' at 'startTime': a
+    // resonant tone (fundamental plus a bright overtone, for a harder
+    // "solid object" character than a plain sine) plus a tiny noise
+    // burst right at the very start standing in for the actual contact
+    // transient, both under a fast exponential decay so it reads as a
+    // knock, not a ring. Draws from the caller's own rng so the whole
+    // clip's randomness stays deterministic from a single seed.
+    private static void AddMahjongKnock(float[] samples, float startTime, float pitch, float amplitude, float ringDuration, System.Random rng)
+    {
+        int startSample = Mathf.FloorToInt(startTime * SampleRate);
+        int knockSamples = Mathf.CeilToInt(ringDuration * SampleRate);
+
+        for (int i = 0; i < knockSamples; i++)
+        {
+            int sampleIndex = startSample + i;
+            if (sampleIndex < 0 || sampleIndex >= samples.Length) continue;
+
+            float localT = i / (float)SampleRate;
+
+            float tone = Mathf.Sin(2f * Mathf.PI * pitch * localT) +
+                         0.4f * Mathf.Sin(2f * Mathf.PI * pitch * 2.4f * localT);
+
+            float clickNoise = localT < 0.003f ? (float)(rng.NextDouble() * 2.0 - 1.0) : 0f;
+
+            float decay = Mathf.Exp(-localT / (ringDuration * 0.3f));
+
+            samples[sampleIndex] += (tone * 0.6f + clickNoise * 0.8f) * decay * amplitude;
+        }
+    }
+
     // A short, harsh "anger" stinger — two low tones a minor second
     // apart (about as dissonant/grating as an interval gets), hard-
     // clipped for a gritty edge, with a fast amplitude tremolo for a

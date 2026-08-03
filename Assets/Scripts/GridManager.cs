@@ -108,6 +108,14 @@ public class GridManager : MonoBehaviour
                 gridPanelFootprint = panelRect.sizeDelta;
             }
         }
+
+        // Baseline for SetGridSize's auto-adjusted scrambleInterval below
+        // — captured once here (the Inspector-authored starting size and
+        // pace) rather than re-derived from whatever the previous
+        // SetGridSize call left behind, so repeated calls never compound.
+        baseGridWidth = defaultGridWidth;
+        baseGridHeight = defaultGridHeight;
+        baseScrambleInterval = scrambleInterval;
     }
 
     void Start()
@@ -116,6 +124,10 @@ public class GridManager : MonoBehaviour
     }
 
     private Vector2 gridPanelFootprint;
+
+    private int baseGridWidth;
+    private int baseGridHeight;
+    private float baseScrambleInterval;
 
     // ── Runtime state ─────────────────────────────────────────────────────
 
@@ -227,6 +239,18 @@ public class GridManager : MonoBehaviour
     // paw print over the cell.
     public event System.Action<Cell> OnCellMarkedSelected;
 
+    // Fired once per ripple sweep — the halftime nudge and each of the
+    // final countdown pulses (see RunAnticipationWave) — regardless of
+    // how many columns actually pop. WordsearchDialogueBridge listens to
+    // play a mahjong-tile clink/shuffle sound alongside the visual.
+    public event System.Action OnScrambleRipple;
+
+    // Fired once, right as the grid actually breaks apart and rebuilds
+    // (see ScrambleGrid) — distinct from OnScrambleRipple's anticipation
+    // pulses. WordsearchDialogueBridge listens to play a deeper, longer
+    // mahjong-tile sound covering the scatter/reassemble animation.
+    public event System.Action OnScrambleBreakApart;
+
     // ── InlineWord: passed in from WordsearchDialogueBridge ──────────────
 
     // Defines one answer word parsed from a <<setpuzzle>> argument.
@@ -278,10 +302,19 @@ public class GridManager : MonoBehaviour
     // before the final daytime segment's puzzles, for a harder late-game
     // grid. Takes effect the next time a puzzle is built; doesn't rebuild
     // whatever grid is currently showing.
+    //
+    // A bigger grid (more total cells than the base size set up in the
+    // Inspector) also doubles scrambleInterval, since there's simply more
+    // ground to visually scan before the timer's out — and restores the
+    // base pace if the size is ever set back down to base or smaller, so
+    // this stays correct regardless of how many times it's called.
     public void SetGridSize(int width, int height)
     {
         defaultGridWidth = width;
         defaultGridHeight = height;
+
+        bool isBiggerThanBase = width * height > baseGridWidth * baseGridHeight;
+        scrambleInterval = isBiggerThanBase ? baseScrambleInterval * 2f : baseScrambleInterval;
     }
 
     // ── Grid building ─────────────────────────────────────────────────────
@@ -780,6 +813,8 @@ public class GridManager : MonoBehaviour
     {
         if (grid == null) yield break;
 
+        OnScrambleRipple?.Invoke();
+
         float pulseInterval = wavePulseCount > 0 ? waveLeadDuration / wavePulseCount : waveLeadDuration;
 
         int columns = grid.GetLength(1);
@@ -932,6 +967,8 @@ public class GridManager : MonoBehaviour
         }
 
         inputEnabled = false;
+
+        OnScrambleBreakApart?.Invoke();
 
         yield return StartCoroutine(SlideCellsOut());
 

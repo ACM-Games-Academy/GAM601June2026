@@ -31,8 +31,8 @@ using Yarn.Unity;
 // random one (including the main Clip) is chosen each time it plays,
 // for variety on repeated triggers like cell-selection scuffs.
 // A handful of known effect names ("MagicalTinkle", "CelebratoryChoir",
-// "WrongAnswerChord", "CellScuff", "AngerStinger", "CatPurr",
-// "HappyMeow") get simple procedurally generated placeholder clip(s)
+// "WrongAnswerChord", "CellScuff", "MahjongShuffle", "MahjongScramble",
+// "AngerStinger", "CatPurr", "HappyMeow") get simple procedurally generated placeholder clip(s)
 // auto-filled in if left blank, so the system works immediately with
 // zero audio assets;
 // assigning real AudioClips in the Inspector always takes priority.
@@ -137,6 +137,33 @@ public class SoundEffectManager : MonoBehaviour
             () => ProceduralAudioClips.GenerateScuffSound(3),
             () => ProceduralAudioClips.GenerateScuffSound(4),
             () => ProceduralAudioClips.GenerateScuffSound(5));
+
+        EnsureProceduralPlaceholderVariants("MahjongShuffle",
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(201),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(202),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(203),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(204),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(205),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(206),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(207),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(208),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(209),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(210),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(211),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(212),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(213),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(214),
+            () => ProceduralAudioClips.GenerateMahjongShuffleSound(215));
+
+        EnsureProceduralPlaceholderVariants("MahjongScramble",
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(401),
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(402),
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(403),
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(404),
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(405),
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(406),
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(407),
+            () => ProceduralAudioClips.GenerateMahjongScrambleSound(408));
 
         EnsureProceduralPlaceholderVariants("HappyMeow",
             () => ProceduralAudioClips.GenerateHappyMeow(1),

@@ -124,6 +124,17 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
     // selected OR deselected during puzzle solving.
     public string cellScuffSoundEffectName = "CellScuff";
 
+    [Header("Scramble Ripple")]
+    // A random variant of this effect plays every time GridManager's
+    // anticipation ripple sweeps the grid — the halftime nudge and each
+    // of the final countdown pulses.
+    public string mahjongShuffleSoundEffectName = "MahjongShuffle";
+
+    // A random variant of this (deeper, longer) effect plays once, right
+    // as the grid actually breaks apart and rebuilds — covering the
+    // scatter/reassemble animation, not the anticipation ripples.
+    public string mahjongScrambleSoundEffectName = "MahjongScramble";
+
     // A translucent paw print flashes over a cell the instant it's
     // selected (not on deselect).
     public float pawPrintSize = 100f;
@@ -182,6 +193,8 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             gridManager.OnWrongAnswer += HandleWrongAnswer;
             gridManager.OnCellSelectionChanged += HandleCellSelectionChanged;
             gridManager.OnCellMarkedSelected += HandleCellMarkedSelected;
+            gridManager.OnScrambleRipple += HandleScrambleRipple;
+            gridManager.OnScrambleBreakApart += HandleScrambleBreakApart;
         }
     }
 
@@ -193,6 +206,8 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
             gridManager.OnWrongAnswer -= HandleWrongAnswer;
             gridManager.OnCellSelectionChanged -= HandleCellSelectionChanged;
             gridManager.OnCellMarkedSelected -= HandleCellMarkedSelected;
+            gridManager.OnScrambleRipple -= HandleScrambleRipple;
+            gridManager.OnScrambleBreakApart -= HandleScrambleBreakApart;
         }
     }
 
@@ -451,6 +466,24 @@ public class WordsearchDialogueBridge : DialoguePresenterBase
         if (soundEffectManager != null)
         {
             soundEffectManager.PlaySoundEffect(cellScuffSoundEffectName);
+        }
+    }
+
+    // ── Scramble ripple ──────────────────────────────────────────────────
+
+    private void HandleScrambleRipple()
+    {
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(mahjongShuffleSoundEffectName);
+        }
+    }
+
+    private void HandleScrambleBreakApart()
+    {
+        if (soundEffectManager != null)
+        {
+            soundEffectManager.PlaySoundEffect(mahjongScrambleSoundEffectName);
         }
     }
 
