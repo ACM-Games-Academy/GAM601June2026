@@ -14,12 +14,12 @@
 Sekhmet: The <color=red>fate of Egypt</color> is at a <b>crossroads.</b> #expression:neutral
 <<showportrait Right Meritamun>>
 Meritamun: But what does that mean for me?  #expression:worried
-Sekhmet: You will carry messages of the divine will to mortals: <color=red>you are our eyes in the mortal realm.</color> 
-Sekhmet: At night you return here to report on the affairs of the mortal world. This is how the Gods can help guide Egypt to glory.Is that understood? #expression:neutral
+Sekhmet: You will <color=red>carry our divine will to mortals.</color>
+Sekhmet: At night you return here to <color=red>report on the affairs of the mortal world.</color> This is how the Gods can help <color=red>guide Egypt to glory.</color> Is that understood? #expression:neutral
 Meritamun: I am your vessel, Lady Sekhmet – your will is my desire. #expression:neutral
 <<showportrait CenterLeft Bes>>
 <<angerreaction Bes>>
-Bes: BUT YOU MADE HER INTO A CAT!? 
+Bes: BUT YOU MADE HER INTO A <color=red>CAT!?<color>
 Bes:I must register my objection here, Sekhmet. 
 Bes:Small cats are in the domestic sphere and therefore in MY realm of influence! Felines are for killing snakes around the house! Not for <color=red>whatever THIS is that you’re trying to do!</color> #expression:neutral
 
@@ -207,7 +207,7 @@ Cat_Meritamun: \[Harwa is a bit taller than I remember, so maybe... <color=red>a
 <<fadetonight BackgroundManager>>
 <<showportrait Left Bast>>
 Bast: So, <color=red>Meritamun</color> – what is <color=red>your father Pharoah Ahmose</color> going to do about the Persians at the border? Will he sue for peace? 
-Bast: Growing up in the shadow of war is a difficult thing for a <color=red>child</color> such as yours, you know…
+Bast: Growing up in the shadow of war is a difficult thing for a <color=red>child</color> like yours, you know…
 <<showportrait Right Meritamun>>
 Meritamun: I’m sorry my <color=red>Lady Bast</color>, but I confess I am confused – #expression:worried
 Meritamun: As I recall, I was by the grace of your blessing, <color=red>with child when I died...</color>
@@ -228,7 +228,7 @@ Bes:How exactly can you ask a <color=red>CAT</color> to find out faster, unless 
 Bes:You’ve made her A DOMESTIC CAT!
 Bes:<color=red>Joy and vermin control,</color> perhaps, but nobody is talking to CATS about platoon movements! 
 <<showportrait CenterRight Thoth>>
-Thoth: I really can’t say I didn’t tell you so <color=red>Sekhmet</color> my darling, viscous lioness, most hot of all the great feminine divines. 
+Thoth: I really can’t say I didn’t tell you so <color=red>Sekhmet</color> my darling, viscious lioness, most hot of all the great feminine divines...
 Thoth: If you want <color=red>Egypt</color> winning wars it's really much more about playing the long game of bolstering the grain silos and harnessing the faith of a tamed, well-fed, civilised populace… 
 <<angerreaction Sekhmet>>
 Sekhmet: Again with the patronising advice, Thoth! 
@@ -324,14 +324,14 @@ Ahmose: There’s no chance of winning any kind of prolonged campaign against <c
 <<showportrait Right Cat_Meritamun>>
 <<playsustainedsound CatPurr>>
 Cat_Meritamun: *Purrrrrr.....*
-Ahmose: What I actually need is some sort of <color=red>distraction</color> to bolster our support here in <color=red>Thebes</color>. Here are the choices I see before me, either of which are expensive but probably less expensive than a war. Should I <br> Marry <b><size=+4>𓋀</size></b> Nitiqret to Harwa in a lavish <b><size=+4>𓇼</size></b> ceremony <b><size=+4>𓇓</size></b> or <br> Start building a new <b><size=+4>𓈍</size></b> temple <b><size=+4>𓊽</size></b> here in Thebes <b><size=+4>𓋔</size></b>? #wordsearch 
+Ahmose: What I actually need is some sort of <color=red>distraction</color> to bolster our support here in <color=red>Thebes</color>. Here are the choices I see before me, both which are expensive. Should I <br> Marry <b><size=+4>𓋀</size></b> Nitiqret to Harwa in a lavish <b><size=+4>𓇼</size></b> ceremony <b><size=+4>𓇓</size></b> or <br> Start building a new <b><size=+4>𓈍</size></b> temple <b><size=+4>𓊽</size></b> here in Thebes <b><size=+4>𓋔</size></b> as a pretext for more taxation? #wordsearch 
 <<if $selectedPath == "Path_A">>
     Ahmose: Oh dear. I am not looking forward to bullying them into that. The things a father has to do for Egypt! Not that I’m questioning your divine will -- it was going to happen anyway and now is as good a time as any.
     <<set $ahmoseDistraction = "marriage">>
     <<addgodaffinity Bast 1>>
     <<addhumanaffinity Chaos 1>>
 <<elseif $selectedPath == "Path_B">>
-    Ahmose: Yes, yes... I shall start a magnificent new civic project, perfect pretext for a little extra taxation...
+    Ahmose: Yes, yes... I shall pretend to start a magnificent new civic project, but secretly funnel those funds into an attack on the Persians instead...
     <<set $ahmoseDistraction = "temple">>
     <<addgodaffinity Thoth 1>>
     <<addhumanaffinity Nitiqret 1>>
@@ -370,38 +370,39 @@ Cat_Meritamun: \[ I have a <color=red>son</color>... and <color=red>he lives?!?!
 
 <<showportrait Left Sekhmet>>
 <<showportrait Right Meritamun>>
-Sekhmet: So what you're saying is that the harvest was bad, the people are restless, and there's nothing in the coffers to fight the Persians with?
+Sekhmet: So what you're saying is that the <color=red>harvest was bad</color>, the <color=red>people are restless</color>, and there's <color=red>nothing in the coffers to fight the Persians with</color>?
 <<if $ahmoseDistraction == "marriage">>
-    Meritamun: Yes, and my father is planning to marry my sister Nitiqret to my brother Harwa in a lavish ceremony to distract the people from the bad harvest and the lack of funds for war.
-    Sekhmet: Lily-livered. Weak. Pathetic excuse for a pharoah -- sounds more like he's trying to distract himself than anyone else.
+    Meritamun: Yes, and my father is planning to <color=red>marry my sister Nitiqret to my brother Harwa</color> in a lavish ceremony to distract the people from the bad harvest and the lack of funds for war.
+    Sekhmet: Lily-livered. <color=red>Weak.</color> Pathetic excuse for a pharoah -- sounds more like he's trying to distract himself than anyone else.
+    Meritamun: ... #expression:worried
 <<elseif $ahmoseDistraction == "temple">>
-    Meritamun: Yes, and my father is planning to start building a new temple in Thebes as a pretext for a little extra taxation from the nobles, possibly to funnel that money towards a war with the Persians.
-    Sekhmet: Seems a roundabout approach, but it perhaps it's a dull edge we can hone to sharpness.
+    Meritamun: Yes, and my father is planning to start <color=red>building a new temple in Thebes</color> as a pretext for a little extra taxation from the nobles, possibly to <color=red>funnel that money towards a war with the Persians</color>.
+    Sekhmet: Seems a roundabout approach, but <color=red>perhaps it's a dull edge we can hone to sharpness.</color>
 <<endif>>
 <<hideallportraits>>
 
 <<showportrait Left Bast>>
 <<showportrait Right Meritamun>>
-Bast: So you found out about your son, Meritamun.
+Bast: So you found out about <color=red>your son,</color> Meritamun.
 <<if $sonReturnChoice == "hidden">>
-    Meritamun: Yes, and I have decided to trust Neferura to keep my son safe far away from Thebes.
+    Meritamun: Yes, and I have decided to trust Neferura to <color=red>keep my son safe far away from Thebes.</color>
     Bast: And the grief of Amenhotep? 
     Bast: Have you no sympathy for his lonliness? 
 <<elseif $sonReturnChoice == "returned">>
-    Meritamun: Yes, and I have decided to bring my son back to Thebes.
-    Bast: You should name him Ptahhotep, for the peace that he may create in Amenhotep's heart.
+    Meritamun: Yes, and I have decided to <color=red>bring my son back to Thebes.</color>
+    Bast: You should name him <color=red>Ptahhotep,</color> for the peace that he may create in Amenhotep's heart.
 <<endif>>
 <<hideallportraits>>
 
 <<showportrait Left Thoth>>
 <<showportrait Right Meritamun>>
-Thoth: So what you're saying is that your former lover Amenhotep is now saddled with your son, and your father thinks it's a power play and is paranoid about it? 
+Thoth: So what you're saying is that <color=red>your former lover Amenhotep</color> is now saddled with your <color=red>son,</color> and your <color=red>father</color> thinks it's a power play and is <color=red>paranoid</color> about it? 
 <<if $amenhotepFate == "ousted">>
-    Meritamun: Yes, and I think the best place for Amenhotep to be is away from my father, so I have decided to let my father oust Amenhotep from his position as high priest.
+    Meritamun: Yes, and I think the best place for Amenhotep to be is away from my father, so I have decided to <color=red>let my father oust Amenhotep from his position as high priest.</color>
     Thoth: The best thing one can say about this is that, a hundred years hence, none of this will matter...
     Meritamun: I suppose that is true, my Lord. #expression:worried
 <<elseif $amenhotepFate == "kept">>
-    Meritamun: Yes,and I think the best place for Amenhotep is for him to remain in his position as high priest, so that he can use his influence to give our son a legacy in Thebes.
+    Meritamun: Yes,and I think the best place for Amenhotep is for him to <color=red>remain in his position as high priest,</color> so that he can use his influence to <color=red>give our son a legacy in Thebes.</color>
     Thoth: Bold move.  
     Meritamun: You think so, my Lord?
     Thoth: I think so. 
@@ -412,11 +413,11 @@ Thoth: So what you're saying is that your former lover Amenhotep is now saddled 
 <<showportrait Left Bes>>
 <<showcritterjudgment CritterJudgment>>
 <<if $critterJudgmentTier == "none">>
-    Bes: You've been a right awful cat! I've half a mind to forbid your return to Thebes!
+    Bes: You've been a <color=red>right awful cat!</color> I've half a mind to forbid your return to Thebes!
 <<elseif $critterJudgmentTier == "excellent">>
-    Bes: You're an utterly extraordinary huntress, my dear! What joy!
+    Bes: You're an <color=red>utterly extraordinary huntress,< /color> my dear! What joy!
 <<else>>
-    Bes: You've been an acceptable exterminator. You may remain in Thebes -- for now.
+    Bes: You've been an <color=red>acceptable</color> exterminator. You may remain in Thebes -- for now.
 <<endif>>
 <<hideallportraits>>
 
